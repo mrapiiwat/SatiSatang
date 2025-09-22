@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verified Successfully</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .success-animation {
+            animation: scaleIn 0.8s ease-out;
+        }
+        
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .check-animation {
+            animation: drawCheck 1.2s ease-in-out 0.5s both;
+        }
+        
+        @keyframes drawCheck {
+            0% {
+                stroke-dasharray: 0, 100;
+            }
+            100% {
+                stroke-dasharray: 100, 0;
+            }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+        
+        .glow {
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.4);
+        }
+        
+        .text-fade-in {
+            animation: fadeInUp 0.8s ease-out 0.8s both;
+        }
+        
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .button-fade-in {
+            animation: fadeInUp 0.8s ease-out 1.2s both;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle 2s linear infinite;
+        }
+        
+        @keyframes sparkle {
+            0%, 20% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            25% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0);
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 max-w-md w-full text-center relative overflow-hidden">
+        
+        <!-- Success Icon with sparkles -->
+        <div class="success-animation mb-8 relative">
+            <div class="w-24 h-24 mx-auto bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center glow float-animation relative">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path class="check-animation" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+                
+                <!-- Sparkles around the icon -->
+                <div class="sparkle" style="top: 10%; left: 20%; animation-delay: 0s;"></div>
+                <div class="sparkle" style="top: 20%; right: 15%; animation-delay: 0.5s;"></div>
+                <div class="sparkle" style="bottom: 25%; left: 10%; animation-delay: 1s;"></div>
+                <div class="sparkle" style="bottom: 15%; right: 25%; animation-delay: 1.5s;"></div>
+                <div class="sparkle" style="top: 50%; left: 5%; animation-delay: 0.3s;"></div>
+                <div class="sparkle" style="top: 40%; right: 8%; animation-delay: 0.8s;"></div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="text-fade-in">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                ยืนยันอีเมลสำเร็จ! 🎉
+            </h1>
+            
+            <p class="text-gray-600 mb-2 text-xl font-medium">
+                ยินดีด้วยค่ะ
+            </p>
+            
+            <p class="text-gray-500 mb-8 text-lg leading-relaxed">
+                อีเมลของคุณได้รับการยืนยันเรียบร้อยแล้ว<br>
+                พร้อมใช้งานเต็มรูปแบบ
+            </p>
+        </div>
+        
+        <!-- Single Action Button -->
+        <div class="button-fade-in">
+            <button onclick="continueToApp()" class="w-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white font-semibold py-5 px-8 rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 text-lg">
+                <span class="flex items-center justify-center">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                    เข้าใช้งาน
+                </span>
+            </button>
+        </div>
+        
+        <!-- Decorative elements -->
+        <div class="absolute -top-4 -left-4 w-24 h-24 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full opacity-20"></div>
+        <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-blue-200 to-indigo-200 rounded-full opacity-20"></div>
+        <div class="absolute top-1/3 -right-2 w-16 h-16 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-full opacity-15"></div>
+        <div class="absolute bottom-1/4 -left-3 w-20 h-20 bg-gradient-to-br from-green-200 to-emerald-200 rounded-full opacity-15"></div>
+    </div>
+
+    <script>
+        function continueToApp() {
+            // เปลี่ยน URL ตามที่ต้องการ
+            console.log('กำลังเข้าสู่แอพพลิเคชัน...');
+            alert('ยินดีต้อนรับสู่แอพพลิเคชัน! 🚀');
+            // window.location.href = '/dashboard';
+        }
+        
+        // Add floating particles effect
+        function createFloatingParticle() {
+            const particle = document.createElement('div');
+            particle.style.cssText = `
+                position: fixed;
+                width: ${Math.random() * 6 + 2}px;
+                height: ${Math.random() * 6 + 2}px;
+                background: rgba(255, 255, 255, 0.8);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 1000;
+            `;
+            
+            particle.style.left = Math.random() * window.innerWidth + 'px';
+            particle.style.top = window.innerHeight + 'px';
+            
+            document.body.appendChild(particle);
+            
+            const animation = particle.animate([
+                { 
+                    transform: 'translateY(0px) rotate(0deg)', 
+                    opacity: 0 
+                },
+                { 
+                    transform: `translateY(-50px) rotate(180deg)`, 
+                    opacity: 0.8 
+                },
+                { 
+                    transform: `translateY(-${window.innerHeight + 100}px) rotate(360deg)`, 
+                    opacity: 0 
+                }
+            ], {
+                duration: 4000 + Math.random() * 3000,
+                easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            });
+            
+            animation.onfinish = () => particle.remove();
+        }
+        
+        // Create particles occasionally
+        setInterval(createFloatingParticle, 800);
+        
+        // Create initial burst of particles
+        setTimeout(() => {
+            for(let i = 0; i < 5; i++) {
+                setTimeout(createFloatingParticle, i * 200);
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
