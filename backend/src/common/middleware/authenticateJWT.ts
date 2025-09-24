@@ -1,25 +1,36 @@
-import { Request, Response, NextFunction } from "express";
-import httpStatus from "http-status";
-import { verifyAccessToken } from "../utils/jwt";
+import { Request, Response, NextFunction } from 'express';
+import httpStatus from 'http-status';
+import { verifyAccessToken } from '../utils/jwt';
 
-export interface AuthRequest extends Request { userId?: number; }
+export interface AuthRequest extends Request {
+  userId?: number;
+}
 
 export function authenticateJWT(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-        const authHeader = req.headers.authorization;
-        let token;
-        if (authHeader && authHeader.startsWith("Bearer ")) {
-            token = authHeader.split(" ")[1];
-        } else {
-            token = req.cookies?.token;
-        }
-        if (!token) {
-            return res.status(httpStatus.UNAUTHORIZED).json({ message: "No token" });
-        }
-        const decoded = verifyAccessToken(token!);
-        req.userId = decoded.userId;
-        next();
-    } catch (err) {
-        return res.status(httpStatus.UNAUTHORIZED).json({ error: "Invalid or expired access token" });
+  try {
+    const authHeader = req.headers.authorization;
+    let token;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else {
+      token = req.cookies?.token;
     }
+    if (!token) {
+      return res.status(httpStatus.UNAUTHORIZED).json({ message: 'No token' });
+    }
+    const decoded = verifyAccessToken(token!);
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Invalid or expired access token',
+        errors: error.message,
+      });
+    } else {
+      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
+  }
 }
