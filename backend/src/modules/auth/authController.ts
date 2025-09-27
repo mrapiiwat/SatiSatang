@@ -23,6 +23,9 @@ export const checkEmail = async (req: Request, res: Response) => {
     let user = await prisma.user.findUnique({ where: { email: validatedData.email } });
 
     if (user?.isEmailVerified) {
+      if (!user.password) {
+        return res.status(httpStatus.OK).json({ message: 'LOGIN WITH GOOGLE OR FACEBOOK' });
+      }
       return res.status(httpStatus.CONFLICT).json({ message: 'EXISTS' });
     }
 

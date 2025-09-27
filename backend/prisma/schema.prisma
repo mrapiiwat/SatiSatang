@@ -15,26 +15,35 @@ datasource db {
 }
 
 model User {
-  id            Int              @id @default(autoincrement())
-  email         String?          @unique
-  password      String?
-  name          String?
-  isEmailVerified Boolean        @default(false)
-  createdAt     DateTime         @default(now())
-  oauthAccounts OAuthAccount[]
-  refreshTokens RefreshToken[]
+  id              Int      @id @default(autoincrement())
+  email           String?  @unique
+  password        String?
+  name            String?
+  balance         Float    @default(0)
+  isEmailVerified Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  oauthAccounts      OAuthAccount[]
+  refreshTokens      RefreshToken[]
   emailVerifications EmailVerification[]
+  categories         Category[]
+  transactions       Transaction[]
+  goals              Goals[]
+  budgets            Budgets[]
+  chatSessions       ChatSession[]
+  chatMessages       ChatMessage[]
 }
 
 model OAuthAccount {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   provider       String
   providerUserId String
   accessToken    String?
   refreshToken   String?
   expiresAt      DateTime?
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
+
   @@unique([provider, providerUserId])
 }
 
@@ -44,8 +53,8 @@ model RefreshToken {
   revoked   Boolean  @default(false)
   createdAt DateTime @default(now())
   expiresAt DateTime
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
 }
 
 model EmailVerification {
@@ -53,6 +62,107 @@ model EmailVerification {
   tokenHash String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+}
+
+model Transaction {
+  id          Int             @id @default(autoincrement())
+  type        TransactionType
+  description String?
+  amount      Float
+  receipt     String?
+  toAccount   String?
+  fromAccount String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId  Int
+
+  @@index([userId, createdAt])
+}
+
+model Category {
+  id        Int             @id @default(autoincrement())
+  name      String
+  type      TransactionType
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  icon      Icon            @relation(fields: [iconId], references: [id], onDelete: Cascade)
+  iconId    Int
+
+  transactions Transaction[]
+}
+
+model Icon {
+  id          Int      @id @default(autoincrement())
+  url         String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categories Category[]
+}
+
+model Goals {
+  id            Int       @id @default(autoincrement())
+  name          String
+  amount        Float
+  currentAmount Float     @default(0)
+  deadline      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+}
+
+model Budgets {
+  id            Int       @id @default(autoincrement())
+  name          String
+  amount        Float
+  currentAmount Float     @default(0)
+  frequency     Frequency
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+}
+
+model ChatSession {
+  id        Int      @id @default(autoincrement())
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+
+  messages ChatMessage[]
+}
+
+model ChatMessage {
+  id        Int         @id @default(autoincrement())
+  role      String
+  content   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId Int
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
