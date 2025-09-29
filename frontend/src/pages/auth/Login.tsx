@@ -139,7 +139,7 @@ const Login = () => {
         setIsLoading(false);
       }
     },
-    [email, password, name, isUser, validateEmail, actionLogin, navigate ,isLoading],
+    [email, password, name, isUser, validateEmail, actionLogin, navigate, isLoading],
   );
 
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

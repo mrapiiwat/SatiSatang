@@ -156,10 +156,11 @@ const Verify = () => {
           <button
             onClick={isLoading || !code.trim() ? undefined : handleVerify}
             disabled={isLoading || !code.trim()}
-            className={`w-full h-12 transition-colors ${isLoading || !code.trim()
+            className={`w-full h-12 transition-colors ${
+              isLoading || !code.trim()
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-gray-900 text-white hover:bg-gray-800'
-              }`}
+            }`}
           >
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mx-auto" />
