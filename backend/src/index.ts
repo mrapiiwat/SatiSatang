@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import cors from 'cors';
 import './common/config/passport';
 
 // Import routes
@@ -14,6 +15,14 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080;
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    credentials: true,
+  }),
+);
+
 app.use(express.static(path.join(__dirname, './common/view')));
 
 app.get('/', (req: Request, res: Response) => {

@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import fs, { access } from 'fs/promises';
+import fs from 'fs/promises';
 import path from 'path';
 
 const transporter = nodemailer.createTransport({
@@ -12,32 +12,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendVerificationEmail(to: string, token: string) {
-  const url = `${process.env.APP_BASE_URL}/api/verify-email?token=${token}`;
+export async function sendVerificationEmail(to: string, otp: string) {
+  const templatePath = path.join(process.cwd(), '/src/common/view/email-form.html');
 
-  try {
-    const templatePath = path.join(process.cwd(), '/src/common/view/email-form.html');
+  await fs.access(templatePath);
+  let html = await fs.readFile(templatePath, 'utf-8');
 
-    await access(templatePath);
-    console.log(`📧 Loading email template from: ${templatePath}`);
+  html = html
+    .replace(/{{OTP_CODE}}/g, otp)
+    .replace(/{{CURRENT_YEAR}}/g, new Date().getFullYear().toString());
 
-    let html = await fs.readFile(templatePath, 'utf-8');
+  const mailOptions = {
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: 'รหัสยืนยันตัวตนทางอีเมล (OTP) - สติสตางค์',
+    html,
+  };
 
-    html = html
-      .replace(/{{VERIFICATION_URL}}/g, url)
-      .replace(/{{CURRENT_YEAR}}/g, new Date().getFullYear().toString());
-
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to,
-      subject: 'การยืนยันตัวตนทางอีเมล - สติสตางค์',
-      html,
-    };
-
-    const result = await transporter.sendMail(mailOptions);
-    return result;
-  } catch (error) {
-    console.error('❌ Error sending verification email:', error);
-    throw error;
-  }
+  const result = await transporter.sendMail(mailOptions);
+  return result;
 }

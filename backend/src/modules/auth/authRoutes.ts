@@ -9,7 +9,7 @@ const router = Router();
 router.post('/check-email', authController.checkEmail);
 router.post('/register', authController.register);
 router.post('/login', authController.login);
-router.get('/verify-email', authController.verifyEmail);
+router.post('/verify-email', authController.verifyEmail);
 
 //logout
 router.get('/logout', authenticateJWT, authController.logout);

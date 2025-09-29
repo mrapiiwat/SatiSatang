@@ -6,87 +6,90 @@ import {
   findRefreshTokenByRaw,
   rotateRefreshToken,
   revokeRefreshTokenByRaw,
-  hashToken,
 } from '../../common/utils/token';
 import httpStatus from 'http-status';
 import { ZodError } from 'zod';
 import { sendVerificationEmail } from '../../common/utils/mail';
 import * as authModels from './models';
-import crypto from 'crypto';
 import prisma from '../../common/config/prismaClient';
-import path from 'path';
 import passport from 'passport';
 
 export const checkEmail = async (req: Request, res: Response) => {
   try {
     const validatedData = authModels.CheckEmailSchema.parse(req.body);
-    let user = await prisma.user.findUnique({ where: { email: validatedData.email } });
 
-    if (user?.isEmailVerified) {
-      if (!user.password) {
-        return res.status(httpStatus.OK).json({ message: 'LOGIN WITH GOOGLE OR FACEBOOK' });
-      }
-      return res.status(httpStatus.CONFLICT).json({ message: 'EXISTS' });
-    }
+    const user = await prisma.user.findUnique({
+      where: { email: validatedData.email },
+      include: { oauthAccounts: true },
+    });
 
     if (!user) {
-      user = await prisma.user.create({ data: { email: validatedData.email } });
+      return res.status(httpStatus.OK).json({ message: 'SIGN UP' });
     }
 
-    await prisma.emailVerification.deleteMany({ where: { userId: user.id } });
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    const tokenHash = hashToken(rawToken);
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1); // 1 ชั่วโมง
+    if (user.password && user.isEmailVerified) {
+      return res.status(httpStatus.OK).json({ message: 'SIGN IN' });
+    }
 
-    await prisma.emailVerification.create({ data: { tokenHash, expiresAt, userId: user.id } });
-    await sendVerificationEmail(validatedData.email, rawToken);
+    if (user.oauthAccounts.length > 0) {
+      return res.status(httpStatus.OK).json({ message: 'OAUTH SIGN IN' });
+    }
 
-    res.status(httpStatus.OK).json({ message: 'Please check your email to verify your account.' });
+    return res.status(httpStatus.OK).json({ message: 'PENDING VERIFICATION' });
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
-    } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+    }
+
+    if (error instanceof Error) {
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
-    } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Internal server error',
-      });
     }
+
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Internal server error',
+    });
   }
 };
 
 export const register = async (req: Request, res: Response) => {
   try {
     const validatedData = authModels.RegisterSchema.parse(req.body);
-
-    let user = await prisma.user.findUnique({ where: { email: validatedData.email } });
-
-    if (!user) {
-      return res.status(httpStatus.CONFLICT).json({ message: 'Please verify your email' });
-    }
-
-    const hashPassword = validatedData.password
-      ? await bcrypt.hash(validatedData.password, 10)
-      : undefined;
-    user = await prisma.user.update({
-      where: {
-        email: validatedData.email,
-      },
+    const hashPassword = await bcrypt.hash(validatedData.password, 10);
+    const user = await prisma.user.create({
       data: {
+        email: validatedData.email,
         password: hashPassword,
         name: validatedData.name,
       },
     });
 
-    res.status(httpStatus.CREATED).json({
-      message: 'Registration successful.',
+    function generateOTP(length = 6) {
+      let otp = '';
+      for (let i = 0; i < length; i++) {
+        otp += Math.floor(Math.random() * 10);
+      }
+      return otp;
+    }
+    await prisma.emailVerification.deleteMany({ where: { userId: user.id } });
+
+    const otp = generateOTP();
+    const otpHash = await bcrypt.hash(otp, 10);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 นาที
+
+    await prisma.emailVerification.create({
+      data: { otpHash, expiresAt, userId: user.id },
+    });
+
+    await sendVerificationEmail(validatedData.email, otp);
+    res.status(httpStatus.OK).json({
+      userId: user.id,
+      message: 'Please check your email to verify your account.',
     });
   } catch (error) {
     if (error instanceof ZodError) {
@@ -150,27 +153,29 @@ export const login = async (req: Request, res: Response) => {
 
 export const verifyEmail = async (req: Request, res: Response) => {
   try {
-    const token = String(req.query.token || '');
-    if (!token)
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ message: 'Missing token ,Please try again later' });
-    const tokenHash = hashToken(token);
-    const record = await prisma.emailVerification.findUnique({
-      where: { tokenHash },
-      include: { user: true },
-    });
-    if (!record) return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid token' });
+    const validateData = authModels.verifyEmailSchema.parse(req.body);
+    const { otp, userId } = validateData;
+    if (!otp || !userId)
+      return res.status(httpStatus.BAD_REQUEST).json({ message: 'Missing userId or OTP' });
+    const record = await prisma.emailVerification.findFirst({ where: { userId } });
+    if (!record) return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid OTP' });
     if (record.expiresAt < new Date())
-      return res.status(httpStatus.BAD_REQUEST).json({ message: 'Token expired' });
+      return res.status(httpStatus.BAD_REQUEST).json({ message: 'OTP expired' });
 
-    await prisma.user.update({ where: { id: record.userId }, data: { isEmailVerified: true } });
+    const isValid = await bcrypt.compare(otp, record.otpHash);
+    if (!isValid) return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid OTP' });
+
+    await prisma.user.update({ where: { id: userId }, data: { isEmailVerified: true } });
     await prisma.emailVerification.delete({ where: { id: record.id } });
-    res
-      .status(httpStatus.OK)
-      .sendFile(path.join(__dirname, '../../common/view/verify-success.html'));
+
+    res.status(httpStatus.OK).json({ message: 'Email verified successfully' });
   } catch (error) {
-    if (error instanceof Error) {
+    if (error instanceof ZodError) {
+      res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Validation error',
+        errors: error,
+      });
+    } else if (error instanceof Error) {
       res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
@@ -254,33 +259,58 @@ export const facebookAuthCallback = [
 ];
 
 export const refreshToken = async (req: Request, res: Response) => {
-  const raw = req.cookies?.refreshToken;
-  if (!raw) return res.status(401).json({ error: 'No refresh token' });
+  try {
+    const raw = req.cookies?.refreshToken;
+    if (!raw) return res.status(401).json({ error: 'No refresh token' });
 
-  const tokenInDb = await findRefreshTokenByRaw(raw);
-  if (!tokenInDb || tokenInDb.revoked || tokenInDb.expiresAt < new Date()) {
-    return res.status(401).json({ error: 'Invalid refresh token' });
+    const tokenInDb = await findRefreshTokenByRaw(raw);
+    if (!tokenInDb || tokenInDb.revoked || tokenInDb.expiresAt < new Date()) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+
+    // rotate: create new, revoke old
+    const newRaw = await rotateRefreshToken(raw, tokenInDb.userId);
+
+    const accessToken = generateAccessToken(tokenInDb.userId);
+
+    res.cookie('refreshToken', newRaw, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({ accessToken });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
+      });
+    } else {
+      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
   }
-
-  // rotate: create new, revoke old
-  const newRaw = await rotateRefreshToken(raw, tokenInDb.userId);
-
-  const accessToken = generateAccessToken(tokenInDb.userId);
-
-  // set new cookie
-  res.cookie('refreshToken', newRaw, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
-  });
-
-  res.json({ accessToken });
 };
 
 export const logout = async (req: Request, res: Response) => {
-  const raw = req.cookies?.refreshToken;
-  if (raw) await revokeRefreshTokenByRaw(raw);
-  res.clearCookie('refreshToken');
-  res.json({ message: 'Logged out' });
+  try {
+    const raw = req.cookies?.refreshToken;
+    if (raw) await revokeRefreshTokenByRaw(raw);
+    res.clearCookie('refreshToken');
+    res.json({ message: 'Logged out' });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
+      });
+    } else {
+      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
+  }
 };

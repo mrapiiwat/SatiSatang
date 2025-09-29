@@ -20,6 +20,7 @@ export const me = async (req: AuthRequest, res: Response) => {
       id: user.id,
       email: user.email,
       name: user.name,
+      balance: user.balance,
       oauthAccounts: user.oauthAccounts,
     });
   } catch (error) {

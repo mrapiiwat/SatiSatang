@@ -4,6 +4,11 @@ export const CheckEmailSchema = z.object({
   email: z.string().email('Invalid email address'),
 });
 
+export const verifyEmailSchema = z.object({
+  userId: z.number(),
+  otp: z.string().length(6, { message: 'OTP must be 6 digits' }),
+});
+
 export const RegisterSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z

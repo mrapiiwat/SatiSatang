@@ -1,291 +1,144 @@
 <!doctype html>
-<html lang="en">
+<html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <title>Verify your email</title>
+    <title>รหัสยืนยันตัวตนทางอีเมล</title>
     <style>
+      /* --- Reset & body --- */
       body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fb;
         margin: 0;
-        padding: 20px;
+        padding: 0;
+        font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f7fb;
+        color: #333333;
       }
 
-      .container {
+      .email-wrapper {
         max-width: 600px;
-        margin: 40px auto;
-        background: #ffffff;
+        margin: 50px auto;
+        background-color: #ffffff;
         border-radius: 16px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        border: 1px solid #eee;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e0e0e0;
       }
 
+      /* Header */
       .header {
-        background: #d4bff9;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
         text-align: center;
-        padding: 40px 20px 30px 20px;
-        position: relative;
+        padding: 40px 20px;
       }
 
       .header h1 {
-        margin: 0 0 10px 0;
-        font-size: 26px;
-        color: #333333;
+        margin: 0;
+        font-size: 32px;
         font-weight: bold;
       }
 
-      .email-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 50%;
-        margin: 0 auto 20px auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-        position: relative;
+      .header p {
+        margin: 10px 0 0;
+        font-size: 16px;
+        opacity: 0.85;
       }
 
-      .email-icon::before {
-        content: '';
-        position: absolute;
-        top: -3px;
-        left: -3px;
-        right: -3px;
-        bottom: -3px;
-        background: linear-gradient(135deg, #667eea, #764ba2, #667eea);
-        border-radius: 50%;
-        z-index: -1;
-        opacity: 0.3;
-      }
-
+      /* Content */
       .content {
         padding: 40px 30px;
-        color: #333333;
-        line-height: 1.7;
-        font-size: 16px;
       }
 
       .content h2 {
-        margin: 0 0 20px 0;
         font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 25px;
         color: #333333;
-        font-weight: bold;
-        text-align: center;
       }
 
-      .welcome-message {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 2px solid #0ea5e9;
-        border-radius: 15px;
-        padding: 25px;
-        margin: 30px 0;
-        color: #0c4a6e;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .welcome-message::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
-        animation: pulse 3s ease-in-out infinite;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-          opacity: 0.5;
-        }
-        50% {
-          transform: scale(1.1);
-          opacity: 0.8;
-        }
-      }
-
-      .button {
-        display: inline-block;
-        margin: 35px 0;
-        padding: 18px 40px;
-        background: linear-gradient(135deg, #d4bff9 0%, #b8a9f5 50%, #a898f1 100%);
-        color: #333333 !important;
-        text-decoration: none;
-        border-radius: 12px;
-        font-weight: bold;
-        transition: all 0.4s ease;
-        box-shadow: 0 8px 25px rgba(168, 152, 241, 0.3);
+      .content p {
         font-size: 16px;
-        position: relative;
-        overflow: hidden;
+        line-height: 1.7;
+        margin-bottom: 20px;
       }
 
-      .button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-        transition: left 0.6s;
+      /* OTP box */
+      .otp-box {
+        display: block;
+        text-align: center;
+        font-size: 36px;
+        font-weight: bold;
+        color: #0ea5e9;
+        background: #e0f2fe;
+        border-radius: 12px;
+        padding: 20px 0;
+        letter-spacing: 10px;
+        width: fit-content;
+        min-width: 220px;
+        margin: 20px auto;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
       }
 
-      .button:hover {
-        background: linear-gradient(135deg, #b1b0ad 0%, #9a9896 50%, #878583 100%);
-        color: #ffffff !important;
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(161, 160, 173, 0.4);
-      }
-
-      .button:hover::before {
-        left: 100%;
-      }
-
-      .security-note {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      /* Note */
+      .note {
+        background: #fffbeb;
         border-left: 5px solid #f59e0b;
         padding: 20px 25px;
-        margin: 30px 0;
         border-radius: 0 12px 12px 0;
         font-size: 14px;
         color: #92400e;
-        position: relative;
+        margin-top: 30px;
       }
 
-      .security-note::before {
-        content: '🔒';
-        position: absolute;
-        top: 15px;
-        left: -2px;
-        font-size: 18px;
-        background: #f59e0b;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
+      /* Footer */
       .footer {
-        font-size: 12px;
-        color: #666666;
         text-align: center;
+        font-size: 12px;
+        color: #777777;
         padding: 25px 20px;
-        border-top: 1px solid #eaeaea;
+        border-top: 1px solid #e0e0e0;
         background: #fafafa;
       }
 
-      .decorative-elements {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        overflow: hidden;
-      }
-
-      .circle {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      .circle1 {
-        width: 50px;
-        height: 50px;
-        top: 15px;
-        left: 25px;
-      }
-
-      .circle2 {
-        width: 35px;
-        height: 35px;
-        top: 45px;
-        right: 35px;
-      }
-
-      .circle3 {
-        width: 25px;
-        height: 25px;
-        bottom: 25px;
-        left: 60px;
-      }
-
+      /* Responsive */
       @media (max-width: 480px) {
-        .container {
-          margin: 10px;
-          border-radius: 12px;
-        }
-
         .content {
           padding: 30px 20px;
         }
 
-        .content h2 {
-          font-size: 22px;
-        }
-
-        .button {
-          padding: 14px 28px;
-          font-size: 15px;
+        .otp-box {
+          font-size: 28px;
+          min-width: 180px;
+          letter-spacing: 6px;
+          padding: 15px 0;
         }
       }
     </style>
   </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <div class="decorative-elements">
-          <div class="circle circle1"></div>
-          <div class="circle circle2"></div>
-          <div class="circle circle3"></div>
-        </div>
 
-        <img src="./assets/SATASATANG_LOGO_BLACK_VERTICAL_TH 1.png" alt="" />
+  <body>
+    <div class="email-wrapper">
+      <div class="header">
+        <h1>สติสตางค์</h1>
+        <p>รหัสยืนยันตัวตนทางอีเมลของคุณ</p>
       </div>
 
       <div class="content">
-        <h2>📧 การยืนยันตัวตนทางอีเมล</h2>
+        <h2>📧 ยืนยันตัวตนของคุณ</h2>
+        <p>เรียน ผู้ใช้บริการ,</p>
+        <p>เพื่อให้การใช้งานของคุณปลอดภัย กรุณากรอกรหัสยืนยัน 6 หลักด้านล่างในแอปของท่าน:</p>
 
-        <div class="welcome-message">
-          <p style="margin: 0; font-weight: bold; position: relative; z-index: 1">
-            ยินดีต้อนรับเข้าสู่ สติสตางค์
-          </p>
-          <p style="margin: 15px 0 0 0; position: relative; z-index: 1">
-            ขอบคุณที่ให้ความไว้วางใจและเลือกใช้บริการของเรา 🎉
-          </p>
+        <span class="otp-box">{{OTP_CODE}}</span>
+
+        <div class="note">
+          🔒 หากคุณไม่ได้ทำการสมัครสมาชิกด้วยตนเอง กรุณาเพิกเฉยต่ออีเมลฉบับนี้ ระบบจะไม่ดำเนินการใดๆ
+          เพิ่มเติม
         </div>
 
-        <p>เรียน ผู้ใช้บริการที่เคารพ,</p>
-
-        <p>
-          เพื่อให้การใช้งานมีความปลอดภัยสูงสุดและเป็นไปตามมาตรฐานการรักษาความปลอดภัยข้อมูล
-          กรุณาทำการยืนยันที่อยู่อีเมลของท่านโดยคลิกที่ปุ่มด้านล่างนี้:
-        </p>
-
-        <p style="text-align: center">
-          <a href="{{VERIFICATION_URL}}" class="button">ยืนยันอีเมลเดี้ยวนี้</a>
-        </p>
-
-        <div class="security-note">
-          <strong>ประกาศสำคัญ:</strong> หากท่านไม่ได้ทำการสมัครสมาชิกด้วยตนเอง
-          กรุณาเพิกเฉยต่ออีเมลฉบับนี้ ระบบจะไม่ดำเนินการใดๆ เพิ่มเติม
-        </div>
-
-        <p>
-          ขอแสดงความนับถือ,<br /><strong>ทีมงาน สติสตางค์</strong><br /><em
-            >ฝ่ายบริการลูกค้าและเทคโนโลยีสารสนเทศ</em
-          >
+        <p style="margin-top: 30px">
+          ขอแสดงความนับถือ,<br />
+          <strong>ทีมงาน สติสตางค์</strong><br />
+          <em>ฝ่ายบริการลูกค้าและเทคโนโลยีสารสนเทศ</em>
         </p>
       </div>
 
