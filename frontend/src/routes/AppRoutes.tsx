@@ -6,11 +6,14 @@ import Verify from '../pages/auth/Verify';
 import HomeUsers from '../pages/users/Home';
 import ProtectRoute from './ProtectRoute';
 import Layout from '../pages/users/Layout';
+import AuthCallback from '../pages/auth/AuthCallback';
+import RedirectIfAuth from './RedirectIfAuth';
 
 const router = createBrowserRouter([
-  { path: '/', element: <Home /> },
-  { path: '/login', element: <Login /> },
-  { path: '/verify', element: <Verify /> },
+  { path: '/', element: <RedirectIfAuth element={<Home />} /> },
+  { path: '/login', element: <RedirectIfAuth element={<Login />} /> },
+  { path: '/verify', element: <RedirectIfAuth element={<Verify />} /> },
+  { path: '/auth/callback', element: <RedirectIfAuth element={<AuthCallback />} /> },
   {
     path: '/user',
     element: <ProtectRoute element={<Layout />} />,

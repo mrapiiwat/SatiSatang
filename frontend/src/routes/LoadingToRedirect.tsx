@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 
 const LoadingToRedirect: React.FC = () => {
-  const [count, setCount] = useState(3);
+  const [count, setCount] = useState(1);
   const [redirect, setRedirect] = useState(false);
   const actionLogout = useAuthStore((state) => state.actionLogout);
 
@@ -29,7 +29,6 @@ const LoadingToRedirect: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white text-gray-700 px-4">
       <div className="text-center space-y-6">
-        <h1 className="text-2xl font-normal">ไม่มีสิทธิ์เข้าถึงหน้านี้</h1>
         <p className="text-base">
           กำลังนำคุณกลับไปยังหน้าแรกใน <span className="font-medium">{count}</span> วินาที
         </p>

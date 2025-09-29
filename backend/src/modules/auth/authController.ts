@@ -155,10 +155,13 @@ export const verifyEmail = async (req: Request, res: Response) => {
   try {
     const validateData = authModels.verifyEmailSchema.parse(req.body);
     const { otp, userId } = validateData;
+
     if (!otp || !userId)
       return res.status(httpStatus.BAD_REQUEST).json({ message: 'Missing userId or OTP' });
+
     const record = await prisma.emailVerification.findFirst({ where: { userId } });
     if (!record) return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid OTP' });
+
     if (record.expiresAt < new Date())
       return res.status(httpStatus.BAD_REQUEST).json({ message: 'OTP expired' });
 
@@ -168,7 +171,102 @@ export const verifyEmail = async (req: Request, res: Response) => {
     await prisma.user.update({ where: { id: userId }, data: { isEmailVerified: true } });
     await prisma.emailVerification.delete({ where: { id: record.id } });
 
-    res.status(httpStatus.OK).json({ message: 'Email verified successfully' });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(httpStatus.NOT_FOUND).json({ message: 'User not found' });
+    }
+
+    const accessToken = generateAccessToken(user.id);
+    const refreshRaw = await createRefreshToken(user.id);
+
+    res.cookie('refreshToken', refreshRaw, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(httpStatus.OK).json({
+      message: 'Email verified successfully',
+      accessToken: accessToken,
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Validation error',
+        errors: error,
+      });
+    } else if (error instanceof Error) {
+      res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
+      });
+    } else {
+      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
+  }
+};
+
+export const resendOtp = async (req: Request, res: Response) => {
+  try {
+    const validateData = authModels.CheckEmailSchema.parse(req.body);
+    const { email } = validateData;
+
+    if (!email) return res.status(httpStatus.BAD_REQUEST).json({ message: 'Missing email' });
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email: email.toLowerCase().trim(),
+        isEmailVerified: false,
+      },
+    });
+
+    if (!user)
+      return res.status(httpStatus.NOT_FOUND).json({
+        message: 'User not found or already verified',
+      });
+
+    const existingRecord = await prisma.emailVerification.findFirst({
+      where: { userId: user.id },
+    });
+
+    if (existingRecord) {
+      const now = new Date();
+      const cooldownMs = 60 * 1000;
+      const timeSinceLastOtp = now.getTime() - existingRecord.createdAt.getTime();
+
+      if (timeSinceLastOtp < cooldownMs) {
+        const remainingSeconds = Math.ceil((cooldownMs - timeSinceLastOtp) / 1000);
+        return res.status(httpStatus.TOO_MANY_REQUESTS).json({
+          message: `Please wait ${remainingSeconds} seconds before requesting new OTP`,
+        });
+      }
+
+      await prisma.emailVerification.delete({
+        where: { id: existingRecord.id },
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await bcrypt.hash(otp, 10);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 นาที
+
+    await sendVerificationEmail(email, otp);
+
+    await prisma.emailVerification.create({
+      data: {
+        userId: user.id,
+        otpHash,
+        expiresAt,
+      },
+    });
+
+    res.status(httpStatus.OK).json({
+      message: 'OTP sent successfully',
+      userId: user.id,
+    });
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(httpStatus.BAD_REQUEST).json({
@@ -207,7 +305,7 @@ export const googleAuthCallback = [
         maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
       });
 
-      res.status(httpStatus.OK).json({ message: 'Login successful', accessToken: accessToken });
+      res.redirect(`${process.env.FRONTEND_BASE_URL}/auth/callback?token=${accessToken}`);
     } catch (error) {
       if (error instanceof Error) {
         res.status(httpStatus.BAD_REQUEST).json({
@@ -242,7 +340,7 @@ export const facebookAuthCallback = [
         maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
       });
 
-      res.status(httpStatus.OK).json({ message: 'Login successful', accessToken: accessToken });
+      res.redirect(`${process.env.FRONTEND_BASE_URL}/auth/callback?token=${accessToken}`);
     } catch (error) {
       if (error instanceof Error) {
         res.status(httpStatus.BAD_REQUEST).json({
@@ -298,8 +396,14 @@ export const refreshToken = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   try {
     const raw = req.cookies?.refreshToken;
-    if (raw) await revokeRefreshTokenByRaw(raw);
-    res.clearCookie('refreshToken');
+    if (raw) {
+      await revokeRefreshTokenByRaw(raw);
+    }
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+    });
     res.json({ message: 'Logged out' });
   } catch (error) {
     if (error instanceof Error) {

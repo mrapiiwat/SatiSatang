@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  satisatang-postgres:
+  postgres:
     image: postgres:16
     container_name: satisatang-postgres
     restart: always
@@ -14,5 +14,20 @@ services:
     volumes:
       - satisatang_postgres_data:/var/lib/postgresql/data
 
+  minio:
+    image: minio/minio
+    container_name: satisatang-minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - satisatang_minio_data:/data
+
 volumes:
   satisatang_postgres_data:
+  satisatang_minio_data:

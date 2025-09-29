@@ -10,9 +10,10 @@ router.post('/check-email', authController.checkEmail);
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/verify-email', authController.verifyEmail);
+router.post('/resend-otp', authController.resendOtp);
 
 //logout
-router.get('/logout', authenticateJWT, authController.logout);
+router.post('/logout', authenticateJWT, authController.logout);
 
 //google oauth
 router.get(

@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import cors from 'cors';
+import { checkBucket } from './common/config/minioClient';
 import './common/config/passport';
 
 // Import routes
@@ -15,6 +16,9 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080;
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
+
+//TESTING MINIO CONNECTION
+checkBucket();
 
 app.use(
   cors({

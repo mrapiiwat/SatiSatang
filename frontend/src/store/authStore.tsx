@@ -18,6 +18,8 @@ interface AuthStore {
   user: userSchema | null;
   token: string | null;
   actionSetUser: (user: userSchema) => void;
+  actionSetToken: (token: string) => void;
+  actionClearAuth: () => void;
   actionLogin: (form: formLogin) => void;
   actionLogout: () => void;
 }
@@ -28,6 +30,10 @@ const authStore: StateCreator<AuthStore> = (set) => ({
   actionSetUser: (user) => {
     set({ user });
   },
+  actionSetToken: (token) => {
+    set({ token });
+  },
+  actionClearAuth: () => set({ user: null, token: null }),
   actionLogin: async (form: formLogin) => {
     const res = await axios.post('/login', form);
     set({
@@ -37,7 +43,7 @@ const authStore: StateCreator<AuthStore> = (set) => ({
     return res;
   },
   actionLogout: async () => {
-    const res = await axios.get('/logout');
+    const res = await axios.post('/logout');
     set({
       user: null,
       token: null,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { me } from '../api/auth';
 import useAuthStore from '../store/authStore';
 import LoadingToRedirect from './LoadingToRedirect';
+import { AxiosError } from 'axios';
 
 interface ProtectRouteProps {
   element: React.ReactElement;
@@ -23,11 +24,15 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
       }
 
       try {
-        const res = await me();
+        const res = await me(token);
         setUser(res.data);
         setPass(true);
       } catch (error) {
-        console.error(error);
+        if (error instanceof AxiosError) {
+          if (error.response?.status !== 401) {
+            console.error(error);
+          }
+        }
         setPass(false);
       } finally {
         setLoading(false);
