@@ -10,7 +10,7 @@ import {
 import httpStatus from 'http-status';
 import { ZodError } from 'zod';
 import { sendVerificationEmail, generateOTP } from '../../common/utils/mail';
-import * as authModels from './models';
+import * as authModels from './authModels';
 import prisma from '../../common/config/prismaClient';
 import passport from 'passport';
 

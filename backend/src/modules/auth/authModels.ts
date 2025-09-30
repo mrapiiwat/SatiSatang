@@ -1,5 +1,6 @@
 import z from 'zod';
 import { User } from '@prisma/client';
+
 export const CheckEmailSchema = z.object({
   email: z.string().email('Invalid email address'),
 });

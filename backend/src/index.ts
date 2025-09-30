@@ -9,6 +9,7 @@ import './common/config/passport';
 // Import routes
 import authRoutes from './modules/auth/authRoutes';
 import userRoutes from './modules/user/userRoutes';
+import iconRoutes from './modules/icon/iconRoutes';
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080;
@@ -36,6 +37,7 @@ app.get('/', (req: Request, res: Response) => {
 // Use routes
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
+app.use('/api', iconRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
