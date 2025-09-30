@@ -15,7 +15,7 @@ interface LoginForm {
   password: string;
 }
 
-const Login = () => {
+const Login: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [name, setName] = useState<string>('');

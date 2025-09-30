@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const Verify = () => {
+const Verify: React.FC = () => {
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
@@ -149,7 +149,7 @@ const Verify = () => {
 
           {success && (
             <div className="border border-green-200 bg-green-50 p-3">
-              <p className="text-green-600 text-sm text-center">{success}</p>
+              <p className="text-green-400 text-sm text-center">{success}</p>
             </div>
           )}
 

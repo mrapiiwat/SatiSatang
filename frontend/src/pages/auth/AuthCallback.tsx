@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
-import axios from '../../api/axios';
+import { me } from '../../api/auth';
 
-const AuthCallback = () => {
+const AuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const actionSetToken = useAuthStore((state) => state.actionSetToken);
@@ -15,10 +15,7 @@ const AuthCallback = () => {
     if (token) {
       actionSetToken(token);
 
-      axios
-        .get('/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+      me(token)
         .then((res) => {
           actionSetUser(res.data);
           navigate('/user');

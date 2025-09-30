@@ -9,7 +9,7 @@ import {
 } from '../../common/utils/token';
 import httpStatus from 'http-status';
 import { ZodError } from 'zod';
-import { sendVerificationEmail } from '../../common/utils/mail';
+import { sendVerificationEmail, generateOTP } from '../../common/utils/mail';
 import * as authModels from './models';
 import prisma from '../../common/config/prismaClient';
 import passport from 'passport';
@@ -69,13 +69,6 @@ export const register = async (req: Request, res: Response) => {
       },
     });
 
-    function generateOTP(length = 6) {
-      let otp = '';
-      for (let i = 0; i < length; i++) {
-        otp += Math.floor(Math.random() * 10);
-      }
-      return otp;
-    }
     await prisma.emailVerification.deleteMany({ where: { userId: user.id } });
 
     const otp = generateOTP();
@@ -359,11 +352,11 @@ export const facebookAuthCallback = [
 export const refreshToken = async (req: Request, res: Response) => {
   try {
     const raw = req.cookies?.refreshToken;
-    if (!raw) return res.status(401).json({ error: 'No refresh token' });
+    if (!raw) return res.status(httpStatus.UNAUTHORIZED).json({ error: 'No refresh token' });
 
     const tokenInDb = await findRefreshTokenByRaw(raw);
     if (!tokenInDb || tokenInDb.revoked || tokenInDb.expiresAt < new Date()) {
-      return res.status(401).json({ error: 'Invalid refresh token' });
+      return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Invalid refresh token' });
     }
 
     // rotate: create new, revoke old

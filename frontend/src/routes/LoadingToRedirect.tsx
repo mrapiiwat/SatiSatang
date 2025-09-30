@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 
 const LoadingToRedirect: React.FC = () => {
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(2);
   const [redirect, setRedirect] = useState(false);
   const actionLogout = useAuthStore((state) => state.actionLogout);
 
