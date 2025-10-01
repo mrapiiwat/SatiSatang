@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState, useCallback } from 'react';
-import Logo from '../../../public/SATISATANG.svg';
 import Google from '../../assets/Google.svg';
 import Facebook from '../../assets/Facebook.svg';
 import axios from '../../api/axios';
@@ -9,6 +8,7 @@ import useAuthStore from '../../store/authStore';
 import OAuthButton from '../../components/OAuthButton';
 import SubmitButton from '../../components/SubmitButton';
 import InputField from '../../components/InputField';
+import Logo from '../../components/Logo';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -185,9 +185,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-center">
-        <img className="w-8 object-contain" src={Logo} alt="SatiSatang Logo" />
-      </div>
+      <Logo />
 
       <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
         <h1 className="text-xl font-medium text-center mb-2">สมัครเข้าใช้งานหรือเข้าสู่ระบบ</h1>
