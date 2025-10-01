@@ -32,6 +32,13 @@ export const checkEmail = async (req: Request, res: Response) => {
     }
 
     if (user.oauthAccounts.length > 0) {
+      const providers = user.oauthAccounts.map((acc) => acc.provider);
+      if (providers.includes('google')) {
+        return res.status(httpStatus.OK).json({ message: 'OAUTH SIGN IN (GOOGLE)' });
+      }
+      if (providers.includes('facebook')) {
+        return res.status(httpStatus.OK).json({ message: 'OAUTH SIGN IN (FACEBOOK)' });
+      }
       return res.status(httpStatus.OK).json({ message: 'OAUTH SIGN IN' });
     }
 
@@ -359,7 +366,6 @@ export const refreshToken = async (req: Request, res: Response) => {
       return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Invalid refresh token' });
     }
 
-    // rotate: create new, revoke old
     const newRaw = await rotateRefreshToken(raw, tokenInDb.userId);
 
     const accessToken = generateAccessToken(tokenInDb.userId);

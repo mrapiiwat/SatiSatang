@@ -23,7 +23,7 @@ export function authenticateJWT(req: AuthRequest, res: Response, next: NextFunct
     next();
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      res.status(httpStatus.UNAUTHORIZED).json({
         message: 'Invalid or expired access token',
         errors: error.message,
       });

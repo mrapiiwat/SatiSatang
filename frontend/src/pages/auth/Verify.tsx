@@ -12,7 +12,9 @@ const Verify: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isResending, setIsResending] = useState<boolean>(false);
   const [allowed, setAllowed] = useState<boolean>(true);
+  const [cooldown, setCooldown] = useState<number>(0);
   const navigate = useNavigate();
   const actionSetToken = useAuthStore((state) => state.actionSetToken);
 
@@ -29,6 +31,13 @@ const Verify: React.FC = () => {
       setAllowed(false);
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
   const handleCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 6);
@@ -69,6 +78,7 @@ const Verify: React.FC = () => {
 
       sessionStorage.removeItem('pendingVerification');
       sessionStorage.removeItem('pendingUserId');
+      sessionStorage.removeItem('userEmail');
 
       navigate('/user');
     } catch (error: unknown) {
@@ -92,6 +102,47 @@ const Verify: React.FC = () => {
     },
     [handleVerify, isLoading],
   );
+
+  const handleResendOtp = useCallback(async () => {
+    if (!userId) {
+      setError('ไม่พบข้อมูลผู้ใช้');
+      return;
+    }
+
+    setIsResending(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const userEmail = sessionStorage.getItem('userEmail');
+      if (!userEmail) {
+        setError('ไม่พบข้อมูลอีเมล');
+        return;
+      }
+
+      await axios.post(`${API_URL}/api/resend-otp`, {
+        email: userEmail,
+      });
+
+      setSuccess('ส่งรหัสยืนยันใหม่เรียบร้อยแล้ว');
+      setCooldown(60);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        const message = error.response?.data?.message;
+        if (error.response?.status === 429 && message) {
+          setError(message);
+        } else {
+          setError(message || 'ไม่สามารถส่งรหัสยืนยันใหม่ได้ กรุณาลองใหม่อีกครั้ง');
+        }
+      } else if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+      }
+    } finally {
+      setIsResending(false);
+    }
+  }, [userId]);
 
   if (!allowed) {
     return (
@@ -141,17 +192,9 @@ const Verify: React.FC = () => {
             className="w-full h-12 text-center text-lg font-mono tracking-wider border border-gray-300 focus:outline-none focus:border-gray-500 transition-colors"
           />
 
-          {error && (
-            <div className="border border-red-200 bg-red-50 p-3">
-              <p className="text-red-600 text-sm text-center">{error}</p>
-            </div>
-          )}
+          {error && <p className="text-red-500 text-xs text-center">{error}</p>}
 
-          {success && (
-            <div className="border border-green-200 bg-green-50 p-3">
-              <p className="text-green-400 text-sm text-center">{success}</p>
-            </div>
-          )}
+          {success && <p className="text-green-600 text-xs text-center">{success}</p>}
 
           <button
             onClick={isLoading || !code.trim() ? undefined : handleVerify}
@@ -167,6 +210,25 @@ const Verify: React.FC = () => {
             ) : (
               'ยืนยัน'
             )}
+          </button>
+        </div>
+
+        <div className="mt-6 text-center border-t border-gray-200 pt-6">
+          <p className="text-sm text-gray-600 mb-3">ไม่ได้รับรหัสยืนยัน?</p>
+          <button
+            onClick={cooldown > 0 || isResending ? undefined : handleResendOtp}
+            disabled={cooldown > 0 || isResending}
+            className={`text-sm transition-colors ${
+              cooldown > 0 || isResending
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-gray-900 hover:text-gray-700 underline'
+            }`}
+          >
+            {isResending
+              ? 'กำลังส่ง...'
+              : cooldown > 0
+                ? `ส่งอีกครั้งใน ${cooldown} วินาที`
+                : 'ส่งรหัสยืนยันใหม่'}
           </button>
         </div>
 

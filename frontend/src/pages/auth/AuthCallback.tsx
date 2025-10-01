@@ -15,7 +15,7 @@ const AuthCallback: React.FC = () => {
     if (token) {
       actionSetToken(token);
 
-      me(token)
+      me()
         .then((res) => {
           actionSetUser(res.data);
           navigate('/user');

@@ -1,11 +1,14 @@
 import React from 'react';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import Logo from '../../../public/SATISATANG.svg';
 import Google from '../../assets/Google.svg';
 import Facebook from '../../assets/Facebook.svg';
 import axios from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
+import OAuthButton from '../../components/OAuthButton';
+import SubmitButton from '../../components/SubmitButton';
+import InputField from '../../components/InputField';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -38,12 +41,35 @@ const Login: React.FC = () => {
     window.location.href = `${API_URL}/api/facebook`;
   }, []);
 
+  const handleEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setEmail(e.target.value);
+
+      if (isUser !== 'Guest') {
+        setIsUser('Guest');
+        setPassword('');
+        setName('');
+        setError('');
+      }
+    },
+    [isUser],
+  );
+
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  }, []);
+
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  }, []);
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       setError('');
 
       const LoginForm: LoginForm = { email, password };
+
       if (isUser === 'Login') {
         try {
           await actionLogin(LoginForm!);
@@ -69,6 +95,7 @@ const Login: React.FC = () => {
 
           sessionStorage.setItem('pendingVerification', 'true');
           sessionStorage.setItem('pendingUserId', userId);
+          sessionStorage.setItem('userEmail', email);
 
           navigate(`/verify?userId=${userId}`);
         } catch (error) {
@@ -100,8 +127,10 @@ const Login: React.FC = () => {
           setIsUser('Login');
         } else if (message === 'SIGN UP') {
           setIsUser('Register');
-        } else if (message === 'OAUTH SIGN IN') {
-          setError('คุณเคยสมัครด้วยบัญชี Google/Facebook กรุณาเข้าสู่ระบบด้วยวิธีนั้น');
+        } else if (message === 'OAUTH SIGN IN (GOOGLE)') {
+          googleLogin();
+        } else if (message === 'OAUTH SIGN IN (FACEBOOK)') {
+          facebookLogin();
         } else if (message === 'PENDING VERIFICATION') {
           try {
             const otpRes = await axios.post(`${API_URL}/api/resend-otp`, { email });
@@ -109,6 +138,7 @@ const Login: React.FC = () => {
 
             sessionStorage.setItem('pendingVerification', 'true');
             sessionStorage.setItem('pendingUserId', userId);
+            sessionStorage.setItem('userEmail', email);
 
             navigate(`/verify?userId=${userId}`);
           } catch (otpError: unknown) {
@@ -139,52 +169,18 @@ const Login: React.FC = () => {
         setIsLoading(false);
       }
     },
-    [email, password, name, isUser, validateEmail, actionLogin, navigate, isLoading],
-  );
-
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  }, []);
-
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  }, []);
-
-  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
-  }, []);
-
-  const emailLabelClass = useMemo(() => {
-    const hasValue = email.trim() !== '';
-    return `absolute left-6 z-10 bg-white px-1 text-gray-400 text-base transition-all duration-300 ease-in-out
-    ${hasValue ? 'top-[-10px] text-sm text-[#CECDCA]' : 'top-[18px] text-gray-400 text-base'}
-    peer-focus:top-[-10px] peer-focus:text-sm peer-focus:text-black`;
-  }, [email]);
-
-  const passwordLabelClass = useMemo(
-    () =>
-      `absolute left-6 z-10 bg-white px-1 text-gray-400 text-base transition-all duration-300 ease-in-out
-   ${password.trim() ? 'top-[-10px] text-sm text-[#CECDCA]' : 'top-[18px] text-gray-400 text-base'}
-   peer-focus:top-[-10px] peer-focus:text-sm peer-focus:text-black`,
-    [password],
-  );
-
-  const nameLabelClass = useMemo(
-    () =>
-      `absolute left-6 z-10 bg-white px-1 text-gray-400 text-base transition-all duration-300 ease-in-out
-   ${name.trim() ? 'top-[-10px] text-sm text-[#CECDCA]' : 'top-[18px] text-gray-400 text-base'}
-   peer-focus:top-[-10px] peer-focus:text-sm peer-focus:text-black`,
-    [name],
-  );
-
-  const buttonClass = useMemo(
-    () =>
-      `flex items-center justify-center h-16 px-6 rounded-full gap-7 transition-colors ${
-        isLoading
-          ? 'bg-gray-400 cursor-not-allowed'
-          : 'bg-[#5300E8] hover:bg-[#4803c7] cursor-pointer'
-      }`,
-    [isLoading],
+    [
+      email,
+      password,
+      name,
+      isUser,
+      validateEmail,
+      actionLogin,
+      navigate,
+      isLoading,
+      googleLogin,
+      facebookLogin,
+    ],
   );
 
   return (
@@ -197,76 +193,52 @@ const Login: React.FC = () => {
         <h1 className="text-xl font-medium text-center mb-2">สมัครเข้าใช้งานหรือเข้าสู่ระบบ</h1>
 
         <div className="relative w-full">
-          <input
-            type="email"
+          <InputField
             id="email"
-            name="email"
+            type="email"
             value={email}
             onChange={handleEmailChange}
-            placeholder=" "
-            required
+            label="อีเมล"
             autoComplete="email"
-            className="peer h-16 w-full border border-[#CECDCA] px-6 py-4 rounded-full text-base focus:outline-none focus:border-[#5300E8]"
           />
-          <label htmlFor="email" className={emailLabelClass}>
-            อีเมล
-          </label>
         </div>
 
         {isUser === 'Login' && (
           <div className="relative w-full">
-            <input
-              type="password"
+            <InputField
               id="password"
-              name="password"
+              type="password"
               value={password}
               onChange={handlePasswordChange}
-              placeholder=" "
-              required
+              label="รหัสผ่าน"
               autoComplete="current-password"
-              className="peer h-16 w-full border border-[#CECDCA] px-6 py-4 rounded-full text-base focus:outline-none focus:border-[#5300E8]"
             />
-            <label htmlFor="password" className={passwordLabelClass}>
-              รหัสผ่าน
-            </label>
           </div>
         )}
 
         {isUser === 'Register' && (
           <div className="flex flex-col gap-5">
             <div className="relative w-full">
-              <input
-                type="password"
+              <InputField
                 id="password"
-                name="password"
+                type="password"
                 value={password}
                 onChange={handlePasswordChange}
-                placeholder=" "
-                required
+                label="รหัสผ่าน"
                 autoComplete="new-password"
                 minLength={6}
-                className="peer h-16 w-full border border-[#CECDCA] px-6 py-4 rounded-full text-base focus:outline-none focus:border-[#5300E8]"
               />
-              <label htmlFor="password" className={passwordLabelClass}>
-                รหัสผ่าน
-              </label>
             </div>
 
             <div className="relative w-full">
-              <input
-                type="text"
+              <InputField
                 id="name"
-                name="name"
+                type="text"
                 value={name}
                 onChange={handleNameChange}
-                placeholder=" "
-                required
+                label="ชื่อ"
                 autoComplete="name"
-                className="peer h-16 w-full border border-[#CECDCA] px-6 py-4 rounded-full text-base focus:outline-none focus:border-[#5300E8]"
               />
-              <label htmlFor="name" className={nameLabelClass}>
-                ชื่อ
-              </label>
             </div>
           </div>
         )}
@@ -277,11 +249,7 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        <button type="submit" disabled={isLoading} className={buttonClass}>
-          <p className="text-xl font-semibold text-[#FEFCFA]">
-            {isLoading ? 'กำลังดำเนินการ' : 'ดำเนินการต่อ'}
-          </p>
-        </button>
+        <SubmitButton isLoading={isLoading} text="ดำเนินการต่อ" />
       </form>
 
       <div className="relative my-7 flex items-center">
@@ -291,23 +259,8 @@ const Login: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-5">
-        <button
-          type="button"
-          onClick={googleLogin}
-          className="flex items-center h-16 border border-[#CECDCA] px-6 rounded-full gap-7 cursor-pointer hover:bg-gray-100 transition-colors"
-        >
-          <img className="w-8 object-contain" src={Google} alt="Google Logo" />
-          <h4 className="text-base">ดำเนินการต่อด้วย Google</h4>
-        </button>
-
-        <button
-          type="button"
-          onClick={facebookLogin}
-          className="flex items-center h-16 border border-[#CECDCA] px-6 rounded-full gap-7 cursor-pointer hover:bg-gray-100 transition-colors"
-        >
-          <img className="w-8 object-contain" src={Facebook} alt="Facebook Logo" />
-          <h4 className="text-base">ดำเนินการต่อด้วย Facebook</h4>
-        </button>
+        <OAuthButton onClick={googleLogin} label="ดำเนินการต่อด้วย Google" logo={Google} />
+        <OAuthButton onClick={facebookLogin} label="ดำเนินการต่อด้วย Facebook" logo={Facebook} />
       </div>
     </div>
   );

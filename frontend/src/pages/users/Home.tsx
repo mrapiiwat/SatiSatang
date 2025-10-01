@@ -1,4 +1,5 @@
 import useAuthStore from '../../store/authStore';
+import Image from '../../components/Image';
 
 const Home = () => {
   const token = useAuthStore((state) => state.token);
@@ -11,7 +12,7 @@ const Home = () => {
       <div>naem:{user?.name}</div>
       <div>email:{user?.email}</div>
       <div>balance:{user?.balance}</div>
-      <button></button>
+      <Image src={`${import.meta.env.VITE_API_URL}/api/icon/2`} alt="hello" />
     </>
   );
 };

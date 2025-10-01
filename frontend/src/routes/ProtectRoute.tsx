@@ -24,7 +24,7 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
       }
 
       try {
-        const res = await me(token);
+        const res = await me();
         setUser(res.data);
         setPass(true);
       } catch (error) {
