@@ -1,5 +1,16 @@
 from settrade_v2 import Investor
-from pprint import pprint
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+investor = Investor(
+    app_id=os.getenv("APP_ID"),
+    app_secret=os.getenv("APP_SECRET"),
+    broker_id=os.getenv("BROKER_ID"),
+    app_code=os.getenv("APP_CODE"),
+    is_auto_queue=os.getenv("IS_AUTO_QUEUE")
+)
 
 def get_quote_symbol(symbol):
     try:
@@ -12,13 +23,4 @@ def get_quote_symbol(symbol):
     except Exception as e:
         print(f"เกิดข้อผิดพลาด: {e}")
         return None
-
-
-investor = Investor(
-    app_id="zFZAvt8TMiNy5C35",
-    app_secret="ARluY1VFoaOsVa3Q3hR3F1Ob3BrqGN3XLq9VCua+JVg=",
-    broker_id="SANDBOX",
-    app_code="SANDBOX",
-    is_auto_queue=False
-)
 
