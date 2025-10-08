@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import Google from '../../assets/Google.svg';
 import Facebook from '../../assets/Facebook.svg';
 import axios from '../../api/axios';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import OAuthButton from '../../components/OAuthButton';
 import SubmitButton from '../../components/SubmitButton';
@@ -185,7 +185,9 @@ const Login: React.FC = () => {
 
   return (
     <div className="p-6">
-      <Logo />
+      <Link to="/" className="cursor-pointer">
+        <Logo />
+      </Link>
 
       <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
         <h1 className="text-xl font-medium text-center mb-2">สมัครเข้าใช้งานหรือเข้าสู่ระบบ</h1>
