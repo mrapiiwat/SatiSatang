@@ -2,9 +2,10 @@
 process.env.NODE_ENV = 'test';
 
 // Load .env.test if present, otherwise .env
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
+// We use dotenv/config via ts-node runtime of the app, but load here for safety
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 
 const rootDir = process.cwd();
 const envTestPath = path.join(rootDir, '.env.test');
@@ -18,5 +19,3 @@ if (fs.existsSync(envTestPath)) {
 if (process.env.TEST_DATABASE_URL) {
   process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 }
-
-
