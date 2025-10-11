@@ -9,9 +9,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "cross-env NODE_ENV=test jest --config ./jest.config.ts --passWithNoTests",
-    "test:watch": "cross-env NODE_ENV=test jest --config ./jest.config.ts --watch",
-    "test:coverage": "cross-env NODE_ENV=test jest --config ./jest.config.ts --coverage"
+    "test": "cross-env NODE_ENV=test jest --config ./jest.config.ts --runInBand --passWithNoTests",
+    "test:coverage": "cross-env NODE_ENV=test jest --config ./jest.config.ts --coverage",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
