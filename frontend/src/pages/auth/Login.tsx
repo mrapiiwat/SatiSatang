@@ -9,6 +9,7 @@ import OAuthButton from '../../components/OAuthButton';
 import SubmitButton from '../../components/SubmitButton';
 import InputField from '../../components/InputField';
 import Logo from '../../components/Logo';
+import { AxiosError } from 'axios';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -84,6 +85,7 @@ const Login: React.FC = () => {
       if (isUser === 'Register') {
         if (isLoading) return;
         setIsLoading(true);
+
         try {
           const res = await axios.post(`${API_URL}/api/register`, {
             email,
@@ -98,12 +100,30 @@ const Login: React.FC = () => {
           sessionStorage.setItem('userEmail', email);
 
           navigate(`/verify?userId=${userId}`);
-        } catch (error) {
-          console.error('Registration error:', error);
-          setError('เกิดข้อผิดพลาดในการลงทะเบียน');
+        } catch (error: unknown) {
+          const axiosError = error as AxiosError;
+          console.error('Registration error:', axiosError);
+
+          const responseData = axiosError.response?.data as
+            | { errors?: { message?: string } }
+            | undefined;
+
+          if (responseData?.errors?.message) {
+            try {
+              const zodErrors = JSON.parse(responseData.errors.message);
+              const errorMessage = zodErrors[0]?.message || 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล';
+              setError(errorMessage);
+            } catch (parseError) {
+              console.error('Error parsing Zod error:', parseError);
+              setError('เกิดข้อผิดพลาดในการตรวจสอบข้อมูล');
+            }
+          } else {
+            setError('เกิดข้อผิดพลาดในการลงทะเบียน');
+          }
         } finally {
           setIsLoading(false);
         }
+
         return;
       }
 

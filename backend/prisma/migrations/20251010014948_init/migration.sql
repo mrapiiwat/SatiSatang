@@ -146,6 +146,49 @@ CREATE TABLE "public"."ChatMessage" (
     CONSTRAINT "ChatMessage_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "public"."Stock" (
+    "id" SERIAL NOT NULL,
+    "symbol" TEXT NOT NULL,
+    "name" TEXT,
+    "instrumentType" TEXT,
+    "securityType" TEXT,
+    "status" TEXT,
+    "marketStatus" TEXT,
+    "last" DOUBLE PRECISION,
+    "high" DOUBLE PRECISION,
+    "low" DOUBLE PRECISION,
+    "average" DOUBLE PRECISION,
+    "change" DOUBLE PRECISION,
+    "percentChange" DOUBLE PRECISION,
+    "percentYield" DOUBLE PRECISION,
+    "pe" DOUBLE PRECISION,
+    "pbv" DOUBLE PRECISION,
+    "eps" DOUBLE PRECISION,
+    "aumSize" DOUBLE PRECISION,
+    "inav" DOUBLE PRECISION,
+    "theoretical" DOUBLE PRECISION,
+    "exercisePrice" DOUBLE PRECISION,
+    "exerciseRatio" DOUBLE PRECISION,
+    "maturityDate" TIMESTAMP(3),
+    "lastTradingDate" TIMESTAMP(3),
+    "toLastTrade" DOUBLE PRECISION,
+    "totalBuyVolume" INTEGER,
+    "totalSellVolume" INTEGER,
+    "totalNoSideVolume" INTEGER,
+    "totalVolume" INTEGER,
+    "underlying" TEXT,
+    "underlyingPrice" DOUBLE PRECISION,
+    "moneyness" DOUBLE PRECISION,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "exchange" TEXT,
+    "impliedVolatility" DOUBLE PRECISION,
+    "intrinsicValue" DOUBLE PRECISION,
+
+    CONSTRAINT "Stock_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
@@ -161,6 +204,12 @@ CREATE UNIQUE INDEX "EmailVerification_otpHash_key" ON "public"."EmailVerificati
 -- CreateIndex
 CREATE INDEX "Transaction_userId_createdAt_idx" ON "public"."Transaction"("userId", "createdAt");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Stock_symbol_key" ON "public"."Stock"("symbol");
+
+-- CreateIndex
+CREATE INDEX "Stock_symbol_idx" ON "public"."Stock"("symbol");
+
 -- AddForeignKey
 ALTER TABLE "public"."OAuthAccount" ADD CONSTRAINT "OAuthAccount_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -171,16 +220,16 @@ ALTER TABLE "public"."RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FO
 ALTER TABLE "public"."EmailVerification" ADD CONSTRAINT "EmailVerification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "public"."Transaction" ADD CONSTRAINT "Transaction_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "public"."Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Category" ADD CONSTRAINT "Category_iconId_fkey" FOREIGN KEY ("iconId") REFERENCES "public"."Icon"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Goals" ADD CONSTRAINT "Goals_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -192,7 +241,7 @@ ALTER TABLE "public"."Budgets" ADD CONSTRAINT "Budgets_userId_fkey" FOREIGN KEY 
 ALTER TABLE "public"."ChatSession" ADD CONSTRAINT "ChatSession_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ChatMessage" ADD CONSTRAINT "ChatMessage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."ChatMessage" ADD CONSTRAINT "ChatMessage_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "public"."ChatSession"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."ChatMessage" ADD CONSTRAINT "ChatMessage_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "public"."ChatSession"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."ChatMessage" ADD CONSTRAINT "ChatMessage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -15,9 +15,13 @@ export const RegisterSchema = z.object({
   password: z
     .string()
     .min(6, 'Password must be at least 6 characters long')
-    .uppercase('Password must contain at least one uppercase letter')
-    .lowercase('Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+    .refine((val) => /[A-Z]/.test(val), {
+      message: 'Password must contain at least one uppercase letter',
+    })
+    .refine((val) => /[a-z]/.test(val), {
+      message: 'Password must contain at least one lowercase letter',
+    })
+    .refine((val) => /[0-9]/.test(val), { message: 'Password must contain at least one number' }),
   name: z
     .string()
     .min(2, 'Name must be at least 2 characters long')

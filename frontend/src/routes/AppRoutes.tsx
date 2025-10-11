@@ -9,6 +9,7 @@ import LayoutUser from '../pages/users/Layout';
 import AuthCallback from '../pages/auth/AuthCallback';
 import RedirectIfAuth from './RedirectIfAuth';
 import Layout from '../pages/Layout';
+import NotFound from '../pages/404/NotFound';
 
 const router = createBrowserRouter([
   {
@@ -19,12 +20,16 @@ const router = createBrowserRouter([
       { path: '/login', element: <Login /> },
       { path: '/verify', element: <Verify /> },
       { path: '/auth/callback', element: <AuthCallback /> },
+      { path: '*', element: <NotFound /> },
     ],
   },
   {
     path: '/user',
     element: <ProtectRoute element={<LayoutUser />} />,
-    children: [{ index: true, element: <HomeUsers /> }],
+    children: [
+      { index: true, element: <HomeUsers /> },
+      { path: '*', element: <NotFound /> },
+    ],
   },
 ]);
 
