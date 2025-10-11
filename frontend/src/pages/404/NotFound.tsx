@@ -13,7 +13,7 @@ const NotFound: React.FC = () => {
           onClick={() => window.history.back()}
           className="px-6 py-3 bg-[#5300E8] text-white rounded-xl font-medium hover:bg-[#4200c7] transition-colors duration-200"
         >
-          กลับหน้าหลัก
+          กลับไปยังหน้าก่อนหน้า
         </button>
       </div>
     </div>

@@ -1,16 +1,25 @@
 import useAuthStore from '../../store/authStore';
+import PageWrapper from '../../components/PageWrapper';
+import { FaApple } from 'react-icons/fa6';
 
 const Home = () => {
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
 
   return (
-    <>
+    <PageWrapper animation="fade" duration={1.5}>
       <div className="text-gray-500 break-words">token: {token}</div>
       <div>id:{user?.id}</div>
       <div>name:{user?.name}</div>
       <div>email:{user?.email}</div>
       <div>balance:{user?.balance}</div>
+      <div className="flex justify-center border-y border-gray-300 py-11 gap-7">
+        <FaApple size={80} />
+        <FaApple size={80} />
+        <FaApple size={80} />
+        <FaApple size={80} />
+        <FaApple size={80} />
+      </div>
       Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae culpa cumque maiores labore
       dolorum, omnis veritatis? Dicta quibusdam natus rerum fugit odio eveniet nostrum quidem
       officiis delectus, doloremque modi corporis pariatur alias minima doloribus vel. Magni
@@ -53,7 +62,7 @@ const Home = () => {
       laboriosam unde, quae dolorem. Omnis tempora amet aspernatur facilis neque recusandae et
       labore laudantium dolore similique, non accusantium? A dicta enim, quos earum fugit aliquid
       corporis, maiores cumque, commodi sint dignissimos?
-    </>
+    </PageWrapper>
   );
 };
 
