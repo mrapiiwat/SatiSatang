@@ -11,9 +11,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black bg-opacity-80 transition-opacity duration-300 z-40 ${
-          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-        }`}
+        className={`fixed inset-0 bg-black bg-opacity-80 transition-opacity duration-300 z-40 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          }`}
         onClick={onClose}
       ></div>
 
@@ -33,14 +32,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <h1 className="text-white text-2xl font-medium">แชทกับพี่สตางค์</h1>
             </div>
             <ul className="space-y-6 px-9">
-              <li className="py-2 text-lg cursor-pointer">สรุปรายรับ รายจ่าย</li>
-              <li className="py-2 text-lg cursor-pointer">จัดการหมวดหมู่</li>
-              <li className="py-2 text-lg cursor-pointer">การตั้งค่า</li>
-              <li className="py-2 text-lg cursor-pointer">บัญชี</li>
-              <li className="py-2 text-lg cursor-pointer">แจ้งปัญหาหรือข้อเสนอแนะ</li>
+              <li className="py-2 font-medium text-base cursor-pointer">สรุปรายรับ รายจ่าย</li>
+              <li className="py-2 font-medium text-base cursor-pointer">จัดการหมวดหมู่</li>
+              <li className="py-2 font-medium text-base cursor-pointer">การตั้งค่า</li>
+              <li className="py-2 font-medium text-base cursor-pointer">บัญชี</li>
+              <li className="py-2 font-medium text-base cursor-pointer">แจ้งปัญหาหรือข้อเสนอแนะ</li>
             </ul>
           </div>
-          <div onClick={actionLogout} className="py-2 px-9 text-lg mb-8 cursor-pointer">
+          <div
+            onClick={actionLogout}
+            className="py-2 px-9 font-medium text-base mb-8 cursor-pointer"
+          >
             ออกจากระบบ
           </div>
         </div>
