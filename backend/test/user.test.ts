@@ -32,30 +32,26 @@ describe('User Module', () => {
           password: await bcrypt.hash('Password123', 10),
           name: 'Test User',
           isEmailVerified: true,
-          balance: 1000.50,
+          balance: 1000.5,
         },
       });
       userId = user.id;
 
       // Generate access token
-      accessToken = jwt.sign(
-        { userId: user.id },
-        process.env.JWT_SECRET || 'test-secret',
-        { expiresIn: '1h' }
-      );
+      accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'test-secret', {
+        expiresIn: '1h',
+      });
     });
 
     it('should return user information for authenticated user', async () => {
-      const res = await request(app)
-        .get('/api/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+      const res = await request(app).get('/api/me').set('Authorization', `Bearer ${accessToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
         id: userId,
         email: 'test@example.com',
         name: 'Test User',
-        balance: 1000.50,
+        balance: 1000.5,
         oauthAccounts: [],
       });
     });
@@ -77,15 +73,13 @@ describe('User Module', () => {
         ],
       });
 
-      const res = await request(app)
-        .get('/api/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+      const res = await request(app).get('/api/me').set('Authorization', `Bearer ${accessToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.id).toBe(userId);
       expect(res.body.email).toBe('test@example.com');
       expect(res.body.name).toBe('Test User');
-      expect(res.body.balance).toBe(1000.50);
+      expect(res.body.balance).toBe(1000.5);
       expect(res.body.oauthAccounts).toHaveLength(2);
       expect(res.body.oauthAccounts).toEqual(
         expect.arrayContaining([
@@ -97,7 +91,7 @@ describe('User Module', () => {
             provider: 'facebook',
             providerUserId: 'facebook123',
           }),
-        ])
+        ]),
       );
     });
 
@@ -106,15 +100,15 @@ describe('User Module', () => {
       const invalidToken = jwt.sign(
         { someOtherField: 'value' },
         process.env.JWT_SECRET || 'test-secret',
-        { expiresIn: '1h' }
+        { expiresIn: '1h' },
       );
 
-      const res = await request(app)
-        .get('/api/me')
-        .set('Authorization', `Bearer ${invalidToken}`);
+      const res = await request(app).get('/api/me').set('Authorization', `Bearer ${invalidToken}`);
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toBe("Oops! We couldn't find your user info. Please log in again to continue.");
+      expect(res.body.error).toBe(
+        "Oops! We couldn't find your user info. Please log in again to continue.",
+      );
     });
 
     it('should return 404 error when user is not found', async () => {
@@ -123,7 +117,7 @@ describe('User Module', () => {
       const tokenWithNonExistentUser = jwt.sign(
         { userId: nonExistentUserId },
         process.env.JWT_SECRET || 'test-secret',
-        { expiresIn: '1h' }
+        { expiresIn: '1h' },
       );
 
       const res = await request(app)
@@ -141,21 +135,16 @@ describe('User Module', () => {
     });
 
     it('should return 401 error when invalid token is provided', async () => {
-      const res = await request(app)
-        .get('/api/me')
-        .set('Authorization', 'Bearer invalid-token');
+      const res = await request(app).get('/api/me').set('Authorization', 'Bearer invalid-token');
 
       expect(res.status).toBe(401);
     });
 
     it('should return 401 error when malformed authorization header is provided', async () => {
-      const res = await request(app)
-        .get('/api/me')
-        .set('Authorization', 'InvalidFormat token');
+      const res = await request(app).get('/api/me').set('Authorization', 'InvalidFormat token');
 
       expect(res.status).toBe(401);
     });
-
 
     it('should return user with zero balance', async () => {
       // Create user with zero balance
@@ -169,15 +158,11 @@ describe('User Module', () => {
         },
       });
 
-      const token = jwt.sign(
-        { userId: user.id },
-        process.env.JWT_SECRET || 'test-secret',
-        { expiresIn: '1h' }
-      );
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'test-secret', {
+        expiresIn: '1h',
+      });
 
-      const res = await request(app)
-        .get('/api/me')
-        .set('Authorization', `Bearer ${token}`);
+      const res = await request(app).get('/api/me').set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(res.body.balance).toBe(0);
