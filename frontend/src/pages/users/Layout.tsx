@@ -6,7 +6,6 @@ const Layout: React.FC = () => {
   return (
     <>
       <Navbar />
-
       <div className="pt-20">
         <Outlet />
       </div>
