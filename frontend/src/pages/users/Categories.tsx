@@ -1,9 +1,9 @@
 import React from 'react';
 
-const Satang: React.FC = () => {
+const Categories: React.FC = () => {
   return (
     <div>
-      <h1>Satang Page</h1>
+      <h1>Categories Page</h1>
       <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
         labore et dolore magna aliqua.
@@ -12,4 +12,4 @@ const Satang: React.FC = () => {
   );
 };
 
-export default Satang;
+export default Categories;
