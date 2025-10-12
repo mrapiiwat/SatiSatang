@@ -4,9 +4,10 @@ import axios from '../api/axios';
 interface ImageProps {
   src: string;
   alt: string;
+  className?: string;
 }
 
-const Image: React.FC<ImageProps> = ({ src, alt }) => {
+const Image: React.FC<ImageProps> = ({ src, alt, className }) => {
   const [imageSrc, setImageSrc] = useState<string>();
 
   useEffect(() => {
@@ -25,7 +26,7 @@ const Image: React.FC<ImageProps> = ({ src, alt }) => {
 
   if (!imageSrc) return <p>Loading...</p>;
 
-  return <img src={imageSrc} alt={alt} />;
+  return <img className={className} src={imageSrc} alt={alt} />;
 };
 
 export default Image;

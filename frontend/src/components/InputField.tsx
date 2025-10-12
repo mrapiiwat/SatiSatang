@@ -24,7 +24,7 @@ const InputField: React.FC<InputFieldProps> = ({
   const labelClass = useMemo(() => {
     const hasValue = value.trim() !== '';
     return `absolute left-6 z-10 bg-white px-1 text-gray-400 text-base transition-all duration-300 ease-in-out
-      ${hasValue ? 'top-[-10px] text-sm text-[#CECDCA]' : 'top-[18px] text-gray-400 text-base'}
+      ${hasValue ? 'top-[-10px] text-sm text-black-400' : 'top-[18px] text-gray-400 text-base'}
       peer-focus:top-[-10px] peer-focus:text-sm peer-focus:text-black`;
   }, [value]);
 
@@ -39,7 +39,7 @@ const InputField: React.FC<InputFieldProps> = ({
         placeholder={placeholder}
         autoComplete={autoComplete}
         minLength={minLength}
-        className="peer h-16 w-full border border-[#CECDCA] px-6 py-4 rounded-full text-base focus:outline-none focus:border-[#5300E8]"
+        className="peer h-16 w-full border border-black-400 px-6 py-4 rounded-full text-base focus:outline-none focus:border-blue-600"
       />
       <label htmlFor={id} className={labelClass}>
         {label}
