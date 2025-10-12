@@ -3,6 +3,7 @@ import PageWrapper from '../../components/PageWrapper';
 import FloatingBubble from '../../components/user/FloatingBubble';
 import MonthHeader from '../../components/user/MonthHeader';
 import { PiChartPieSliceLight } from 'react-icons/pi';
+import { useNavigate } from "react-router-dom";
 
 interface Transaction {
   id: number;
@@ -55,8 +56,13 @@ const mockTransactions: Transaction[] = [
 
 const Home = () => {
   const today = new Date();
+  const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
+  
+  const handleGoToSummary = () => {
+    navigate("/user/summary");
+  };
 
   const handleBubbleClick = () => alert('เปิดแชท!');
 
@@ -96,7 +102,10 @@ const Home = () => {
           <h1 className="text-[96px] mb-2 font-semibold leading-none">
             {totalExpense.toLocaleString()}
           </h1>
-          <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-black-50 font-semibold text-[14px] rounded-[100px] w-[121px] h-[40px] transform transition-transform duration-200 ease-in-out hover:scale-105 mx-auto">
+          <button
+            onClick={handleGoToSummary}
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-black-50 font-semibold text-[14px] rounded-[100px] w-[121px] h-[40px] transform transition-transform duration-200 ease-in-out hover:scale-105 mx-auto"
+          >
             <PiChartPieSliceLight size={20} />
             ดูสรุป
           </button>
