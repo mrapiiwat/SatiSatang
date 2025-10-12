@@ -32,11 +32,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <h1 className="text-white text-2xl font-medium">แชทกับพี่สตางค์</h1>
             </div>
             <ul className="space-y-6 px-9">
-              <li className="py-2 font-medium text-base cursor-pointer">สรุปรายรับ รายจ่าย</li>
-              <li className="py-2 font-medium text-base cursor-pointer">จัดการหมวดหมู่</li>
-              <li className="py-2 font-medium text-base cursor-pointer">การตั้งค่า</li>
-              <li className="py-2 font-medium text-base cursor-pointer">บัญชี</li>
-              <li className="py-2 font-medium text-base cursor-pointer">แจ้งปัญหาหรือข้อเสนอแนะ</li>
+              <li className="py-2 font-semibold text-base cursor-pointer">สรุปรายรับ รายจ่าย</li>
+              <li className="py-2 font-semibold text-base cursor-pointer">จัดการหมวดหมู่</li>
+              <li className="py-2 font-semibold text-base cursor-pointer">บัญชี</li>
             </ul>
           </div>
           <div

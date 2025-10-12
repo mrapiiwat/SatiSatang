@@ -10,6 +10,9 @@ import AuthCallback from '../pages/auth/AuthCallback';
 import RedirectIfAuth from './RedirectIfAuth';
 import Layout from '../pages/Layout';
 import NotFound from '../pages/404/NotFound';
+import Account from '../pages/users/Account';
+import Category from '../pages/users/Category';
+import Satang from '../pages/users/Satang';
 
 const router = createBrowserRouter([
   {
@@ -29,6 +32,9 @@ const router = createBrowserRouter([
     element: <LayoutUser />,
     children: [
       { index: true, element: <HomeUsers /> },
+      { path: '/user/account', element: <Account /> },
+      { path: '/user/category', element: <Category /> },
+      { path: '/user/satang', element: <Satang /> },
       { path: '*', element: <NotFound /> },
     ],
   },
