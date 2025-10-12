@@ -1,76 +1,82 @@
-import React, { useState } from "react";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import React from 'react';
+import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 
-const MonthHeader = () => {
-  const currentDate = new Date("2025-10-12"); // mock วันนี้
-  const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth());
-  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
+interface MonthHeaderProps {
+  selectedMonth: number;
+  selectedYear: number;
+  onMonthChange: (month: number, year: number) => void;
+}
 
+const MonthHeader: React.FC<MonthHeaderProps> = ({
+  selectedMonth,
+  selectedYear,
+  onMonthChange,
+}) => {
   const monthsThai = [
-    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+    'มกราคม',
+    'กุมภาพันธ์',
+    'มีนาคม',
+    'เมษายน',
+    'พฤษภาคม',
+    'มิถุนายน',
+    'กรกฎาคม',
+    'สิงหาคม',
+    'กันยายน',
+    'ตุลาคม',
+    'พฤศจิกายน',
+    'ธันวาคม',
   ];
 
-  const isCurrentMonth =
-    currentMonth === currentDate.getMonth() &&
-    currentYear === currentDate.getFullYear();
+  const today = new Date();
+  const currentMonth = today.getMonth() + 1;
+  const currentYear = today.getFullYear();
 
   const handlePrev = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear((y) => y - 1);
-    } else {
-      setCurrentMonth((m) => m - 1);
-    }
+    if (selectedMonth === 1) onMonthChange(12, selectedYear - 1);
+    else onMonthChange(selectedMonth - 1, selectedYear);
   };
 
   const handleNext = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear((y) => y + 1);
-    } else {
-      setCurrentMonth((m) => m + 1);
+    if (
+      selectedYear > currentYear ||
+      (selectedYear === currentYear && selectedMonth >= currentMonth)
+    ) {
+      return;
     }
+
+    if (selectedMonth === 12) onMonthChange(1, selectedYear + 1);
+    else onMonthChange(selectedMonth + 1, selectedYear);
   };
 
-  const handleCalendarClick = () => {
-    alert("เปิดปฏิทินเลือกเดือนและปี");
-  };
+  const handleCalendarClick = () => alert('เปิดปฏิทินเลือกเดือนและปี');
 
   return (
     <div className="flex items-center justify-center mb-8">
-      {/* กล่องกลางทั้งหมด (ลูกศร + ปุ่มเดือน) */}
       <div className="flex items-center justify-center gap-2">
-        {/* ลูกศรซ้าย */}
         <button
           onClick={handlePrev}
           className="text-black-900 text-2xl hover:opacity-70 transition"
-          aria-label="previous month"
         >
           <IoIosArrowBack />
         </button>
 
-        {/* ปุ่มเดือน */}
         <button
           onClick={handleCalendarClick}
           className="border border-black-900 rounded-[8px] px-4 py-1 text-sm font-semibold text-black-900"
         >
-          {monthsThai[currentMonth]} {currentYear + 543 - 2500}
+          {monthsThai[selectedMonth - 1]} {selectedYear + 543}
         </button>
 
-        {/* ลูกศรขวา (มีเฉพาะถ้าไม่ใช่เดือนปัจจุบัน) */}
-        {!isCurrentMonth ? (
-          <button
-            onClick={handleNext}
-            className="text-black-900 text-2xl hover:opacity-70 transition"
-            aria-label="next month"
-          >
-            <IoIosArrowForward />
-          </button>
-        ) : (
-          // ถ้าเป็นเดือนปัจจุบัน → จองที่ไว้ให้ layout ไม่ขยับ
-          <div className="w-[24px] h-[24px]" />
-        )}
+        <button
+          onClick={handleNext}
+          className={`text-black-900 text-2xl transition ${selectedYear > currentYear || (selectedYear === currentYear && selectedMonth >= currentMonth) ? 'opacity-30 cursor-not-allowed' : 'hover:opacity-70'}`}
+          disabled={
+            selectedYear > currentYear ||
+            (selectedYear === currentYear && selectedMonth >= currentMonth)
+          }
+        >
+          <IoIosArrowForward />
+        </button>
       </div>
     </div>
   );

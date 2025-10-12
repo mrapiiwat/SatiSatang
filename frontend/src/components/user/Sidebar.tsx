@@ -1,4 +1,5 @@
 import useAuthStore from '../../store/authStore';
+import { Link } from 'react-router-dom';
 
 type SidebarProps = {
   isOpen: boolean;
@@ -11,8 +12,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black-900 bg-opacity-80 transition-opacity duration-300 z-40 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-          }`}
+        className={`fixed inset-0 bg-black-900 bg-opacity-80 transition-opacity duration-300 z-40 ${
+          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`}
         onClick={onClose}
       ></div>
 
@@ -28,18 +30,40 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div className="flex flex-col justify-between h-full">
           <div className="px-3 py-5">
-            <div className="bg-blue-600 rounded-2xl h-16 flex items-center justify-center mb-7 cursor-pointer">
+            <Link
+              to="/user/satang"
+              onClick={onClose}
+              className="bg-blue-600 rounded-2xl h-16 flex items-center justify-center mb-7 cursor-pointer"
+            >
               <h1 className="text-white text-2xl font-medium">แชทกับพี่สตางค์</h1>
+            </Link>
+            <div className="flex flex-col gap-4 px-9">
+              <Link
+                to="/user"
+                onClick={onClose}
+                className="py-2 font-semibold text-lg cursor-pointer"
+              >
+                สรุปรายรับ รายจ่าย
+              </Link>
+              <Link
+                to="/user/categories"
+                onClick={onClose}
+                className="py-2 font-semibold text-lg cursor-pointer"
+              >
+                จัดการหมวดหมู่
+              </Link>
+              <Link
+                to="/user/account"
+                onClick={onClose}
+                className="py-2 font-semibold text-lg cursor-pointer"
+              >
+                บัญชี
+              </Link>
             </div>
-            <ul className="space-y-6 px-9">
-              <li className="py-2 font-semibold text-base cursor-pointer">สรุปรายรับ รายจ่าย</li>
-              <li className="py-2 font-semibold text-base cursor-pointer">จัดการหมวดหมู่</li>
-              <li className="py-2 font-semibold text-base cursor-pointer">บัญชี</li>
-            </ul>
           </div>
           <div
             onClick={actionLogout}
-            className="py-2 px-9 font-medium text-base mb-8 cursor-pointer"
+            className="py-2 px-9 font-semibold text-lg mb-8 cursor-pointer"
           >
             ออกจากระบบ
           </div>
