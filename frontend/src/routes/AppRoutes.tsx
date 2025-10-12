@@ -13,6 +13,7 @@ import NotFound from '../pages/404/NotFound';
 import Account from '../pages/users/Account';
 import Category from '../pages/users/Category';
 import Satang from '../pages/users/Satang';
+import Summary from '../pages/users/Summary';
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
       { path: '/user/account', element: <Account /> },
       { path: '/user/category', element: <Category /> },
       { path: '/user/satang', element: <Satang /> },
+      { path: '/user/summary', element: <Summary /> },
       { path: '*', element: <NotFound /> },
     ],
   },
