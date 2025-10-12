@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 const MonthHeader = () => {
-  const currentDate = new Date("2025-09-15"); // mock วันนี้
+  const currentDate = new Date("2025-10-12"); // mock วันนี้
   const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth());
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
 
