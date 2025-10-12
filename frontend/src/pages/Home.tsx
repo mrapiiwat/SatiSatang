@@ -21,17 +21,17 @@ const Home: React.FC = () => {
             className="w-[194px] h-auto mb-8"
           />
 
-          <p className="max-w-sm text-xl font-semibold leading-relaxed text-gray-700 mb-8">
+          <p className="max-w-sm text-xl font-semibold leading-relaxed text-black-900 mb-8">
             เว็บแอปบันทึกรายรับรายจ่ายส่วนตัว พร้อมผู้ช่วยที่จะมาช่วยบันทึกรายรับรายจ่ายให้แบบง่ายๆ
             และที่ปรึกษาด้านการลงทุนที่จะช่วยแนะนำการลงทุนให้กับคุณโดยเฉพาะ
           </p>
 
-          <p className="max-w-sm text-base font-normal leading-relaxed text-gray-700 mb-8">
+          <p className="max-w-sm text-base font-normal leading-relaxed text-black-900 mb-8">
             ยังไม่มีบัญชีหรอ? จะรอช้าทำไมล่ะ สมัครโล้ดด
           </p>
 
           <Link to="/login" className="w-full">
-            <button className="w-full bg-[#5300E8] hover:bg-[#3F00B8] text-white font-semibold text-2xl py-3 rounded-full transition cursor-pointer">
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-2xl py-3 rounded-full transition cursor-pointer">
               เข้าใช้งาน
             </button>
           </Link>
@@ -39,11 +39,11 @@ const Home: React.FC = () => {
 
         <section id="main" className="w-full max-w-md px-6 py-8 text-center">
           <h2 className="w-full text-left text-xl font-semibold mb-2">แนวคิด</h2>
-          <h3 className="w-full text-left text-[40px] font-semibold mb-2 bg-gradient-to-r from-[#3D00E0] via-[#E278FA] to-[#BCD646] text-transparent bg-clip-text">
+          <h3 className="w-full text-left text-[40px] font-semibold mb-2 bg-gradient-to-r from-blue-700 via-purple-300 to-green-600 text-transparent bg-clip-text">
             “สติสตางค์” <br />
             ชื่อนี้ท่านได้แต่ใดมา?
           </h3>
-          <p className="max-w-sm text-left text-sm font-normal leading-relaxed text-gray-700 mb-8">
+          <p className="max-w-sm text-left text-sm font-normal leading-relaxed text-black-900 mb-8">
             ชื่อ "สติสตางค์" มาจากการผสมคำกันระหว่าง "สติ" และ "สตางค์" <br />
             "สติ" หมายถึง ความมีสติปัญญา การมีความระมัดระวัง <br />
             "สตางค์" เป็นหน่วยเงิน <br />
@@ -52,11 +52,11 @@ const Home: React.FC = () => {
         </section>
 
         <section className="w-full max-w-md px-6 pb-10">
-          <h3 className="w-full text-left text-[40px] font-semibold mb-2 bg-gradient-to-r from-[#3D00E0] via-[#E278FA] to-[#BCD646] text-transparent bg-clip-text">
+          <h3 className="w-full text-left text-[40px] font-semibold mb-2 bg-gradient-to-r from-blue-700 via-purple-300 to-green-600  text-transparent bg-clip-text">
             ฟีเจอร์ เริศ เริศ
           </h3>
 
-          <ol className="list-decimal list-inside text-left space-y-3 text-sm leading-relaxed">
+          <ol className="list-decimal list-inside text-left space-y-3 text-sm leading-relaxed text-black-900">
             <li>
               กดเพิ่มรายรับรายจ่าย พร้อมกับเมนูอัปโหลดสลิป: ผู้ใช้งานกดเพิ่มรายรับ รายจ่าย /
               แสดงช่องใส่ข้อมูล เป็นรายรับหรือรายจ่าย กรอกจำนวนเงิน กรอกหมวดหมู่ และอัปโหลดสลิปได้
@@ -73,7 +73,7 @@ const Home: React.FC = () => {
           </ol>
         </section>
 
-        <footer className="w-full bg-[#2F2E2C] text-white py-8 px-6 border-t border-gray-700">
+        <footer className="w-full bg-black-900 text-white py-8 px-6 ">
           <div className="max-w-6xl mx-auto flex flex-col justify-between min-h-[220px]">
             <a
               href="#top"

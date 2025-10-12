@@ -25,7 +25,8 @@ const router = createBrowserRouter([
   },
   {
     path: '/user',
-    element: <ProtectRoute element={<LayoutUser />} />,
+    // element: <ProtectRoute element={<LayoutUser />} />,
+    element: <LayoutUser />,
     children: [
       { index: true, element: <HomeUsers /> },
       { path: '*', element: <NotFound /> },

@@ -45,12 +45,12 @@ const Navbar: React.FC = () => {
         >
           <span
             className={`block absolute h-0.5 w-6 transform transition duration-300 ease-in-out
-              ${isOpen ? 'rotate-45 top-3 bg-white' : 'top-2 bg-black'}
+              ${isOpen ? 'rotate-45 top-3 bg-white' : 'top-2 bg-black-900'}
             `}
           ></span>
           <span
             className={`block absolute h-0.5 w-6 transform transition duration-300 ease-in-out
-              ${isOpen ? '-rotate-45 top-3 bg-white' : 'top-5 bg-black'}
+              ${isOpen ? '-rotate-45 top-3 bg-white' : 'top-5 bg-black-900'}
             `}
           ></span>
         </button>
