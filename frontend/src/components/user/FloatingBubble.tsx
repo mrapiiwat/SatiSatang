@@ -46,7 +46,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
     });
   };
 
-  const handleMouseUp = (e: MouseEvent) => {
+  const handleMouseUp = () => {
     if (!dragging) return;
     setDragging(false);
     snapToEdge();
@@ -77,7 +77,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
     e.preventDefault();
   };
 
-  const handleTouchEnd = (e: TouchEvent) => {
+  const handleTouchEnd = () => {
     if (!dragging) return;
     setDragging(false);
     snapToEdge();
