@@ -57,7 +57,7 @@ const Account = ({ userId = 1 }) => {
   return (
     <div className="relative px-6 py-8 font-ibm text-black-900 min-h-screen">
 
-      {/* ✅ Popup */}
+      {/* Popup แจ้งเตือนว่าแก้ไขชื่อหรือบันทึกรหัสผ่านเสร็จแล้ว */}
       <div
         className={`fixed top-4 left-1/2 transform -translate-x-1/2 bg-black-300 text-black-900 px-6 py-2 rounded-lg text-sm shadow-md transition-all duration-500 ease-in-out ${
           showPopup
@@ -81,7 +81,7 @@ const Account = ({ userId = 1 }) => {
 
       {!isChangingPassword ? (
         <>
-          {/* 🔹 ชื่อผู้ใช้งาน */}
+          {/* ชื่อผู้ใช้งาน */}
           <div className="mb-6">
             <label className="block text-sm font-semibold mb-1">ชื่อผู้ใช้งาน</label>
             <input
@@ -98,7 +98,7 @@ const Account = ({ userId = 1 }) => {
             />
           </div>
 
-          {/* 🔹 รหัสผ่าน */}
+          {/* รหัสผ่าน */}
           <div className="mb-8">
             <label className="block text-sm font-semibold mb-1">รหัสผ่าน</label>
 
@@ -119,7 +119,7 @@ const Account = ({ userId = 1 }) => {
             )}
           </div>
 
-          {/* 🔹 ปุ่มบันทึก */}
+          {/* ปุ่มบันทึก */}
           <div className="flex justify-end">
             <button
               disabled={!isEdited || !name.trim()}
@@ -134,14 +134,14 @@ const Account = ({ userId = 1 }) => {
             </button>
           </div>
 
-          {/* 🔹 ปุ่มลบบัญชี */}
+          {/* ปุ่มลบบัญชี */}
           <div className="fixed left-0 bottom-8 w-full flex justify-center">
             <button className="text-[#FF5F57] font-medium">ลบบัญชี</button>
           </div>
         </>
       ) : (
         <>
-          {/* 🧩 หน้าเปลี่ยนรหัสผ่าน */}
+          {/* หน้าเปลี่ยนรหัสผ่าน */}
           <h2 className="text-center font-semibold mb-6">เปลี่ยนรหัสผ่าน</h2>
 
           <div className="space-y-6">

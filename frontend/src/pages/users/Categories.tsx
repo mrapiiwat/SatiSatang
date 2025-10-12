@@ -14,7 +14,7 @@ const Categories = () => {
   const currentCategories =
     selectedType === "income" ? incomeCategories : expenseCategories;
 
-  // 🪄 ทำให้ขีดเส้นใต้ขยับอัตโนมัติให้ตรงกับปุ่มที่เลือก
+  // ทำให้ขีดเส้นใต้ขยับอัตโนมัติให้ตรงกับปุ่มที่เลือก
   useEffect(() => {
     const currentButton =
       selectedType === "income" ? incomeRef.current : expenseRef.current;

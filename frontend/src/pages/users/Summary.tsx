@@ -64,7 +64,6 @@ const Summary: React.FC = () => {
 
   return (
     <div className="px-6 py-4 font-ibm text-black-900">
-      {/* Header เดือน */}
       <MonthHeader
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
@@ -74,7 +73,7 @@ const Summary: React.FC = () => {
         }}
       />
 
-      {/* ✅ กราฟวงกลม */}
+      {/* กราฟวงกลม */}
       <div className="flex flex-col items-center mb-8">
         <div className="relative w-full h-[260px]">
           <ResponsiveContainer>
@@ -108,7 +107,7 @@ const Summary: React.FC = () => {
           )}
         </div>
 
-        {/* Legend แบบแนวตั้ง */}
+        {/* จุดสีบอกรายรับ รายจ่าย เป้าหมาย */}
         <div className="flex justify-center gap-8 text-sm font-medium mt-3">
           <div className="flex flex-col items-center gap-1">
             <span className="w-3 h-3 rounded-full bg-[#5300E8]" />
@@ -125,7 +124,7 @@ const Summary: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ รายรับ */}
+      {/* รายรับ */}
       <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-semibold text-gray-700">รายรับทั้งหมด</span>
@@ -171,7 +170,7 @@ const Summary: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ รายจ่าย */}
+      {/* รายจ่าย */}
       <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-semibold text-gray-700">รายจ่ายทั้งหมด</span>
@@ -216,7 +215,7 @@ const Summary: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ เป้าหมาย */}
+      {/* เป้าหมาย */}
       <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
         <p className="font-semibold text-gray-700 mb-2">เป้าหมาย</p>
         {mockGoals.map((goal) => (
