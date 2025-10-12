@@ -156,9 +156,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
     const validateData = authModels.verifyEmailSchema.parse(req.body);
     const { otp, userId } = validateData;
 
-    if (!otp || !userId)
-      return res.status(httpStatus.BAD_REQUEST).json({ message: 'Missing userId or OTP' });
-
     const record = await prisma.emailVerification.findFirst({ where: { userId } });
     if (!record) return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid OTP' });
 

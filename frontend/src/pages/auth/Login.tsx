@@ -9,6 +9,8 @@ import OAuthButton from '../../components/OAuthButton';
 import SubmitButton from '../../components/SubmitButton';
 import InputField from '../../components/InputField';
 import Logo from '../../components/Logo';
+import PageWrapper from '../../components/PageWrapper';
+import { AxiosError } from 'axios';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -84,6 +86,7 @@ const Login: React.FC = () => {
       if (isUser === 'Register') {
         if (isLoading) return;
         setIsLoading(true);
+
         try {
           const res = await axios.post(`${API_URL}/api/register`, {
             email,
@@ -98,12 +101,30 @@ const Login: React.FC = () => {
           sessionStorage.setItem('userEmail', email);
 
           navigate(`/verify?userId=${userId}`);
-        } catch (error) {
-          console.error('Registration error:', error);
-          setError('เกิดข้อผิดพลาดในการลงทะเบียน');
+        } catch (error: unknown) {
+          const axiosError = error as AxiosError;
+          console.error('Registration error:', axiosError);
+
+          const responseData = axiosError.response?.data as
+            | { errors?: { message?: string } }
+            | undefined;
+
+          if (responseData?.errors?.message) {
+            try {
+              const zodErrors = JSON.parse(responseData.errors.message);
+              const errorMessage = zodErrors[0]?.message || 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล';
+              setError(errorMessage);
+            } catch (parseError) {
+              console.error('Error parsing Zod error:', parseError);
+              setError('เกิดข้อผิดพลาดในการตรวจสอบข้อมูล');
+            }
+          } else {
+            setError('เกิดข้อผิดพลาดในการลงทะเบียน');
+          }
         } finally {
           setIsLoading(false);
         }
+
         return;
       }
 
@@ -184,40 +205,27 @@ const Login: React.FC = () => {
   );
 
   return (
-    <div className="p-6">
-      <Link to="/" className="cursor-pointer">
-        <Logo />
-      </Link>
+    <PageWrapper animation="scale-fade">
+      <div className="p-6">
+        <Link to="/" className="cursor-pointer">
+          <Logo />
+        </Link>
 
-      <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
-        <h1 className="text-xl font-medium text-center mb-2">สมัครเข้าใช้งานหรือเข้าสู่ระบบ</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
+          <h1 className="text-xl font-medium text-center mb-2">สมัครเข้าใช้งานหรือเข้าสู่ระบบ</h1>
 
-        <div className="relative w-full">
-          <InputField
-            id="email"
-            type="email"
-            value={email}
-            onChange={handleEmailChange}
-            label="อีเมล"
-            autoComplete="email"
-          />
-        </div>
-
-        {isUser === 'Login' && (
           <div className="relative w-full">
             <InputField
-              id="password"
-              type="password"
-              value={password}
-              onChange={handlePasswordChange}
-              label="รหัสผ่าน"
-              autoComplete="current-password"
+              id="email"
+              type="email"
+              value={email}
+              onChange={handleEmailChange}
+              label="อีเมล"
+              autoComplete="email"
             />
           </div>
-        )}
 
-        {isUser === 'Register' && (
-          <div className="flex flex-col gap-5">
+          {isUser === 'Login' && (
             <div className="relative w-full">
               <InputField
                 id="password"
@@ -225,44 +233,59 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={handlePasswordChange}
                 label="รหัสผ่าน"
-                autoComplete="new-password"
-                minLength={6}
+                autoComplete="current-password"
               />
             </div>
+          )}
 
-            <div className="relative w-full">
-              <InputField
-                id="name"
-                type="text"
-                value={name}
-                onChange={handleNameChange}
-                label="ชื่อ"
-                autoComplete="name"
-              />
+          {isUser === 'Register' && (
+            <div className="flex flex-col gap-5">
+              <div className="relative w-full">
+                <InputField
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  label="รหัสผ่าน"
+                  autoComplete="new-password"
+                  minLength={6}
+                />
+              </div>
+
+              <div className="relative w-full">
+                <InputField
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={handleNameChange}
+                  label="ชื่อ"
+                  autoComplete="name"
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {error && (
-          <div className="text-red-500 text-sm text-center mb-2" role="alert" aria-live="polite">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="text-red-500 text-sm text-center mb-2" role="alert" aria-live="polite">
+              {error}
+            </div>
+          )}
 
-        <SubmitButton isLoading={isLoading} text="ดำเนินการต่อ" />
-      </form>
+          <SubmitButton isLoading={isLoading} text="ดำเนินการต่อ" />
+        </form>
 
-      <div className="relative my-7 flex items-center">
-        <div className="flex-grow border-t border-gray-300"></div>
-        <span className="mx-4 text-gray-500">หรือ</span>
-        <div className="flex-grow border-t border-gray-300"></div>
+        <div className="relative my-7 flex items-center">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="mx-4 text-gray-500">หรือ</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        <div className="flex flex-col gap-5">
+          <OAuthButton onClick={googleLogin} label="ดำเนินการต่อด้วย Google" logo={Google} />
+          <OAuthButton onClick={facebookLogin} label="ดำเนินการต่อด้วย Facebook" logo={Facebook} />
+        </div>
       </div>
-
-      <div className="flex flex-col gap-5">
-        <OAuthButton onClick={googleLogin} label="ดำเนินการต่อด้วย Google" logo={Google} />
-        <OAuthButton onClick={facebookLogin} label="ดำเนินการต่อด้วย Facebook" logo={Facebook} />
-      </div>
-    </div>
+    </PageWrapper>
   );
 };
 

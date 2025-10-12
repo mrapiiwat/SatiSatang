@@ -1,16 +1,14 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import useAuthStore from '../../store/authStore';
+import Navbar from '../../components/user/Navbar';
 
-const Layout = () => {
-  const actionLogout = useAuthStore((state) => state.actionLogout);
+const Layout: React.FC = () => {
   return (
     <>
-      <div>Layout</div>
-      <button className="bg-red-400" onClick={actionLogout}>
-        Logout
-      </button>
-      <Outlet />
+      <Navbar />
+      <div className="pt-20">
+        <Outlet />
+      </div>
     </>
   );
 };
