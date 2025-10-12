@@ -39,7 +39,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </Link>
             <div className="flex flex-col gap-4 px-9">
               <Link
-                to="/user"
+                to="/user/summary"
                 onClick={onClose}
                 className="py-2 font-semibold text-lg cursor-pointer"
               >
