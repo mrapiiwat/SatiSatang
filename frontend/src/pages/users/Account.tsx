@@ -56,13 +56,9 @@ const Account = ({ userId = 1 }) => {
 
   return (
     <div className="relative px-6 py-8 font-ibm text-black-900 min-h-screen">
-
-      {/* Popup แจ้งเตือนว่าแก้ไขชื่อหรือบันทึกรหัสผ่านเสร็จแล้ว */}
       <div
         className={`fixed top-4 left-1/2 transform -translate-x-1/2 bg-black-300 text-black-900 px-6 py-2 rounded-lg text-sm shadow-md transition-all duration-500 ease-in-out ${
-          showPopup
-            ? 'opacity-100 translate-y-0'
-            : 'opacity-0 -translate-y-4 pointer-events-none'
+          showPopup ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
         }`}
         style={{ zIndex: 9999 }}
       >
@@ -81,7 +77,6 @@ const Account = ({ userId = 1 }) => {
 
       {!isChangingPassword ? (
         <>
-          {/* ชื่อผู้ใช้งาน */}
           <div className="mb-6">
             <label className="block text-sm font-semibold mb-1">ชื่อผู้ใช้งาน</label>
             <input
@@ -98,7 +93,6 @@ const Account = ({ userId = 1 }) => {
             />
           </div>
 
-          {/* รหัสผ่าน */}
           <div className="mb-8">
             <label className="block text-sm font-semibold mb-1">รหัสผ่าน</label>
 
@@ -119,33 +113,27 @@ const Account = ({ userId = 1 }) => {
             )}
           </div>
 
-          {/* ปุ่มบันทึก */}
           <div className="flex justify-end">
             <button
               disabled={!isEdited || !name.trim()}
               onClick={handleSaveName}
               className={`px-6 py-2 rounded-md text-white text-sm font-semibold ${
-                isEdited && name.trim()
-                  ? 'bg-blue-600'
-                  : 'bg-gray-400 cursor-not-allowed'
+                isEdited && name.trim() ? 'bg-blue-600' : 'bg-gray-400 cursor-not-allowed'
               }`}
             >
               บันทึก
             </button>
           </div>
 
-          {/* ปุ่มลบบัญชี */}
           <div className="fixed left-0 bottom-8 w-full flex justify-center">
             <button className="text-[#FF5F57] font-medium">ลบบัญชี</button>
           </div>
         </>
       ) : (
         <>
-          {/* หน้าเปลี่ยนรหัสผ่าน */}
           <h2 className="text-center font-semibold mb-6">เปลี่ยนรหัสผ่าน</h2>
 
           <div className="space-y-6">
-            {/* รหัสผ่านเก่า */}
             <div>
               <label className="block text-sm mb-1">รหัสผ่านเก่า</label>
               <div className="flex items-center border-b border-gray-300">
@@ -165,7 +153,6 @@ const Account = ({ userId = 1 }) => {
               </div>
             </div>
 
-            {/* รหัสผ่านใหม่ */}
             <div>
               <label className="block text-sm mb-1">รหัสผ่านใหม่</label>
               <div className="flex items-center border-b border-gray-300">
@@ -185,7 +172,6 @@ const Account = ({ userId = 1 }) => {
               </div>
             </div>
 
-            {/* ยืนยันรหัสผ่าน */}
             <div>
               <label className="block text-sm mb-1">ยืนยันรหัสผ่าน</label>
               <div className="flex items-center border-b border-gray-300">
@@ -197,20 +183,15 @@ const Account = ({ userId = 1 }) => {
                 />
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="text-gray-600"
                 >
                   {showConfirmPassword ? <LuEye /> : <LuEyeClosed />}
                 </button>
               </div>
-              {passwordError && (
-                <p className="text-red-500 text-sm mt-1">{passwordError}</p>
-              )}
+              {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
             </div>
 
-            {/* ปุ่มกลับ / บันทึก */}
             <div className="flex justify-between items-center mt-6">
               <button
                 type="button"

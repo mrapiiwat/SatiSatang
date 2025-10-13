@@ -3,7 +3,7 @@ import PageWrapper from '../../components/PageWrapper';
 import FloatingBubble from '../../components/user/FloatingBubble';
 import MonthHeader from '../../components/user/MonthHeader';
 import { PiChartPieSliceLight } from 'react-icons/pi';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 interface Transaction {
   id: number;
@@ -59,9 +59,9 @@ const Home = () => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
-  
+
   const handleGoToSummary = () => {
-    navigate("/user/summary");
+    navigate('/user/summary');
   };
 
   const handleBubbleClick = () => alert('เปิดแชท!');
@@ -87,7 +87,7 @@ const Home = () => {
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <PageWrapper animation="fade" duration={1.5}>
+    <PageWrapper animation="scale-fade">
       <div className="px-6 py-4 font-ibm text-black-900">
         <MonthHeader
           selectedMonth={selectedMonth}

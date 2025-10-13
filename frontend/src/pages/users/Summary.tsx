@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import MonthHeader from "../../components/user/MonthHeader";
-import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
+import React, { useState } from 'react';
+import MonthHeader from '../../components/user/MonthHeader';
+import { MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 interface Transaction {
   id: number;
-  type: "income" | "expense";
+  type: 'income' | 'expense';
   description: string;
   amount: number;
   createdAt: string;
@@ -20,19 +20,47 @@ interface Goal {
 }
 
 const mockTransactions: Transaction[] = [
-  { id: 1, type: "income", description: "รายรับจากเซเว่น", amount: 1500, createdAt: "2025-10-12T14:48:46.904Z" },
-  { id: 2, type: "expense", description: "กาแฟ", amount: 50, createdAt: "2025-09-01T10:00:00Z" },
-  { id: 3, type: "expense", description: "ข้าวกลางวัน", amount: 80, createdAt: "2025-09-02T12:30:00Z" },
-  { id: 4, type: "income", description: "เงินเดือน", amount: 20000, createdAt: "2025-09-05T08:00:00Z" },
-  { id: 5, type: "expense", description: "น้ำมันรถ", amount: 600, createdAt: "2025-09-05T09:30:00Z" },
-  { id: 6, type: "income", description: "โบนัส", amount: 5000, createdAt: "2025-10-01T10:00:00Z" },
-  { id: 7, type: "expense", description: "ข้าวเช้า", amount: 45, createdAt: "2025-10-01T08:00:00Z" },
-  { id: 8, type: "expense", description: "ขนม", amount: 25, createdAt: "2025-10-03T14:00:00Z" },
+  {
+    id: 1,
+    type: 'income',
+    description: 'รายรับจากเซเว่น',
+    amount: 1500,
+    createdAt: '2025-10-12T14:48:46.904Z',
+  },
+  { id: 2, type: 'expense', description: 'กาแฟ', amount: 50, createdAt: '2025-09-01T10:00:00Z' },
+  {
+    id: 3,
+    type: 'expense',
+    description: 'ข้าวกลางวัน',
+    amount: 80,
+    createdAt: '2025-09-02T12:30:00Z',
+  },
+  {
+    id: 4,
+    type: 'income',
+    description: 'เงินเดือน',
+    amount: 20000,
+    createdAt: '2025-09-05T08:00:00Z',
+  },
+  {
+    id: 5,
+    type: 'expense',
+    description: 'น้ำมันรถ',
+    amount: 600,
+    createdAt: '2025-09-05T09:30:00Z',
+  },
+  { id: 6, type: 'income', description: 'โบนัส', amount: 5000, createdAt: '2025-10-01T10:00:00Z' },
+  {
+    id: 7,
+    type: 'expense',
+    description: 'ข้าวเช้า',
+    amount: 45,
+    createdAt: '2025-10-01T08:00:00Z',
+  },
+  { id: 8, type: 'expense', description: 'ขนม', amount: 25, createdAt: '2025-10-03T14:00:00Z' },
 ];
 
-const mockGoals: Goal[] = [
-  { id: 1, name: "iPhone 17", amount: 1000, currentAmount: 0 },
-];
+const mockGoals: Goal[] = [{ id: 1, name: 'iPhone 17', amount: 1000, currentAmount: 0 }];
 
 const Summary: React.FC = () => {
   const today = new Date();
@@ -41,25 +69,24 @@ const Summary: React.FC = () => {
   const [showIncomeDetail, setShowIncomeDetail] = useState(false);
   const [showExpenseDetail, setShowExpenseDetail] = useState(false);
 
-  // กรองข้อมูลเฉพาะเดือนและปีที่เลือก
   const filteredTransactions = mockTransactions.filter((t) => {
     const date = new Date(t.createdAt);
     return date.getMonth() + 1 === selectedMonth && date.getFullYear() === selectedYear;
   });
 
-  const incomes = filteredTransactions.filter((t) => t.type === "income");
-  const expenses = filteredTransactions.filter((t) => t.type === "expense");
+  const incomes = filteredTransactions.filter((t) => t.type === 'income');
+  const expenses = filteredTransactions.filter((t) => t.type === 'expense');
 
   const totalIncome = incomes.reduce((sum, t) => sum + t.amount, 0);
   const totalExpense = expenses.reduce((sum, t) => sum + t.amount, 0);
   const totalGoal = mockGoals.reduce((sum, g) => sum + g.amount, 0);
   const totalSum = totalIncome + totalExpense + totalGoal;
 
-  const COLORS = ["#5300E8", "#E278FA", "#C8E84D"]; // รายรับ, รายจ่าย, เป้าหมาย
+  const COLORS = ['#5300E8', '#E278FA', '#C8E84D'];
   const data = [
-    { name: "รายรับ", value: totalIncome },
-    { name: "รายจ่าย", value: totalExpense },
-    { name: "เป้าหมาย", value: totalGoal },
+    { name: 'รายรับ', value: totalIncome },
+    { name: 'รายจ่าย', value: totalExpense },
+    { name: 'เป้าหมาย', value: totalGoal },
   ];
 
   return (
@@ -73,7 +100,6 @@ const Summary: React.FC = () => {
         }}
       />
 
-      {/* กราฟวงกลม */}
       <div className="flex flex-col items-center mb-8">
         <div className="relative w-full h-[260px]">
           <ResponsiveContainer>
@@ -87,7 +113,7 @@ const Summary: React.FC = () => {
                 paddingAngle={3}
                 dataKey="value"
               >
-                {data.map((entry, index) => (
+                {data.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index]} />
                 ))}
               </Pie>
@@ -97,7 +123,6 @@ const Summary: React.FC = () => {
             </PieChart>
           </ResponsiveContainer>
 
-          {/* เปอร์เซ็นต์ตรงกลาง */}
           {totalSum > 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-xs font-semibold text-black-900 leading-tight">
               <p>รายรับ {Math.round((totalIncome / totalSum) * 100)}%</p>
@@ -107,7 +132,6 @@ const Summary: React.FC = () => {
           )}
         </div>
 
-        {/* จุดสีบอกรายรับ รายจ่าย เป้าหมาย */}
         <div className="flex justify-center gap-8 text-sm font-medium mt-3">
           <div className="flex flex-col items-center gap-1">
             <span className="w-3 h-3 rounded-full bg-[#5300E8]" />
@@ -124,7 +148,6 @@ const Summary: React.FC = () => {
         </div>
       </div>
 
-      {/* รายรับ */}
       <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-semibold text-gray-700">รายรับทั้งหมด</span>
@@ -141,14 +164,11 @@ const Summary: React.FC = () => {
           </button>
         </div>
 
-        <p className="text-blue-600 font-semibold text-xl mb-2">
-          ฿{totalIncome.toLocaleString()}
-        </p>
+        <p className="text-blue-600 font-semibold text-xl mb-2">฿{totalIncome.toLocaleString()}</p>
 
-        {/* Animation Fade+Slide */}
         <div
           className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            showIncomeDetail ? "max-h-96 opacity-100 mt-2" : "max-h-0 opacity-0"
+            showIncomeDetail ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
           }`}
         >
           {showIncomeDetail && (
@@ -170,7 +190,6 @@ const Summary: React.FC = () => {
         </div>
       </div>
 
-      {/* รายจ่าย */}
       <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-semibold text-gray-700">รายจ่ายทั้งหมด</span>
@@ -193,7 +212,7 @@ const Summary: React.FC = () => {
 
         <div
           className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            showExpenseDetail ? "max-h-96 opacity-100 mt-2" : "max-h-0 opacity-0"
+            showExpenseDetail ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
           }`}
         >
           {showExpenseDetail && (
@@ -215,7 +234,6 @@ const Summary: React.FC = () => {
         </div>
       </div>
 
-      {/* เป้าหมาย */}
       <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
         <p className="font-semibold text-gray-700 mb-2">เป้าหมาย</p>
         {mockGoals.map((goal) => (
