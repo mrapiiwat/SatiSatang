@@ -5,7 +5,7 @@ import path from 'path';
 import cors from 'cors';
 import { checkBucket } from './common/config/minioClient';
 import './common/config/passport';
-import { authenticateJWT } from "./common/middleware/authenticateJWT"
+import { authenticateJWT } from './common/middleware/authenticateJWT';
 
 // Import routes
 import authRoutes from './modules/auth/authRoutes';

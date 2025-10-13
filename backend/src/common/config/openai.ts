@@ -1,27 +1,27 @@
-import { OpenAI } from "openai";
-import dotenv from "dotenv";
+import { OpenAI } from 'openai';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function chatWithAI(prompt: string) {
-    try {
-        const response = await openai.chat.completions.create({
-            model: "gpt-5",
-            messages: [
-                {
-                    role: "system",
-                    content: `You are a helpful assistant that provides concise and accurate information.`,
-                },
-                { role: "user", content: prompt },
-            ],
-        });
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-5',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a helpful assistant that provides concise and accurate information.`,
+        },
+        { role: 'user', content: prompt },
+      ],
+    });
 
-        return response.choices[0]?.message?.content;
-    } catch (error) {
-        console.error("Error:", error);
-    }
+    return response.choices[0]?.message?.content;
+  } catch (error) {
+    console.error('Error:', error);
+  }
 }
