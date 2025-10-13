@@ -1,6 +1,6 @@
 import React from 'react';
 import { GoArrowUp } from 'react-icons/go';
-import Bruh from '../../assets/Page-1.svg';
+import Face from '../../assets/Page-1.svg';
 
 interface SatangTextModeProps {
   toggleVoiceMode: () => void;
@@ -27,7 +27,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({ toggleVoiceMode, text, 
           onClick={toggleVoiceMode}
           className="flex justify-center items-center min-w-16 min-h-16 bg-blue-600 rounded-full cursor-pointer"
         >
-          <img src={Bruh} className="w-7 h-7" />
+          <img src={Face} className="w-7 h-7" />
         </div>
         <form className="w-full relative" onSubmit={handleSubmit}>
           <input

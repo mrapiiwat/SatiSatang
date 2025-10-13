@@ -12,9 +12,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black-900 bg-opacity-80 transition-opacity duration-300 z-40 ${
-          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-        }`}
+        className={`fixed inset-0 bg-black-900 bg-opacity-80 transition-opacity duration-300 z-40 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          }`}
         onClick={onClose}
       ></div>
 
@@ -38,6 +37,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <h1 className="text-white text-2xl font-medium">แชทกับพี่สตางค์</h1>
             </Link>
             <div className="flex flex-col gap-4 px-9">
+              <Link
+                to="/user"
+                onClick={onClose}
+                className="py-2 font-semibold text-lg cursor-pointer"
+              >
+                หน้าหลัก
+              </Link>
               <Link
                 to="/user/summary"
                 onClick={onClose}

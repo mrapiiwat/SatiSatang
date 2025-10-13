@@ -5,11 +5,13 @@ import path from 'path';
 import cors from 'cors';
 import { checkBucket } from './common/config/minioClient';
 import './common/config/passport';
+import { authenticateJWT } from "./common/middleware/authenticateJWT"
 
 // Import routes
 import authRoutes from './modules/auth/authRoutes';
 import userRoutes from './modules/user/userRoutes';
 import iconRoutes from './modules/icon/iconRoutes';
+import { chatWithAI } from './common/config/openai';
 
 const app = express();
 
@@ -32,6 +34,20 @@ app.use(express.static(path.join(__dirname, './common/view')));
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
+});
+
+app.post('/openai', authenticateJWT, async (req: Request, res: Response) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+    const response = await chatWithAI(prompt);
+    return res.json({ response });
+  } catch (error) {
+    console.error('Error communicating with OpenAI:', error);
+    return res.status(500).json({ error: 'Error communicating with OpenAI' });
+  }
 });
 
 // Use routes
