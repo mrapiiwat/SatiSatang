@@ -1,18 +1,17 @@
-import { Response } from 'express';
-import { AuthRequest } from '../../common/middleware/authenticateJWT';
+import { Response, Request } from 'express';
 import httpStatus from 'http-status';
 import prisma from '../../common/config/prismaClient';
 
-export const me = async (req: AuthRequest, res: Response) => {
+export const me = async (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
+    if (!req.user) {
       res.status(httpStatus.BAD_REQUEST).json({
         error: "Oops! We couldn't find your user info. Please log in again to continue.",
       });
       return;
     }
     const user = await prisma.user.findUnique({
-      where: { id: req.userId },
+      where: { id: Number(req.user) },
       include: { oauthAccounts: true },
     });
     if (!user) return res.status(404).json({ error: 'Not found' });

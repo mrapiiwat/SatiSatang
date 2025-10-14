@@ -1,0 +1,240 @@
+import { Request, Response } from 'express';
+import httpStatus from 'http-status';
+import { ZodError } from 'zod';
+import minioClient from '../../common/config/minioClient';
+import crypto from 'crypto';
+import * as transactionModels from "./transactionModels"
+import prisma from '../../common/config/prismaClient';
+
+const BUCKET = process.env.MINIO_BUCKET!;
+
+export const getTransactions = async (req: Request, res: Response) => {
+    try {
+        const search = req.query.search as string | undefined;
+
+        const where = search
+            ? {
+                userId: req.user,
+                OR: search.split(' ').map((word) => ({
+                    description: { contains: word, mode: 'insensitive' as const },
+                })),
+            }
+            : { userId: req.user };
+
+        const transactions = await prisma.transaction.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+        });
+
+        const formattedTransactions = transactions.map(t => ({
+            ...t,
+            receipt: t.receipt
+                ? `${process.env.APP_BASE_URL}/api/transaction/receipt/${t.id}`
+                : null,
+        }));
+
+        return res.status(httpStatus.OK).json({
+            message: 'Transactions fetched successfully',
+            data: formattedTransactions,
+        });
+
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(httpStatus.BAD_REQUEST).json({
+                message: 'Something went wrong!',
+                errors: error.message,
+            });
+        } else {
+            res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: 'Internal server error',
+            });
+        }
+    }
+};
+
+export const getTransaction = async (req: Request, res: Response) => {
+    try {
+        const transactionId = Number(req.params.id);
+
+        if (isNaN(transactionId)) {
+            return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid transaction id' });
+        }
+
+        const transaction = await prisma.transaction.findFirst({
+            where: { id: transactionId, userId: req.user },
+        });
+
+        if (!transaction) {
+            return res.status(httpStatus.NOT_FOUND).json({ message: 'Transaction not found' });
+        }
+
+        const formattedTransactions = {
+            ...transaction,
+            receipt: `${process.env.APP_BASE_URL}/api/transaction/receipt/${transaction.id}`
+        }
+
+        return res.status(httpStatus.OK).json({
+            message: 'Transaction fetched successfully',
+            data: formattedTransactions,
+        });
+    } catch (error) {
+        if (error instanceof Error) {
+            return res.status(httpStatus.BAD_REQUEST).json({
+                message: 'Something went wrong!',
+                errors: error.message,
+            });
+        }
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+    }
+};
+
+export const getReceipt = async (req: Request, res: Response) => {
+    try {
+        const transactionId = Number(req.params.id);
+        if (isNaN(transactionId)) {
+            return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid transaction id' });
+        }
+
+        const transaction = await prisma.transaction.findUnique({
+            where: { id: transactionId },
+        });
+
+        if (!transaction || !transaction.receipt) {
+            return res.status(httpStatus.NOT_FOUND).json({ message: 'Receipt not found' });
+        }
+
+        const stream = await minioClient.getObject(BUCKET, transaction.receipt);
+
+        res.setHeader('Content-Disposition', `inline; filename="${transaction.receipt}"`);
+
+        stream.pipe(res);
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(httpStatus.BAD_REQUEST).json({
+                message: 'Something went wrong!',
+                errors: error.message,
+            });
+        } else {
+            res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: 'Internal server error',
+            });
+        }
+    }
+};
+
+export const createTransaction = async (req: Request, res: Response) => {
+    try {
+        const validatedData = transactionModels.transactionSchema.parse(req.body);
+        const file = req.file;
+        let filename: string | null = null
+
+        if (file) {
+            const ext = file.originalname.split('.').pop();
+            filename = `${crypto.randomUUID()}.${ext}`;
+
+            await minioClient.putObject(BUCKET, filename, file.buffer, file.size, {
+                'Content-Type': file.mimetype,
+            });
+        }
+
+        const transaction = await prisma.transaction.create({
+            data: {
+                ...validatedData,
+                receipt: filename,
+                userId: Number(req.user),
+            }
+        })
+
+        return res.status(httpStatus.CREATED).json({
+            message: 'Transaction created successfully',
+            data: transaction,
+        });
+
+    } catch (error) {
+        if (error instanceof ZodError) {
+            res.status(httpStatus.BAD_REQUEST).json({
+                message: 'Validation error',
+                errors: error,
+            });
+        } else if (error instanceof Error) {
+            res.status(httpStatus.BAD_REQUEST).json({
+                message: 'Something went wrong!',
+                errors: error.message,
+            });
+        } else {
+            res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: 'Internal server error',
+            });
+        }
+    }
+};
+
+export const updateTransaction = async (req: Request, res: Response) => {
+    try {
+        const transactionId = Number(req.params.id);
+        if (isNaN(transactionId)) {
+            return res.status(httpStatus.BAD_REQUEST).json({
+                message: 'Invalid transaction id',
+            });
+        }
+
+        const validatedData = transactionModels.transactionSchema.partial().parse({ ...req.body });
+
+        const file = req.file;
+        let filename: string | null = null;
+
+        const existingTransaction = await prisma.transaction.findUnique({
+            where: { id: transactionId },
+        });
+
+        if (!existingTransaction) {
+            return res.status(httpStatus.NOT_FOUND).json({
+                message: 'Transaction not found',
+            });
+        }
+
+        if (file) {
+            if (existingTransaction.receipt) {
+                await minioClient.removeObject(BUCKET, existingTransaction.receipt);
+            }
+
+            const ext = file.originalname.split('.').pop();
+            filename = `${crypto.randomUUID()}.${ext}`;
+            await minioClient.putObject(BUCKET, filename, file.buffer, file.size, {
+                'Content-Type': file.mimetype,
+            });
+        }
+
+        const transaction = await prisma.transaction.update({
+            where: { id: transactionId },
+            data: {
+                ...validatedData,
+                receipt: filename || existingTransaction.receipt,
+                userId: Number(req.user),
+            },
+        });
+
+        return res.status(httpStatus.OK).json({
+            message: 'Transaction updated successfully',
+            data: transaction,
+        });
+
+    } catch (error) {
+        if (error instanceof ZodError) {
+            res.status(httpStatus.BAD_REQUEST).json({
+                message: 'Validation error',
+                errors: error,
+            });
+        } else if (error instanceof Error) {
+            res.status(httpStatus.BAD_REQUEST).json({
+                message: 'Something went wrong!',
+                errors: error.message,
+            });
+        } else {
+            res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: 'Internal server error',
+            });
+        }
+    }
+};
+

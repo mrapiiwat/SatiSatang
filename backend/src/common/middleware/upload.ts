@@ -1,5 +1,5 @@
 import multer, { FileFilterCallback } from 'multer';
-import { Request, Express } from 'express';
+import { Request } from 'express';
 
 // ไฟล์ที่อนุญาต
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];

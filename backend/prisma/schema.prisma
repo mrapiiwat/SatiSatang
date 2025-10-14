@@ -24,6 +24,7 @@ model User {
   oauthAccounts      OAuthAccount[]
   refreshTokens      RefreshToken[]
   transactions       Transaction[]
+  Icon               Icon[]
 }
 
 model OAuthAccount {
@@ -82,10 +83,10 @@ model Category {
   type         TransactionType
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
-  userId       Int
+  userId       Int?
   iconId       Int
   icon         Icon            @relation(fields: [iconId], references: [id], onDelete: Cascade)
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
 }
 
@@ -93,8 +94,10 @@ model Icon {
   id          Int        @id @default(autoincrement())
   url         String
   description String?
+  userId      Int?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   categories  Category[]
 }
 

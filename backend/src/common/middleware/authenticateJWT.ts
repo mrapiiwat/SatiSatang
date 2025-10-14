@@ -2,11 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import httpStatus from 'http-status';
 import { verifyAccessToken } from '../utils/jwt';
 
-export interface AuthRequest extends Request {
-  userId?: number;
-}
-
-export function authenticateJWT(req: AuthRequest, res: Response, next: NextFunction) {
+export function authenticateJWT(req: Request, res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
     let token;
@@ -19,7 +15,7 @@ export function authenticateJWT(req: AuthRequest, res: Response, next: NextFunct
       return res.status(httpStatus.UNAUTHORIZED).json({ message: 'No token' });
     }
     const decoded = verifyAccessToken(token!);
-    req.userId = decoded.userId;
+    req.user = decoded.userId;
     next();
   } catch (error) {
     if (error instanceof Error) {

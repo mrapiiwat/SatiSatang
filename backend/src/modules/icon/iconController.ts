@@ -30,6 +30,7 @@ export const createIcon = async (req: Request, res: Response) => {
       data: {
         url: filename,
         description: validatedData.description || null,
+        userId: Number(validatedData.userId) || null,
       },
     });
 
@@ -69,9 +70,12 @@ export const getIcons = async (req: Request, res: Response) => {
               contains: word,
               mode: 'insensitive' as const,
             },
+            OR: [{ userId: null }, { userId: req.user }],
           })),
         }
-      : undefined;
+      : {
+          OR: [{ userId: null }, { userId: req.user }],
+        };
 
     const data = await prisma.icon.findMany({
       where,
