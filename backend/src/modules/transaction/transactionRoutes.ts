@@ -8,7 +8,17 @@ const router = Router();
 router.get('/transaction', authenticateJWT, transactionController.getTransactions);
 router.get('/transaction/:id', authenticateJWT, transactionController.getTransaction);
 router.get('/transaction/receipt/:id', authenticateJWT, transactionController.getReceipt);
-router.post('/transaction', authenticateJWT, upload.single("receipt"), transactionController.createTransaction);
-router.put('/transaction/:id', authenticateJWT, upload.single("receipt"), transactionController.updateTransaction);
+router.post(
+  '/transaction',
+  authenticateJWT,
+  upload.single('receipt'),
+  transactionController.createTransaction,
+);
+router.put(
+  '/transaction/:id',
+  authenticateJWT,
+  upload.single('receipt'),
+  transactionController.updateTransaction,
+);
 
 export default router;
