@@ -5,7 +5,6 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import prisma from './prismaClient';
 
-
 passport.use(
   new LocalStrategy(
     {
@@ -29,8 +28,8 @@ passport.use(
       } catch (err) {
         return done(err);
       }
-    }
-  )
+    },
+  ),
 );
 
 passport.use(

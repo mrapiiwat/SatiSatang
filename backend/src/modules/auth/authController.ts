@@ -13,6 +13,7 @@ import { sendVerificationEmail, generateOTP } from '../../common/utils/mail';
 import * as authModels from './authModels';
 import prisma from '../../common/config/prismaClient';
 import passport from 'passport';
+import { User } from '@prisma/client';
 
 export const checkEmail = async (req: Request, res: Response) => {
   try {
@@ -119,7 +120,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
     passport.authenticate(
       'local',
-      async (err: Error | null, user: any, info: { message?: string } | undefined) => {
+      async (err: Error | null, user: User, info: { message?: string } | undefined) => {
         if (err) return next(err);
         if (!user)
           return res
@@ -137,8 +138,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         });
 
         res.status(httpStatus.OK).json({ message: 'Login successful', accessToken: accessToken });
-      })(req, res, next)
-      
+      },
+    )(req, res, next);
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(httpStatus.BAD_REQUEST).json({

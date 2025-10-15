@@ -28,5 +28,4 @@ export async function checkBucket() {
   }
 }
 
-
 export default minioClient;
