@@ -2,6 +2,15 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      keyframes: {
+        'bounce-smooth': {
+          '0%, 80%, 100%': { transform: 'translateY(0)' },
+          '40%': { transform: 'translateY(-6px)' },
+        },
+      },
+      animation: {
+        'bounce-smooth': 'bounce-smooth 1s infinite ease-in-out',
+      },
       fontFamily: {
         sans: ['IBM Plex Sans Thai', 'sans-serif'],
       },
@@ -57,5 +66,17 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-none': {
+          'scrollbar-width': 'none',
+          '-ms-overflow-style': 'none',
+        },
+        '.scrollbar-none::-webkit-scrollbar': {
+          display: 'none',
+        },
+      });
+    },
+  ],
 };

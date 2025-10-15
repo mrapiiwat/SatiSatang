@@ -1,40 +1,31 @@
 import React, { useState } from 'react';
 import SatangTextMode from '../../components/user/SatangTextMode';
 import SatangVoiceMode from '../../components/user/SatangVoiceMode';
+import type { ChatMessage } from '../../types/satang';
 
 const Satang: React.FC = () => {
-  const [isMicOn, setIsMicOn] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(true);
   const [text, setText] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isMicOn, setIsMicOn] = useState(true);
 
-  const playBeep = (frequency: number, duration = 0.2) => {
-    const ctx = new window.AudioContext();
-    const oscillator = ctx.createOscillator();
-    const gain = ctx.createGain();
+  const toggleVoiceMode = () => setIsVoiceMode(prev => !prev);
+  const toggleMic = () => setIsMicOn(prev => !prev);
 
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+  const sendMessage = (msgText: string) => {
+    if (!msgText.trim()) return;
 
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.01);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+    const userMessage: ChatMessage = { id: Date.now(), role: 'user', content: msgText, createdAt: new Date().toISOString() };
+    setMessages(prev => [...prev, userMessage]);
+    setText('');
+    setIsTyping(true);
 
-    oscillator.connect(gain);
-    gain.connect(ctx.destination);
-    oscillator.start();
-    oscillator.stop(ctx.currentTime + duration + 0.05);
-  };
-
-  const toggleVoiceMode = () => {
-    setIsVoiceMode((prev) => !prev);
-  };
-
-  const toggleMic = () => {
-    setIsMicOn((prev) => {
-      if (prev) playBeep(400);
-      else playBeep(900);
-      return !prev;
-    });
+    setTimeout(() => {
+      const botMessage: ChatMessage = { id: Date.now() + 1, role: 'bot', content: `AI ตอบ: ${msgText}`, createdAt: new Date().toISOString() };
+      setMessages(prev => [...prev, botMessage]);
+      setIsTyping(false);
+    }, 1200);
   };
 
   return (
@@ -46,7 +37,14 @@ const Satang: React.FC = () => {
           toggleVoiceMode={toggleVoiceMode}
         />
       ) : (
-        <SatangTextMode toggleVoiceMode={toggleVoiceMode} text={text} setText={setText} />
+        <SatangTextMode
+          toggleVoiceMode={toggleVoiceMode}
+          text={text}
+          setText={setText}
+          sendMessage={sendMessage}
+          messages={messages}
+          isTyping={isTyping}
+        />
       )}
     </div>
   );

@@ -1,12 +1,7 @@
 import React from 'react';
 import { PiMicrophoneLight, PiMicrophoneSlash } from 'react-icons/pi';
 import { RxCross2 } from 'react-icons/rx';
-
-interface SatangVoiceModeProps {
-  toggleMic: () => void;
-  toggleVoiceMode: () => void;
-  isMicOn: boolean;
-}
+import type { SatangVoiceModeProps } from "../../types/satang"
 
 const SatangVoiceMode: React.FC<SatangVoiceModeProps> = ({
   toggleMic,
