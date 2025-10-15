@@ -1,5 +1,5 @@
-import prisma from "../config/prismaClient";
+import prisma from '../config/prismaClient';
 
 export const stock = async () => {
-    return await prisma.stock.findMany()
-}
+  return await prisma.stock.findMany();
+};

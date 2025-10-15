@@ -1,5 +1,8 @@
 import { OpenAI } from 'openai';
 import dotenv from 'dotenv';
+import { stock } from '../utils/stock';
+import util from 'util';
+
 
 dotenv.config();
 
@@ -12,31 +15,32 @@ interface ChatMessage {
   content: string;
 }
 
-
 export async function Satang(messages: ChatMessage[]) {
   try {
+    const data = await stock()
+    const readableData = util.inspect(data, { depth: null, maxArrayLength: null });
+
     const response = await openai.chat.completions.create({
       model: 'gpt-5-mini',
       messages: [
         {
           role: 'system',
-          content: `You are a professional Thai stock market analyst AI. 
-Your task is to analyze the given market data and provide clear, data-driven insights.
+          content: `
+You are a professional Thai stock market analyst AI. 
+Analyze the following market data and provide concise, actionable insights.
 
-When analyzing, follow this structure:
+Structure:
+1) Market Overview — 1–2 sentences summary of general trend.
+2) Key Stocks — highlight 5–8 notable stocks with symbol, %change, and main signal (buy/sell/anomaly).
+3) Trends — short-term and medium-term patterns in price/volume.
+4) Insights — key signals or anomalies.
+5) Recommendations — 2–3 actionable notes (informational only).
 
-1. Market Overview — summarize the overall market condition and general trend.
-2. Key Stocks — highlight 5–10 notable stocks based on price change, percent change, or unusual volume.
-3. Trends & Patterns — describe short-term and medium-term price or volume patterns.
-4. Insights — identify potential signals, anomalies, or noteworthy movements.
-5. Recommendations — give possible actions or interpretations (informational only, not financial advice).
-
-Be concise, structured, and focus on actionable market insights.
-`,
+Be concise. Do not include unnecessary details.`,
         },
         ...messages.map((msg: ChatMessage) => ({
           role: msg.role as 'user' | 'assistant',
-          content: msg.content,
+          content: `Analyze the following Thai stock market data: ${readableData} ${msg.content}`,
         })),
       ],
     });

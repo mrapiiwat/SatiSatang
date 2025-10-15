@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SatangTextMode from '../../components/user/SatangTextMode';
 import SatangVoiceMode from '../../components/user/SatangVoiceMode';
 import type { ChatMessage } from '../../types/satang';
+import axios from "../../api/axios"
 
 const Satang: React.FC = () => {
   const [isVoiceMode, setIsVoiceMode] = useState(true);
@@ -13,19 +14,60 @@ const Satang: React.FC = () => {
   const toggleVoiceMode = () => setIsVoiceMode(prev => !prev);
   const toggleMic = () => setIsMicOn(prev => !prev);
 
-  const sendMessage = (msgText: string) => {
+  // ดึง session ล่าสุดตอน mount
+  useEffect(() => {
+    const fetchLatestSession = async () => {
+      try {
+        const res = await axios.get("/satang/session"); // backend route
+        if (res.data?.data?.messages) {
+          setMessages(res.data.data.messages.map((m: any) => ({
+            id: m.id,
+            role: m.role === 'assistant' ? 'bot' : 'user',
+            content: m.content,
+            createdAt: m.createdAt,
+          })));
+        }
+      } catch (error) {
+        console.log("Failed to fetch latest session:", error);
+      }
+    };
+    fetchLatestSession();
+  }, []);
+
+  const sendMessage = async (msgText: string) => {
     if (!msgText.trim()) return;
 
-    const userMessage: ChatMessage = { id: Date.now(), role: 'user', content: msgText, createdAt: new Date().toISOString() };
+    const userMessage: ChatMessage = { 
+      id: Date.now(), 
+      role: 'user', 
+      content: msgText, 
+      createdAt: new Date().toISOString() 
+    };
     setMessages(prev => [...prev, userMessage]);
     setText('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const botMessage: ChatMessage = { id: Date.now() + 1, role: 'bot', content: `AI ตอบ: ${msgText}`, createdAt: new Date().toISOString() };
+    try {
+      const res = await axios.post("/satang", { content: msgText });
+      const botMessage: ChatMessage = {
+        id: Date.now() + 1,
+        role: 'bot',
+        content: res.data.message,
+        createdAt: new Date().toISOString(),
+      };
       setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.log("Error sending message:", error);
+      const botMessage: ChatMessage = {
+        id: Date.now() + 1,
+        role: 'bot',
+        content: "เกิดข้อผิดพลาดในการตอบ AI",
+        createdAt: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, botMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   return (
