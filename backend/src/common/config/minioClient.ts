@@ -13,12 +13,20 @@ const minioClient = new Client({
 export async function checkBucket() {
   try {
     const bucketName = process.env.MINIO_BUCKET!;
-    await minioClient.bucketExists(bucketName);
-    console.log('MinIO connected!');
+    const exists = await minioClient.bucketExists(bucketName);
+
+    if (!exists) {
+      console.log(`Bucket "${bucketName}" does not exist. Creating...`);
+      await minioClient.makeBucket(bucketName, '');
+      console.log(`Bucket "${bucketName}" created successfully.`);
+    } else {
+      console.log(`MinIO connected and bucket "${bucketName}" exists.`);
+    }
   } catch (err) {
     console.error('Cannot connect to MinIO:', err);
     process.exit(1);
   }
 }
+
 
 export default minioClient;

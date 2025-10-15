@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import { generateAccessToken } from '../../common/utils/jwt';
 import {
@@ -110,28 +110,35 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validatedData = authModels.LoginSchema.parse(req.body);
-    const user = await prisma.user.findUnique({ where: { email: validatedData.email } });
 
-    if (!user || !user.password)
-      return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Invalid credentials' });
+    req.body.email = validatedData.email;
+    req.body.password = validatedData.password;
 
-    const ok = await bcrypt.compare(validatedData.password, user?.password);
-    if (!ok)
-      return res.status(httpStatus.UNAUTHORIZED).json({ error: 'email or password is incorrect' });
-    const accessToken = generateAccessToken(user.id);
-    const refreshRaw = await createRefreshToken(user.id);
+    passport.authenticate(
+      'local',
+      async (err: Error | null, user: any, info: { message?: string } | undefined) => {
+        if (err) return next(err);
+        if (!user)
+          return res
+            .status(httpStatus.UNAUTHORIZED)
+            .json({ error: info?.message || 'Invalid credentials' });
 
-    res.cookie('refreshToken', refreshRaw, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
-    });
+        const accessToken = generateAccessToken(user.id);
+        const refreshRaw = await createRefreshToken(user.id);
 
-    res.status(httpStatus.OK).json({ message: 'Login successful', accessToken: accessToken });
+        res.cookie('refreshToken', refreshRaw, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
+        });
+
+        res.status(httpStatus.OK).json({ message: 'Login successful', accessToken: accessToken });
+      })(req, res, next)
+      
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(httpStatus.BAD_REQUEST).json({

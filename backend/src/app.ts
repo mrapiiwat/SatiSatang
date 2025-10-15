@@ -11,6 +11,7 @@ import authRoutes from './modules/auth/authRoutes';
 import userRoutes from './modules/user/userRoutes';
 import iconRoutes from './modules/icon/iconRoutes';
 import transactionRoutes from './modules/transaction/transactionRoutes';
+import categoriesRoutes from './modules/categories/categoriesRoutes';
 
 const app = express();
 
@@ -40,5 +41,6 @@ app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', iconRoutes);
 app.use('/api', transactionRoutes);
+app.use('/api', categoriesRoutes);
 
 export default app;

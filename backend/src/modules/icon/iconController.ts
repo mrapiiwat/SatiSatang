@@ -169,7 +169,7 @@ export const updateIcon = async (req: Request, res: Response) => {
       try {
         await minioClient.removeObject(BUCKET, icon.url);
       } catch (err) {
-        console.warn('⚠️ Failed to remove old file:', err);
+        console.warn('Failed to remove old file:', err);
       }
 
       newStoragePath = filename;
