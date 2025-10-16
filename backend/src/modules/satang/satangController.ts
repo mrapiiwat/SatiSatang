@@ -40,44 +40,6 @@ export const createSatangSession = async (req: Request, res: Response) => {
   }
 };
 
-export const getLatestSatangSession = async (req: Request, res: Response) => {
-  try {
-    const userId = Number(req.user);
-
-    const latestSession = await prisma.chatSession.findFirst({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'asc' },
-        },
-      },
-    });
-
-    if (!latestSession) {
-      return res.status(httpStatus.NOT_FOUND).json({
-        message: 'No Satang sessions found for this user',
-      });
-    }
-
-    res.status(httpStatus.OK).json({
-      message: 'Latest Satang session fetched successfully',
-      data: latestSession,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
-        message: 'Something went wrong!',
-        errors: error.message,
-      });
-    } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Internal server error',
-      });
-    }
-  }
-};
-
 export const SatangChat = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.user);
@@ -140,5 +102,61 @@ export const SatangChat = async (req: Request, res: Response) => {
         message: 'Internal server error',
       });
     }
+  }
+};
+
+export const getOrCreateLatestSatangSession = async (req: Request, res: Response) => {
+  try {
+    const userId = Number(req.user);
+
+    const latestSession = await prisma.chatSession.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: { messages: { orderBy: { createdAt: 'asc' } } },
+    });
+
+    const now = new Date();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+
+    if (!latestSession) {
+      const session = await prisma.chatSession.create({
+        data: {
+          title: `Satang ${now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`,
+          userId,
+        },
+      });
+
+      return res.status(httpStatus.CREATED).json({
+        message: 'New Satang session created (no previous session found)',
+        data: { ...session, messages: [] },
+      });
+    }
+
+    const createdAt = new Date(latestSession.createdAt);
+    const diff = now.getTime() - createdAt.getTime();
+
+    if (diff >= oneDayMs) {
+      const newSession = await prisma.chatSession.create({
+        data: {
+          title: `Satang ${now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`,
+          userId,
+        },
+      });
+
+      return res.status(httpStatus.CREATED).json({
+        message: 'New Satang session created (older than 1 day)',
+        data: { ...newSession, messages: [] },
+      });
+    }
+
+    return res.status(httpStatus.OK).json({
+      message: 'Latest Satang session fetched successfully',
+      data: latestSession,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Internal server error',
+    });
   }
 };

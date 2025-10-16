@@ -14,11 +14,10 @@ const Satang: React.FC = () => {
   const toggleVoiceMode = () => setIsVoiceMode(prev => !prev);
   const toggleMic = () => setIsMicOn(prev => !prev);
 
-  // ดึง session ล่าสุดตอน mount
   useEffect(() => {
-    const fetchLatestSession = async () => {
+    const fetchOrCreateSession = async () => {
       try {
-        const res = await axios.get("/satang/session"); // backend route
+        const res = await axios.get("/satang/session");
         if (res.data?.data?.messages) {
           setMessages(res.data.data.messages.map((m: any) => ({
             id: m.id,
@@ -28,20 +27,22 @@ const Satang: React.FC = () => {
           })));
         }
       } catch (error) {
-        console.log("Failed to fetch latest session:", error);
+        console.log("Failed to fetch or create session:", error);
       }
     };
-    fetchLatestSession();
+
+    fetchOrCreateSession();
   }, []);
+
 
   const sendMessage = async (msgText: string) => {
     if (!msgText.trim()) return;
 
-    const userMessage: ChatMessage = { 
-      id: Date.now(), 
-      role: 'user', 
-      content: msgText, 
-      createdAt: new Date().toISOString() 
+    const userMessage: ChatMessage = {
+      id: Date.now(),
+      role: 'user',
+      content: msgText,
+      createdAt: new Date().toISOString()
     };
     setMessages(prev => [...prev, userMessage]);
     setText('');
