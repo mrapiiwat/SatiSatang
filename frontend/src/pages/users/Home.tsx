@@ -4,6 +4,10 @@ import FloatingBubble from '../../components/user/FloatingBubble';
 import MonthHeader from '../../components/user/MonthHeader';
 import { PiChartPieSliceLight } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
+import Modal from '../../components/Modal';
+import { GoArrowUp } from 'react-icons/go';
+import { FaPlus } from 'react-icons/fa6';
+import { RxCross2 } from 'react-icons/rx';
 
 interface Transaction {
   id: number;
@@ -59,12 +63,15 @@ const Home = () => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleGoToSummary = () => {
     navigate('/user/summary');
   };
 
-  const handleBubbleClick = () => alert('เปิดแชท!');
+  const handleBubbleClick = () => setIsChatOpen(true);
+  const handleCloseChatModal = () => setIsChatOpen(false);
 
   const filtered = mockTransactions.filter((t) => {
     const d = new Date(t.createdAt);
@@ -97,6 +104,7 @@ const Home = () => {
             setSelectedYear(year);
           }}
         />
+
         <div className="text-center mb-6">
           <p className="text-sm mb-4">ยอดใช้จ่าย</p>
           <h1 className="text-[96px] mb-2 font-semibold leading-none">
@@ -110,6 +118,7 @@ const Home = () => {
             ดูสรุป
           </button>
         </div>
+
         <div className="flex flex-row overflow-y-auto max-h-[460px] md:flex md:justify-center">
           <div className="w-1/6 md:w-[7%] bg-white">
             {sortedDates.map((date) => {
@@ -132,15 +141,15 @@ const Home = () => {
                   style={{ height: `${totalHeight}px` }}
                 >
                   <div
-                    className={`border-l-4  ${isToday ? 'border-blue-600' : 'border-black-700'} absolute top-2 left-0 h-14`}
-                  ></div>
+                    className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'} absolute top-2 left-0 h-14`}
+                  />
                   <p
                     className={`text-base font-medium ${isToday ? 'text-blue-600' : 'text-black-700'}`}
                   >
                     {dayLabel}
                   </p>
                   <p
-                    className={`text-base font-bold  ${isToday ? 'text-blue-600' : 'text-black-700'} leading-tight`}
+                    className={`text-base font-bold ${isToday ? 'text-blue-600' : 'text-black-700'} leading-tight`}
                   >
                     {dayNumber}
                   </p>
@@ -148,6 +157,7 @@ const Home = () => {
               );
             })}
           </div>
+
           <div className="w-5/6 md:w-[70%]">
             {sortedDates.map((date) => {
               const dayTransactions = groupedByDate[date];
@@ -209,7 +219,71 @@ const Home = () => {
           <div className="md:w-[5%]"></div>
         </div>
       </div>
+
       <FloatingBubble onClick={handleBubbleClick} />
+
+      <Modal isOpen={isChatOpen} onClose={handleCloseChatModal}>
+        <div className="min-h-[calc(100vh-80px)] min-w-full flex flex-col justify-evenly items-center px-6 mt-10">
+          <div className="border-[1px] bg-white border-black-600 rounded-xl flex-1 w-full overflow-y-auto p-2 max-h-[75vh] scrollbar-none">
+            <div className="flex justify-end m-3">
+              <div
+                className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400"
+                onClick={handleCloseChatModal}
+              >
+                <RxCross2 size={25} />
+              </div>
+            </div>
+            <div onClick={() => setIsMenuOpen(false)}>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. A ducimus atque ipsum
+              necessitatibus velit culpa error eos, sit ratione est minima accusamus voluptas
+              dolores nulla architecto porro dignissimos expedita quas iure impedit cumque molestias
+              nobis aperiam! Ipsum veniam natus facere omnis, sequi eveniet aut ea recusandae
+              laudantium doloribus! Unde doloremque vel saepe perspiciatis recusandae sapiente,
+              expedita non dicta molestias dolor eveniet eos nisi accusantium! Sapiente dolorum, ex
+              ratione placeat temporibus eveniet eius recusandae, debitis nobis assumenda quam
+              obcaecati labore quasi similique aut cum maiores magni, in eligendi nostrum odit
+              impedit officiis? Perferendis fugit, laborum harum veniam debitis molestiae dicta
+              accusantium?
+            </div>
+          </div>
+          <div className="flex flex-row justify-between gap-3 w-full ">
+            <div
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="flex justify-center items-center min-w-16 min-h-16 bg-blue-600 rounded-full relative cursor-pointer hover:bg-blue-700"
+            >
+              <FaPlus size={25} color="white" />
+              {isMenuOpen ? (
+                <div className="absolute bg-blue-100 w-52 h-52 left-0 bottom-20 rounded-3xl shadow-xl shadow-black-800">
+                  <ul className="h-full flex flex-col justify-evenly">
+                    <li className="font-semibold text-black-900 h-full flex items-center px-5 cursor-pointer rounded-t-3xl hover:bg-blue-50">
+                      อัปโหลดสลิป
+                    </li>
+                    <li className="font-semibold text-black-900 h-full flex items-center px-5 cursor-pointer hover:bg-blue-50">
+                      บันทึกรายรับรายจ่ายเอง
+                    </li>
+                    <li className="font-semibold text-black-900 h-full flex items-center px-5 cursor-pointer hover:bg-blue-50">
+                      ตั้งงบ
+                    </li>
+                    <li className="font-semibold text-black-900 h-full flex items-center px-5 cursor-pointer rounded-b-3xl hover:bg-blue-50">
+                      ตั้งเป้าหมาย
+                    </li>
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+
+            <form className="w-full relative">
+              <input
+                className="flex justify-center items-center h-16 text-xl pl-4 px-3 w-full rounded-full border-2 border-black-900 pr-16"
+                placeholder="ให้น้องสติช่วยจดนะ"
+              />
+              <button className="absolute translate-y-[-50%] right-2 top-1/2 bg-black-900 w-12 h-12 rounded-full flex justify-center items-center hover:bg-black-800">
+                <GoArrowUp size={24} color="white" />
+              </button>
+            </form>
+          </div>
+        </div>
+      </Modal>
     </PageWrapper>
   );
 };

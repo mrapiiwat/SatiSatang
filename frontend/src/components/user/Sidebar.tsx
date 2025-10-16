@@ -12,8 +12,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black-900 bg-opacity-80 transition-opacity duration-300 z-40 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-          }`}
+        className={`fixed inset-0 bg-black-900 bg-opacity-80 transition-opacity duration-300 z-40 ${
+          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`}
         onClick={onClose}
       ></div>
 

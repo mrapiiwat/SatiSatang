@@ -28,7 +28,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
   return (
     <div className="min-h-[calc(100vh-80px)] flex flex-col justify-between px-6 py-6">
       <div className="border-[1px] border-black-600 rounded-xl flex-1 w-full mb-5 overflow-y-auto p-2 max-h-[75vh] scrollbar-none">
-        {messages.map(msg => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`p-2 my-1 rounded-xl w-fit max-w-[70%] break-words whitespace-normal ${

@@ -1,7 +1,7 @@
 import { OpenAI } from 'openai';
 import dotenv from 'dotenv';
 import { stock } from '../utils/stock';
-import { satangSystem, formatDataReadable } from '../utils/prompt';
+import { satangSystem } from '../utils/prompt';
 
 dotenv.config();
 

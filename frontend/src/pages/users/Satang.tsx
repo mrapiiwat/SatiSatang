@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SatangTextMode from '../../components/user/SatangTextMode';
 import SatangVoiceMode from '../../components/user/SatangVoiceMode';
 import type { ChatMessage } from '../../types/satang';
-import axios from "../../api/axios"
+import axios from '../../api/axios';
 
 const Satang: React.FC = () => {
   const [isVoiceMode, setIsVoiceMode] = useState(true);
@@ -11,29 +11,30 @@ const Satang: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
 
-  const toggleVoiceMode = () => setIsVoiceMode(prev => !prev);
-  const toggleMic = () => setIsMicOn(prev => !prev);
+  const toggleVoiceMode = () => setIsVoiceMode((prev) => !prev);
+  const toggleMic = () => setIsMicOn((prev) => !prev);
 
   useEffect(() => {
     const fetchOrCreateSession = async () => {
       try {
-        const res = await axios.get("/satang/session");
+        const res = await axios.get('/satang/session');
         if (res.data?.data?.messages) {
-          setMessages(res.data.data.messages.map((m: any) => ({
-            id: m.id,
-            role: m.role === 'assistant' ? 'bot' : 'user',
-            content: m.content,
-            createdAt: m.createdAt,
-          })));
+          setMessages(
+            res.data.data.messages.map((m: ChatMessage) => ({
+              id: m.id,
+              role: m.role === 'assistant' ? 'bot' : 'user',
+              content: m.content,
+              createdAt: m.createdAt,
+            })),
+          );
         }
       } catch (error) {
-        console.log("Failed to fetch or create session:", error);
+        console.log('Failed to fetch or create session:', error);
       }
     };
 
     fetchOrCreateSession();
   }, []);
-
 
   const sendMessage = async (msgText: string) => {
     if (!msgText.trim()) return;
@@ -42,30 +43,30 @@ const Satang: React.FC = () => {
       id: Date.now(),
       role: 'user',
       content: msgText,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setText('');
     setIsTyping(true);
 
     try {
-      const res = await axios.post("/satang", { content: msgText });
+      const res = await axios.post('/satang', { content: msgText });
       const botMessage: ChatMessage = {
         id: Date.now() + 1,
-        role: 'bot',
+        role: 'assistant',
         content: res.data.message,
         createdAt: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, botMessage]);
+      setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      console.log("Error sending message:", error);
+      console.log('Error sending message:', error);
       const botMessage: ChatMessage = {
         id: Date.now() + 1,
-        role: 'bot',
-        content: "เกิดข้อผิดพลาดในการตอบ AI",
+        role: 'assistant',
+        content: 'เกิดข้อผิดพลาดในการตอบ AI',
         createdAt: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, botMessage]);
+      setMessages((prev) => [...prev, botMessage]);
     } finally {
       setIsTyping(false);
     }
