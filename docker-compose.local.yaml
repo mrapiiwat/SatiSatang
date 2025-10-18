@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: ./frontend
+    env_file:
+      - ./frontend/.env.local
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - ${FRONTEND_PORT}:5173
+    depends_on:
+      - backend
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env.local
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - ${BACKEND_PORT}:8080
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:16
+    container_name: satisatang-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - satisatang_postgres_data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    container_name: satisatang-minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - satisatang_minio_data:/data
+    depends_on:
+      - postgres
+
+volumes:
+  satisatang_postgres_data:
+  satisatang_minio_data:

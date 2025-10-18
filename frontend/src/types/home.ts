@@ -2,12 +2,15 @@ export interface ManualProps {
   onClose: () => void;
   onSuccess: () => void;
 }
+
 export interface UploadProps {
   onClose: () => void;
 }
+
 export interface BudgetProps {
   onClose: () => void;
 }
+
 export interface GoalProps {
   onClose: () => void;
 }
