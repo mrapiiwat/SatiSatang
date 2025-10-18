@@ -15,6 +15,7 @@ export interface SatangTextModeProps {
   messages: ChatMessage[];
   isTyping: boolean;
 }
+
 export interface SatangVoiceModeProps {
   toggleMic: () => void;
   toggleVoiceMode: () => void;
