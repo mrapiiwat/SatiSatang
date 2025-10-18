@@ -1,6 +1,5 @@
 import { OpenAI } from 'openai';
 import dotenv from 'dotenv';
-import { stock } from '../utils/stock';
 import { satangSystem } from '../utils/prompt';
 
 dotenv.config();
@@ -16,9 +15,6 @@ interface ChatMessage {
 
 export async function Satang(messages: ChatMessage[]) {
   try {
-    const data = await stock();
-    // const readableData = formatDataReadable(data)
-
     const response = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [

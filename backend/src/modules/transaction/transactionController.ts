@@ -11,15 +11,26 @@ const BUCKET = process.env.MINIO_BUCKET!;
 export const getTransactions = async (req: Request, res: Response) => {
   try {
     const search = req.query.search as string | undefined;
+    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
 
-    const where = search
-      ? {
-          userId: req.user,
-          OR: search.split(' ').map((word) => ({
-            description: { contains: word, mode: 'insensitive' as const },
-          })),
-        }
-      : { userId: req.user };
+    let where: transactionModels.WhereClause = { userId: Number(req.user) };
+
+    if (search) {
+      where.OR = search.split(' ').map((word) => ({
+        description: { contains: word, mode: 'insensitive' as const },
+      }));
+    }
+
+    if (month && year) {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+      where.createdAt = {
+        gte: startDate,
+        lte: endDate,
+      };
+    }
 
     const transactions = await prisma.transaction.findMany({
       where,

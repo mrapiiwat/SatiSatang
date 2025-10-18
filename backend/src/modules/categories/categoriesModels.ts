@@ -5,3 +5,8 @@ export const categorySchema = z.object({
   type: z.enum(['INCOME', 'EXPENSE']),
   iconId: z.number(),
 });
+
+export enum TransactionType {
+  INCOME = 'INCOME',
+  EXPENSE = 'EXPENSE',
+}

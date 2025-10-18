@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import { ZodError } from 'zod';
 import * as categoriesModels from './categoriesModels';
 import prisma from '../../common/config/prismaClient';
+import { TransactionType } from '@prisma/client';
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
@@ -43,15 +44,28 @@ export const createCategory = async (req: Request, res: Response) => {
 export const getCategories = async (req: Request, res: Response) => {
   try {
     const search = req.query.search as string | undefined;
+    const typeParam = req.query.type as string | undefined;
 
-    const where = search
-      ? {
-          userId: req.user,
-          OR: search.split(' ').map((word) => ({
-            name: { contains: word, mode: 'insensitive' as const },
-          })),
-        }
-      : { userId: req.user };
+    const type =
+      typeParam === 'INCOME'
+        ? TransactionType.INCOME
+        : typeParam === 'EXPENSE'
+          ? TransactionType.EXPENSE
+          : undefined;
+
+    const where = {
+      OR: [{ userId: req.user }, { userId: null }],
+      ...(type && { type: { equals: type } }),
+      ...(search && {
+        AND: [
+          {
+            OR: search.split(' ').map((word) => ({
+              name: { contains: word, mode: 'insensitive' as const },
+            })),
+          },
+        ],
+      }),
+    };
 
     const category = await prisma.category.findMany({
       where,

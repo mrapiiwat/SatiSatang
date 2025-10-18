@@ -8,7 +8,7 @@ interface FloatingBubbleProps {
 const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   const BUBBLE_SIZE = 65;
   const MARGIN = 15;
-  const TOP_LIMIT_RATIO = 0.9;
+  const TOP_LIMIT_RATIO = 0.88;
 
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
   const getTopLimit = () => window.innerHeight * TOP_LIMIT_RATIO;

@@ -15,3 +15,12 @@ export const transactionSchema = z.object({
     return val;
   }, z.number()),
 });
+
+export interface WhereClause {
+  userId: number;
+  OR?: Array<{ description: { contains: string; mode: 'insensitive' } }>;
+  createdAt?: {
+    gte: Date;
+    lte: Date;
+  };
+}
