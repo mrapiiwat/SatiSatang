@@ -26,7 +26,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: ['http://localhost:5173'],
     credentials: true,
   }),
 );
@@ -34,7 +34,7 @@ app.use(
 app.use(express.static(path.join(__dirname, './common/view')));
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
+  res.send('Hello World!!!');
 });
 
 // Use routes

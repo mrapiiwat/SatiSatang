@@ -1,7 +1,3 @@
-import dotenv from 'dotenv';
-
-dotenv.config();
-
 import { PrismaClient } from '@prisma/client';
 
 const isTest = process.env.NODE_ENV === 'test';

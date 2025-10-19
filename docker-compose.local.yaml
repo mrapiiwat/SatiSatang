@@ -3,6 +3,7 @@ version: "3.9"
 services:
   frontend:
     build: ./frontend
+    restart: unless-stopped
     env_file:
       - ./frontend/.env.local
     volumes:
@@ -14,6 +15,8 @@ services:
       - backend
   backend:
     build: ./backend
+    restart: unless-stopped
+
     env_file:
       - ./backend/.env.local
     volumes:
@@ -23,10 +26,11 @@ services:
       - ${BACKEND_PORT}:8080
     depends_on:
       - postgres
+      - minio
   postgres:
     image: postgres:16
     container_name: satisatang-postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -39,7 +43,7 @@ services:
   minio:
     image: minio/minio
     container_name: satisatang-minio
-    restart: always
+    restart: unless-stopped
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -49,9 +53,7 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - satisatang_minio_data:/data
-    depends_on:
-      - postgres
-
+    
 volumes:
   satisatang_postgres_data:
   satisatang_minio_data:
