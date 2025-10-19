@@ -13,7 +13,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
         const dayIncome = dayTransactions
           .filter((t) => t.type === 'INCOME')
           .reduce((sum, t) => sum + t.amount, 0);
-        
+
         const dayExpense = dayTransactions
           .filter((t) => t.type === 'EXPENSE')
           .reduce((sum, t) => sum + t.amount, 0);

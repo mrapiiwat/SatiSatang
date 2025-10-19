@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PiNotePencilLight } from 'react-icons/pi';
+import { FaPlus } from 'react-icons/fa';
 
 interface FloatingBubbleProps {
   onClick?: () => void;
@@ -161,7 +162,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
         }}
         className="w-full h-full flex items-center justify-center"
       >
-        <PiNotePencilLight size={28} />
+        <FaPlus size={25} />
       </button>
     </div>
   );
