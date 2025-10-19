@@ -139,7 +139,7 @@ const Home = () => {
                     style={{ height: `${totalHeight}px` }}
                   >
                     <div
-                      className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'} absolute top-0 left-0 h-16`}
+                      className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'} absolute top-0 left-0 h-14`}
                     />
                     <p
                       className={`text-base font-medium ${isToday ? 'text-blue-600' : 'text-black-700'}`}

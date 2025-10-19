@@ -1,10 +1,30 @@
-import React from 'react';
-import type { DayTransactionsProps } from '../../types/home';
+import React, { useEffect, useState } from 'react';
+import type { DayTransactionsProps, CategoriesType } from '../../types/home';
+import Image from '../Image';
+import axios from '../../api/axios';
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sortedDates }) => {
-  if (sortedDates.length === 0) {
-    return null;
-  }
+  const [categoryMap, setCategoryMap] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get('/categories', { withCredentials: true });
+        const categories: CategoriesType[] = res.data.data || [];
+        const map: Record<number, string> = {};
+        categories.forEach((c) => {
+          map[c.id] = c.icon;
+        });
+        setCategoryMap(map);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (sortedDates.length === 0) return null;
 
   return (
     <div className="w-5/6 md:w-[70%]">
@@ -13,7 +33,6 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
         const dayIncome = dayTransactions
           .filter((t) => t.type === 'INCOME')
           .reduce((sum, t) => sum + t.amount, 0);
-
         const dayExpense = dayTransactions
           .filter((t) => t.type === 'EXPENSE')
           .reduce((sum, t) => sum + t.amount, 0);
@@ -35,8 +54,16 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
               {dayTransactions.map((transaction) => (
                 <div key={transaction.id} className="flex items-center justify-between px-4 h-16">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-black-900 flex items-center justify-center">
-                      <img src="../../../public/SATISATANG1.svg" alt="" />
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                      {categoryMap[transaction.categoryId] ? (
+                        <Image
+                          src={categoryMap[transaction.categoryId]}
+                          alt={transaction.description || 'category icon'}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 animate-pulse" />
+                      )}
                     </div>
                     <div>
                       <p className="font-semibold text-black text-base">

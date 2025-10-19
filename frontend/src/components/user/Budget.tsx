@@ -5,22 +5,12 @@ import { RxCross2 } from 'react-icons/rx';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
 import { IoChevronDownSharp } from 'react-icons/io5';
-import type { CategoryResponse } from '../../types/home';
-
-interface CategoryOption {
-  value: number;
-  label: string;
-}
-
-interface FrequencyOption {
-  value: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-  label: string;
-}
-
-interface BudgetProps {
-  onClose: () => void;
-  onSuccess?: () => void;
-}
+import type {
+  CategoryResponse,
+  FrequencyOption,
+  CategoryOption,
+  BudgetProps,
+} from '../../types/home';
 
 const frequencies: FrequencyOption[] = [
   { value: 'DAILY', label: 'รายวัน' },
@@ -44,7 +34,7 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get('/categories?type=EXPENSE'); // ดึงเฉพาะหมวดรายจ่าย
+        const res = await axios.get('/categories?type=EXPENSE');
         const data = res.data.data;
         const formatted = data.map((cat: CategoryResponse) => ({
           value: cat.id,
@@ -69,7 +59,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
     setErrors(newErrors);
 
     if (Object.values(newErrors).some(Boolean)) {
-      // keep using alert but also show inline messages
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
@@ -110,7 +99,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
         </div>
 
         <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-          {/* หมวด */}
           <div className="flex flex-col gap-2">
             <label>หมวด</label>
             <Select<CategoryOption, false>
@@ -135,7 +123,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                   height: 40,
                   minHeight: 40,
                   borderRadius: 6,
-                  // only change border color; do not use focus ring/boxShadow
                   borderColor: errors.category
                     ? '#FF383C'
                     : state.isFocused
@@ -153,8 +140,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
               <p className="text-sm text-[#FF383C] mt-1">กรุณากรอกข้อมูลให้ครบถ้วน</p>
             )}
           </div>
-
-          {/* รอบงบประมาณ */}
           <div className="flex flex-col gap-2">
             <label>รอบงบประมาณ</label>
             <Select<FrequencyOption, false>
@@ -197,7 +182,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
             )}
           </div>
 
-          {/* จำนวนเงิน */}
           <div className="flex flex-col gap-2">
             <label htmlFor="amount">จำนวนเงิน</label>
             <input
@@ -220,7 +204,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
             )}
           </div>
 
-          {/* ปุ่มบันทึก */}
           <div className="flex justify-center items-center mt-3">
             <button
               type="submit"

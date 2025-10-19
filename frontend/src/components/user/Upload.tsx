@@ -12,7 +12,6 @@ const Upload: React.FC<UploadProps> = ({ onClose }) => {
     if (file) {
       setSelectedFile(file);
 
-      // ถ้าเป็นรูปภาพ ให้สร้าง URL preview
       if (file.type.startsWith('image/')) {
         const url = URL.createObjectURL(file);
         setPreviewUrl(url);

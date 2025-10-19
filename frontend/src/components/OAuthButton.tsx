@@ -1,10 +1,5 @@
 import React from 'react';
-
-interface OAuthButtonProps {
-  onClick: () => void;
-  label: string;
-  logo: string;
-}
+import type { OAuthButtonProps } from '../types/auth';
 
 const OAuthButton: React.FC<OAuthButtonProps> = ({ onClick, label, logo }) => (
   <button

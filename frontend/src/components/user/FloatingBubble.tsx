@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaPlus } from 'react-icons/fa';
-
-interface FloatingBubbleProps {
-  onClick?: () => void;
-}
+import type { FloatingBubbleProps } from '../../types/home';
 
 const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   const BUBBLE_SIZE = 65;

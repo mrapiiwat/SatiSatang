@@ -6,12 +6,7 @@ import { GoCalendar } from 'react-icons/go';
 import type { ManualProps, OptionType } from '../../types/home';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
-import type { CategoryResponse } from '../../types/home';
-
-interface CategoryOption {
-  value: number;
-  label: string;
-}
+import type { CategoryResponse, CategoryOption } from '../../types/home';
 
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
   const today = new Date();
@@ -81,8 +76,8 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
       });
 
       alert('บันทึกสำเร็จ');
-      onSuccess(); // เรียก fetch ข้อมูลใหม่
-      onClose(); // ปิด modal
+      onSuccess();
+      onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         alert(err.response?.data?.message || 'เกิดข้อผิดพลาด');

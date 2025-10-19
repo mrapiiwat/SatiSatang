@@ -1,11 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../api/axios';
-
-interface ImageProps {
-  src: string;
-  alt: string;
-  className?: string;
-}
+import type { ImageProps } from '../types/components';
 
 const Image: React.FC<ImageProps> = ({ src, alt, className }) => {
   const [imageSrc, setImageSrc] = useState<string>();

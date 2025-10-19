@@ -44,7 +44,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
 
   return (
     <div className="flex justify-center items-center px-6">
-      <div className="bg-white w-full max-w-96 min-h-[480px] rounded-2xl py-7 px-8">
+      <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-6">
           <h4 className="font-semibold">เป้าหมาย</h4>
           <div
@@ -55,9 +55,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
           </div>
         </div>
 
-        {/* ฟอร์มตั้งเป้าหมาย */}
         <div className="flex flex-col gap-4">
-          {/* ชื่อเป้าหมาย */}
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">ชื่อเป้าหมาย</label>
             <input
@@ -72,7 +70,6 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
             {errors.goalName && <p className="text-red-500 text-xs mt-1">{errors.goalName}</p>}
           </div>
 
-          {/* จำนวนเงิน */}
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">จำนวนเงิน</label>
             <input
@@ -87,11 +84,9 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
             {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount}</p>}
           </div>
 
-          {/* ระยะเวลา */}
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">ระยะเวลา</label>
             <div className="flex gap-2">
-              {/* ปี */}
               <div className="flex flex-col flex-1 min-w-0">
                 <input
                   type="number"
@@ -104,8 +99,6 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                 />
                 {errors.year && <p className="text-red-500 text-xs mt-1">{errors.year}</p>}
               </div>
-
-              {/* เดือน */}
               <div className="flex flex-col flex-1 min-w-0">
                 <input
                   type="number"
@@ -118,8 +111,6 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                 />
                 {errors.month && <p className="text-red-500 text-xs mt-1">{errors.month}</p>}
               </div>
-
-              {/* วัน */}
               <div className="flex flex-col flex-1 min-w-0">
                 <input
                   type="number"
@@ -134,8 +125,6 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
               </div>
             </div>
           </div>
-
-          {/* ปุ่มบันทึก */}
           <div className="flex justify-center mt-6">
             <button
               onClick={handleSave}

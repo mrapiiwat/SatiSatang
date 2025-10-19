@@ -1,14 +1,9 @@
 import useAuthStore from '../../store/authStore';
 import { Link } from 'react-router-dom';
-
-type SidebarProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
+import type { SidebarProps } from '../../types/components';
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const actionLogout = useAuthStore((state) => state.actionLogout);
-
   return (
     <>
       <div

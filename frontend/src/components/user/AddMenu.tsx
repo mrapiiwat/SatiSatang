@@ -15,7 +15,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ isOpen, onSelect, onClose }) => (
               <li
                 key={item}
                 onClick={() => onSelect(item)}
-                className="font-semibold text-black-900 h-full flex items-center px-5 cursor-pointer hover:bg-blue-50"
+                className={`font-semibold text-black-900 h-full flex items-center px-5 cursor-pointer hover:bg-blue-50 ${item === 'upload' && 'อัปโหลดสลิป' ? 'hover:rounded-t-3xl' : null} ${item === 'goal' && 'อัปโหลดสลิป' ? 'hover:rounded-b-3xl' : null} `}
               >
                 {item === 'upload' && 'อัปโหลดสลิป'}
                 {item === 'manual' && 'บันทึกรายรับรายจ่ายเอง'}

@@ -1,23 +1,6 @@
-// components/PageWrapper.tsx
 import { motion } from 'framer-motion';
 import React from 'react';
-
-type AnimationType =
-  | 'fade'
-  | 'fade-slide'
-  | 'scale-fade'
-  | 'slide-left'
-  | 'slide-right'
-  | 'slide-up'
-  | 'slide-down'
-  | 'rotate'
-  | 'flip';
-
-interface PageWrapperProps {
-  children: React.ReactNode;
-  animation?: AnimationType;
-  duration?: number;
-}
+import type { PageWrapperProps } from '../types/components';
 
 const PageWrapper: React.FC<PageWrapperProps> = ({
   children,

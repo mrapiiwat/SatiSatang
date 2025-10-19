@@ -1,15 +1,5 @@
 import React, { useMemo } from 'react';
-
-interface InputFieldProps {
-  id: string;
-  type: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  autoComplete?: string;
-  minLength?: number;
-  label: string;
-}
+import type { InputFieldProps } from '../types/auth';
 
 const InputField: React.FC<InputFieldProps> = ({
   id,
