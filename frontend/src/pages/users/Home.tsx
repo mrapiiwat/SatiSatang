@@ -118,7 +118,7 @@ const Home = () => {
           </div>
         ) : (
           <div className="flex flex-row overflow-y-auto max-h-[460px] md:flex md:justify-center">
-            <div className="w-1/6 md:w-[7%] bg-white">
+            <div className="w-1/6 md:w-[7%]">
               {sortedDates.map((date) => {
                 const dayTransactions = groupedByDate[date];
                 const headerHeight = 64;
@@ -135,11 +135,11 @@ const Home = () => {
                 return (
                   <div
                     key={date}
-                    className="relative flex flex-col items-center p-3"
+                    className="relative flex flex-col items-center"
                     style={{ height: `${totalHeight}px` }}
                   >
                     <div
-                      className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'} absolute top-2 left-0 h-14`}
+                      className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'} absolute top-0 left-0 h-16`}
                     />
                     <p
                       className={`text-base font-medium ${isToday ? 'text-blue-600' : 'text-black-700'}`}
@@ -155,8 +155,7 @@ const Home = () => {
                 );
               })}
             </div>
-            <DayTransactions transactions={transactions} />
-            <div className="md:w-[5%]"></div>
+            <DayTransactions groupedByDate={groupedByDate} sortedDates={sortedDates} />
           </div>
         )}
       </div>

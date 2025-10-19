@@ -39,5 +39,6 @@ export interface Transaction {
 }
 
 export interface DayTransactionsProps {
-  transactions: Transaction[];
+  groupedByDate: Record<number, Transaction[]>;
+  sortedDates: number[];
 }
