@@ -9,12 +9,6 @@ const NotFound: React.FC = () => {
           ไม่พบหน้าที่คุณค้นหา
         </h2>
         <p className="text-gray-500 mb-8">ขออภัย หน้าที่คุณกำลังมองหาอาจถูกย้ายหรือไม่มีอยู่จริง</p>
-        <button
-          onClick={() => window.history.back()}
-          className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors duration-200"
-        >
-          กลับไปยังหน้าก่อนหน้า
-        </button>
       </div>
     </div>
   );
