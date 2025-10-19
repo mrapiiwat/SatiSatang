@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { PiNotePencilLight } from 'react-icons/pi';
 import { FaPlus } from 'react-icons/fa';
 
 interface FloatingBubbleProps {
