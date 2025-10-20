@@ -59,15 +59,13 @@ const IconSelector: React.FC<IconSelectorProps> = ({
           type="button"
           onClick={handleOpenModal}
           disabled={disabled}
-          className={`w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all ${
-            disabled
-              ? 'opacity-50 cursor-not-allowed bg-gray-100'
-              : 'cursor-pointer hover:scale-105 hover:shadow-md'
-          } ${
-            selectedIconId
+          className={`w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all ${disabled
+            ? 'opacity-50 cursor-not-allowed bg-gray-100'
+            : 'cursor-pointer hover:scale-105 hover:shadow-md'
+            } ${selectedIconId
               ? 'border-blue-600 bg-white shadow-sm'
               : 'border-gray-300 bg-white hover:border-blue-600'
-          }`}
+            }`}
         >
           {selectedIcon ? (
             <Image
@@ -81,8 +79,11 @@ const IconSelector: React.FC<IconSelectorProps> = ({
         </button>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <div className="flex justify-center items-center px-4">
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 backdrop-blur-sm"
+          onClick={handleCloseModal} 
+        >
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm h-[520px] shadow-xl flex flex-col">
             <h3 className="text-lg font-semibold text-center mb-4 text-gray-800">เลือกไอคอน</h3>
 
@@ -93,7 +94,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm mb-4 transition"
             />
-            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar mb-4 p-2 ">
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar mb-4 p-2">
               <div className="grid grid-cols-4 gap-4">
                 {loading ? (
                   <div className="col-span-full text-center text-gray-400 py-10">
@@ -109,11 +110,10 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                       key={icon.id}
                       type="button"
                       onClick={() => handleSelectIcon(icon.id.toString())}
-                      className={`w-full aspect-square rounded-full border-2 flex items-center justify-center transition-all p-px ${
-                        selectedIconId === icon.id.toString()
-                          ? 'border-blue-600 bg-purple-50 shadow-md scale-105'
-                          : 'border-gray-200 hover:border-blue-600 hover:scale-110 bg-white'
-                      }`}
+                      className={`w-full aspect-square rounded-full border-2 flex items-center justify-center transition-all p-px ${selectedIconId === icon.id.toString()
+                        ? 'border-blue-600 bg-purple-50 shadow-md scale-105'
+                        : 'border-gray-200 hover:border-blue-600 hover:scale-110 bg-white'
+                        }`}
                       title={icon.description}
                     >
                       <Image
@@ -137,7 +137,8 @@ const IconSelector: React.FC<IconSelectorProps> = ({
             </div>
           </div>
         </div>
-      </Modal>
+      )}
+
     </>
   );
 };
