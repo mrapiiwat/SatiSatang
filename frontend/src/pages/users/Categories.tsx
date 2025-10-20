@@ -4,6 +4,7 @@ import type { CategoriesType } from '../../types/home';
 import CategoryHeader from '../../components/user/CategoryHeader';
 import CategoryList from '../../components/user/CategoryList';
 import CategoryModal from '../../components/user/CategoryModal';
+import PageWrapper from '../../components/PageWrapper';
 
 const Categories = () => {
   const [selectedType, setSelectedType] = useState<'INCOME' | 'EXPENSE'>('INCOME');
@@ -24,20 +25,22 @@ const Categories = () => {
   }, [selectedType, fetchCategories]);
 
   return (
-    <div className="px-6 py-8 text-black-900">
-      <CategoryHeader selectedType={selectedType} setSelectedType={setSelectedType} />
-      <CategoryList
-        categories={categories}
-        setCategories={setCategories}
-        onAddClick={() => setIsModalOpen(true)}
-      />
-      <CategoryModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        selectedType={selectedType}
-        refresh={fetchCategories}
-      />
-    </div>
+    <PageWrapper animation="scale-fade">
+      <div className="px-6 py-8 text-black-900">
+        <CategoryHeader selectedType={selectedType} setSelectedType={setSelectedType} />
+        <CategoryList
+          categories={categories}
+          setCategories={setCategories}
+          onAddClick={() => setIsModalOpen(true)}
+        />
+        <CategoryModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          selectedType={selectedType}
+          refresh={fetchCategories}
+        />
+      </div>
+    </PageWrapper>
   );
 };
 
