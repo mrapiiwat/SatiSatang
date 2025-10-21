@@ -1,40 +1,55 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
 import Image from '../../components/Image';
 import Modal from '../Modal';
 import IconSelector from '../user/IconSelector';
-import type { CategoriesType } from '../../types/home';
 import axios from '../../api/axios';
-import type { CategoryListProps } from '../../types/home';
-import { RxCross2 } from 'react-icons/rx';
 import { isAxiosError } from 'axios';
+import type { CategoriesType, CategoryListProps } from '../../types/home';
 
 const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, setCategories }) => {
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);
   const [loading, setLoading] = useState(false);
+  const [editData, setEditData] = useState({ name: '', iconId: '' });
 
   const handleCategoryClick = (category: CategoriesType) => {
+    const iconId = category.icon.split('/').pop() || '';
+    setEditData({ name: category.name, iconId }); 
     setEditingCategory(category);
   };
 
   const handleCloseModal = () => {
-    setEditingCategory(null);
+    if (!loading) {
+      setEditingCategory(null);
+      setEditData({ name: '', iconId: '' });
+    }
   };
 
-  const handleUpdateCategory = async (updatedData: { name: string; iconId: string }) => {
+  const handleUpdateCategory = async () => {
     if (!editingCategory) return;
+
+    if (!editData.name.trim()) {
+      alert('กรุณากรอกชื่อหมวดหมู่');
+      return;
+    }
+
+    if (!editData.iconId) {
+      alert('กรุณาเลือกไอคอน');
+      return;
+    }
 
     try {
       setLoading(true);
       const res = await axios.put(
         `/category/${editingCategory.id}`,
         {
-          name: updatedData.name,
-          iconId: Number(updatedData.iconId),
+          name: editData.name.trim(),
+          iconId: Number(editData.iconId),
         },
         { withCredentials: true },
       );
+
+      alert('แก้ไขหมวดหมู่สำเร็จ');
 
       setCategories((prev) =>
         prev.map((cat) =>
@@ -44,8 +59,9 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
         ),
       );
 
-      setEditingCategory(null);
+      handleCloseModal();
     } catch (err: unknown) {
+      console.error('Error updating category:', err);
       if (isAxiosError(err)) {
         alert(err.response?.data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้');
       } else if (err instanceof Error) {
@@ -55,6 +71,12 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      handleUpdateCategory();
     }
   };
 
@@ -84,49 +106,54 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
 
       {editingCategory && (
         <Modal isOpen={!!editingCategory} onClose={handleCloseModal}>
-          <div className="flex justify-center items-center px-4">
-            <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl flex flex-col gap-4">
-              <div className="flex justify-between items-center mb-5">
-                <h4 className="font-medium">บันทึกรายรับรายจ่าย</h4>
-                <div
-                  onClick={handleCloseModal}
-                  className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
-                >
-                  <RxCross2 size={25} />
+          <div className="flex justify-center">
+            <div className="p-6 flex flex-col gap-4 bg-white rounded-2xl min-w-[382px] max-w-md">
+              <h2 className="text-xl font-semibold text-center mb-2">แก้ไขหมวดหมู่</h2>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="category-name" className="text-sm font-medium text-gray-700">
+                  ชื่อหมวดหมู่
+                </label>
+                <input
+                  id="category-name"
+                  type="text"
+                  placeholder="ระบุชื่อหมวดหมู่"
+                  value={editData.name}
+                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  onKeyPress={handleKeyPress}
+                  disabled={loading}
+                  maxLength={50}
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition"
+                />
+                <span className="text-xs text-gray-500">{editData.name.length}/50 ตัวอักษร</span>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">เลือกไอคอน</label>
+                <div className={loading ? 'opacity-50 pointer-events-none' : ''}>
+                  <IconSelector
+                    selectedIconId={editData.iconId}
+                    onSelect={(id) => setEditData({ ...editData, iconId: id })}
+                  />
                 </div>
               </div>
 
-              <input
-                type="text"
-                value={editingCategory.name}
-                onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                className="border-[1px] text-black-900 border-black-500 w-full h-10 rounded-md p-1 px-3"
-                placeholder="ชื่อหมวดหมู่"
-              />
-
-              <div className="flex-1 overflow-y-auto py-3">
-                <IconSelector
-                  selectedIconId={editingCategory.icon.split('/').pop() || ''}
-                  onSelect={(iconId) =>
-                    setEditingCategory({ ...editingCategory, icon: `/api/icon/${iconId}` })
-                  }
-                />
+              <div className="flex gap-3 mt-2">
+                <button
+                  onClick={handleCloseModal}
+                  disabled={loading}
+                  className="flex-1 bg-gray-200 text-gray-700 py-2.5 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={handleUpdateCategory}
+                  disabled={loading || !editData.name.trim() || !editData.iconId}
+                  className="flex-1 bg-purple-600 text-white py-2.5 rounded-lg hover:bg-purple-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                >
+                  {loading ? 'กำลังบันทึก...' : 'บันทึก'}
+                </button>
               </div>
-
-              <button
-                onClick={() =>
-                  handleUpdateCategory({
-                    name: editingCategory.name,
-                    iconId: editingCategory.icon.split('/').pop() || '',
-                  })
-                }
-                disabled={loading}
-                className={`w-full py-2.5 rounded-xl text-white font-medium transition ${
-                  loading ? 'bg-blue-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-600/95'
-                }`}
-              >
-                {loading ? 'กำลังบันทึก...' : 'บันทึก'}
-              </button>
             </div>
           </div>
         </Modal>
