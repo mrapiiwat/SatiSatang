@@ -13,6 +13,7 @@ import iconRoutes from './modules/icon/iconRoutes';
 import transactionRoutes from './modules/transaction/transactionRoutes';
 import categoriesRoutes from './modules/categories/categoriesRoutes';
 import satangRouter from './modules/satang/satangRoutes';
+import goalRouter from './modules/goal/goalRoutes';
 
 const app = express();
 
@@ -44,5 +45,6 @@ app.use('/api', iconRoutes);
 app.use('/api', transactionRoutes);
 app.use('/api', categoriesRoutes);
 app.use('/api', satangRouter);
+app.use('/api', goalRouter);
 
 export default app;

@@ -103,7 +103,7 @@ model Icon {
 
 model Goals {
   id            Int       @id @default(autoincrement())
-  name          String
+  name          String    @unique
   amount        Float
   currentAmount Float     @default(0)
   deadline      DateTime?

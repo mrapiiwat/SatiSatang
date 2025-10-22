@@ -14,7 +14,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
 
   const handleCategoryClick = (category: CategoriesType) => {
     const iconId = category.icon.split('/').pop() || '';
-    setEditData({ name: category.name, iconId }); 
+    setEditData({ name: category.name, iconId });
     setEditingCategory(category);
   };
 
