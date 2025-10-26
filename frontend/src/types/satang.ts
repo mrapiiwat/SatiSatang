@@ -14,6 +14,8 @@ export interface SatangTextModeProps {
   sendMessage: (text: string) => void;
   messages: ChatMessage[];
   isTyping: boolean;
+  loadMore: () => Promise<void>;
+  hasMore: boolean;
 }
 
 export interface SatangVoiceModeProps {

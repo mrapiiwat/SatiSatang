@@ -28,6 +28,16 @@ services:
     volumes:
       - satisatang_minio_data:/data
 
+  qdrant:
+    image: qdrant/qdrant:v1.3.0
+    container_name: satisatang-qdrant
+    ports:
+      - "${QDRANT_PORT}:6333"
+    volumes:
+      - satisatang_qdrant_data:/qdrant/storage
+    restart: always
+
 volumes:
   satisatang_postgres_data:
   satisatang_minio_data:
+  satisatang_qdrant_data:

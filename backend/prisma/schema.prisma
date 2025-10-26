@@ -25,6 +25,8 @@ model User {
   refreshTokens      RefreshToken[]
   transactions       Transaction[]
   Icon               Icon[]
+
+  @@index([id, email])
 }
 
 model OAuthAccount {
@@ -60,19 +62,19 @@ model EmailVerification {
 }
 
 model Transaction {
-  id          Int             @id @default(autoincrement())
-  type        TransactionType
+  id          Int              @id @default(autoincrement())
+  type        TransactionType?
   description String?
   amount      Float
   receipt     String?
   toAccount   String?
   fromAccount String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   userId      Int
   categoryId  Int
-  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
 }

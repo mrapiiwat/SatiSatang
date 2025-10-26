@@ -11,23 +11,81 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
   sendMessage,
   messages,
   isTyping,
+  loadMore,
+  hasMore,
 }) => {
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const prevMessagesLengthRef = useRef(messages.length);
+  const isUserScrolledRef = useRef(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setText(e.target.value);
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     sendMessage(text);
   };
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onScroll = () => {
+      const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+      isUserScrolledRef.current = !nearBottom;
+    };
+
+    container.addEventListener('scroll', onScroll);
+    return () => container.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) container.scrollTop = container.scrollHeight;
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const prevLength = prevMessagesLengthRef.current;
+    const newMessagesCount = messages.length - prevLength;
+
+    if (newMessagesCount > 0 && !isUserScrolledRef.current) {
+      container.scrollTop = container.scrollHeight;
+    }
+
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onScroll = async () => {
+      if (container.scrollTop < 50 && hasMore) {
+        const prevScrollBottom = container.scrollHeight - container.scrollTop;
+        await loadMore();
+        requestAnimationFrame(() => {
+          container.scrollTop = container.scrollHeight - prevScrollBottom;
+        });
+      }
+    };
+
+    container.addEventListener('scroll', onScroll);
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [loadMore, hasMore]);
 
   return (
     <div className="min-h-[calc(100vh-80px)] flex flex-col justify-between px-6 py-6">
-      <div className="border-[1px] border-black-600 rounded-xl flex-1 w-full mb-5 overflow-y-auto p-2 max-h-[75vh] scrollbar-none">
+      <div
+        ref={containerRef}
+        className="border-[1px] border-black-600 rounded-xl flex-1 w-full mb-5 overflow-y-auto p-2 max-h-[75vh] scrollbar-none"
+      >
+        {hasMore && (
+          <div className="text-center text-gray-500 text-sm mb-2">
+            เลื่อนขึ้นเพื่อโหลดเพิ่มเติม...
+          </div>
+        )}
+
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -44,8 +102,6 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
             <TypingIndicator />
           </div>
         )}
-
-        <div ref={chatEndRef} />
       </div>
 
       <div className="flex flex-row justify-between gap-3 px-2 py-4">

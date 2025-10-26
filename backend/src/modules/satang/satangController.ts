@@ -5,41 +5,6 @@ import * as satangModels from './satangModels';
 import prisma from '../../common/config/prismaClient';
 import { Satang } from '../../common/config/openai';
 
-export const createSatangSession = async (req: Request, res: Response) => {
-  try {
-    const validatedData = satangModels.satangSessionSchema.parse(req.body);
-    const now = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
-
-    const session = await prisma.chatSession.create({
-      data: {
-        title: `${validatedData.title} ${now}`,
-        userId: Number(req.user),
-      },
-    });
-
-    res.status(httpStatus.CREATED).json({
-      message: 'Satang Session created successfully',
-      data: session,
-    });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
-        message: 'Validation error',
-        errors: error,
-      });
-    } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
-        message: 'Something went wrong!',
-        errors: error.message,
-      });
-    } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Internal server error',
-      });
-    }
-  }
-};
-
 export const SatangChat = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.user);
@@ -108,16 +73,19 @@ export const SatangChat = async (req: Request, res: Response) => {
 export const getOrCreateLatestSatangSession = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.user);
+    const cursor = req.query.cursor as string | undefined;
+    const limit = Number(req.query.limit) || 20;
 
+    // หา session ล่าสุด
     const latestSession = await prisma.chatSession.findFirst({
       where: { userId },
       orderBy: { createdAt: 'desc' },
-      include: { messages: { orderBy: { createdAt: 'asc' } } },
     });
 
     const now = new Date();
-    const oneDayMs = 24 * 60 * 60 * 1000;
+    const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
 
+    // ถ้าไม่มี session ให้สร้างใหม่
     if (!latestSession) {
       const session = await prisma.chatSession.create({
         data: {
@@ -128,14 +96,13 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
 
       return res.status(httpStatus.CREATED).json({
         message: 'New Satang session created (no previous session found)',
-        data: { ...session, messages: [] },
+        data: { ...session, messages: [], nextCursor: null, hasMore: false },
       });
     }
 
+    // ถ้า session เก่ากว่า 1 เดือน ให้สร้างใหม่
     const createdAt = new Date(latestSession.createdAt);
-    const diff = now.getTime() - createdAt.getTime();
-
-    if (diff >= oneDayMs) {
+    if (now.getTime() - createdAt.getTime() >= oneMonthMs) {
       const newSession = await prisma.chatSession.create({
         data: {
           title: `Satang ${now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`,
@@ -144,19 +111,45 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       });
 
       return res.status(httpStatus.CREATED).json({
-        message: 'New Satang session created (older than 1 day)',
-        data: { ...newSession, messages: [] },
+        message: 'New Satang session created (older than 1 month)',
+        data: { ...newSession, messages: [], nextCursor: null, hasMore: false },
       });
     }
 
+    const messages = await prisma.chatMessage.findMany({
+      where: { sessionId: latestSession.id },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit,
+      ...(cursor
+        ? {
+            skip: 1,
+            cursor: { id: Number(cursor) },
+          }
+        : {}),
+    });
+
+    const hasMore = messages.length === limit;
+
     return res.status(httpStatus.OK).json({
       message: 'Latest Satang session fetched successfully',
-      data: latestSession,
+      data: {
+        ...latestSession,
+        messages: messages.reverse(),
+        nextCursor: hasMore ? messages[messages.length - 1].id : null,
+        hasMore,
+      },
     });
   } catch (error) {
     console.error(error);
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: 'Internal server error',
-    });
+    if (error instanceof Error) {
+      res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
+      });
+    } else {
+      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
   }
 };
