@@ -56,7 +56,7 @@ CREATE TABLE "EmailVerification" (
 -- CreateTable
 CREATE TABLE "Transaction" (
     "id" SERIAL NOT NULL,
-    "type" "TransactionType" NOT NULL,
+    "type" "TransactionType",
     "description" TEXT,
     "amount" DOUBLE PRECISION NOT NULL,
     "receipt" TEXT,
@@ -152,46 +152,39 @@ CREATE TABLE "Stock" (
     "id" SERIAL NOT NULL,
     "symbol" TEXT NOT NULL,
     "name" TEXT,
-    "instrumentType" TEXT,
-    "securityType" TEXT,
-    "status" TEXT,
-    "marketStatus" TEXT,
-    "last" DOUBLE PRECISION,
-    "high" DOUBLE PRECISION,
-    "low" DOUBLE PRECISION,
-    "average" DOUBLE PRECISION,
-    "change" DOUBLE PRECISION,
-    "percentChange" DOUBLE PRECISION,
-    "percentYield" DOUBLE PRECISION,
-    "pe" DOUBLE PRECISION,
-    "pbv" DOUBLE PRECISION,
-    "eps" DOUBLE PRECISION,
-    "aumSize" DOUBLE PRECISION,
-    "inav" DOUBLE PRECISION,
-    "theoretical" DOUBLE PRECISION,
-    "exercisePrice" DOUBLE PRECISION,
-    "exerciseRatio" DOUBLE PRECISION,
-    "maturityDate" TIMESTAMP(3),
-    "lastTradingDate" TIMESTAMP(3),
-    "toLastTrade" DOUBLE PRECISION,
-    "totalBuyVolume" INTEGER,
-    "totalSellVolume" INTEGER,
-    "totalNoSideVolume" INTEGER,
-    "totalVolume" INTEGER,
-    "underlying" TEXT,
-    "underlyingPrice" DOUBLE PRECISION,
-    "moneyness" DOUBLE PRECISION,
+    "quoteType" TEXT,
+    "currency" TEXT,
+    "market" TEXT,
+    "regularMarketPrice" DOUBLE PRECISION,
+    "regularMarketOpen" DOUBLE PRECISION,
+    "regularMarketHigh" DOUBLE PRECISION,
+    "regularMarketLow" DOUBLE PRECISION,
+    "previousClose" DOUBLE PRECISION,
+    "dayHigh" DOUBLE PRECISION,
+    "dayLow" DOUBLE PRECISION,
+    "volume" BIGINT,
+    "averageVolume" BIGINT,
+    "fiftyDayAverage" DOUBLE PRECISION,
+    "twoHundredDayAverage" DOUBLE PRECISION,
+    "fiftyTwoWeekLow" DOUBLE PRECISION,
+    "fiftyTwoWeekHigh" DOUBLE PRECISION,
+    "fiftyTwoWeekChangePercent" DOUBLE PRECISION,
+    "regularMarketChange" DOUBLE PRECISION,
+    "regularMarketChangePercent" DOUBLE PRECISION,
+    "marketState" TEXT,
+    "tradeable" BOOLEAN,
+    "lastUpdated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "exchange" TEXT,
-    "impliedVolatility" DOUBLE PRECISION,
-    "intrinsicValue" DOUBLE PRECISION,
 
     CONSTRAINT "Stock_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "User_id_email_idx" ON "User"("id", "email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "OAuthAccount_provider_providerUserId_key" ON "OAuthAccount"("provider", "providerUserId");
@@ -206,10 +199,16 @@ CREATE UNIQUE INDEX "EmailVerification_otpHash_key" ON "EmailVerification"("otpH
 CREATE INDEX "Transaction_userId_createdAt_idx" ON "Transaction"("userId", "createdAt");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Goals_name_key" ON "Goals"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Stock_symbol_key" ON "Stock"("symbol");
 
 -- CreateIndex
 CREATE INDEX "Stock_symbol_idx" ON "Stock"("symbol");
+
+-- CreateIndex
+CREATE INDEX "Stock_symbol_lastUpdated_idx" ON "Stock"("symbol", "lastUpdated");
 
 -- AddForeignKey
 ALTER TABLE "OAuthAccount" ADD CONSTRAINT "OAuthAccount_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

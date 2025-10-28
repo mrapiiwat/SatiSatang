@@ -4,15 +4,18 @@ import { ZodError } from 'zod';
 import * as satangModels from './satangModels';
 import prisma from '../../common/config/prismaClient';
 import { Satang } from '../../common/config/openai';
+import { searchMemory, addMemory } from '../../common/utils/qdrant';
+import { ChatMessage } from '../../common/config/openai';
+import { satangSystem } from '../../common/utils/prompt';
 
 export const SatangChat = async (req: Request, res: Response) => {
   try {
-    const userId = Number(req.user);
+    const userId = String(req.user);
 
     const validatedData = satangModels.satangChatSchema.parse(req.body);
 
     const latestSession = await prisma.chatSession.findFirst({
-      where: { userId },
+      where: { userId: Number(userId) },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -20,37 +23,37 @@ export const SatangChat = async (req: Request, res: Response) => {
       data: {
         role: 'user',
         content: validatedData.content,
-        userId: userId,
+        userId: Number(userId),
         sessionId: Number(latestSession?.id),
       },
     });
 
-    const history = await prisma.chatMessage.findMany({
-      where: {
-        sessionId: Number(latestSession?.id),
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+    const memoryResults = await searchMemory(userId, validatedData.content);
 
-    const messagesForAPI = history.map((m) => ({
-      role: m.role === 'user' ? 'user' : 'assistant',
-      content: m.content,
-    }));
+    const messagesForAPI: ChatMessage[] = [
+      { role: 'system', content: satangSystem },
+      ...memoryResults.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      })),
+      { role: 'user', content: validatedData.content },
+    ];
 
     const reply = await Satang(messagesForAPI);
 
-    const aiMessage = await prisma.chatMessage.create({
+    await prisma.chatMessage.create({
       data: {
         role: 'assistant',
         content: reply,
-        userId,
+        userId: Number(userId),
         sessionId: Number(latestSession?.id),
       },
     });
 
-    res.status(httpStatus.OK).json({
-      message: aiMessage.content,
-    });
+    await addMemory(userId, validatedData.content, 'user');
+    await addMemory(userId, reply, 'assistant');
+
+    res.status(httpStatus.OK).json({ message: reply, memoryResults });
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(httpStatus.BAD_REQUEST).json({
