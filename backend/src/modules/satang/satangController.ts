@@ -28,11 +28,24 @@ export const SatangChat = async (req: Request, res: Response) => {
       },
     });
 
+    const lastTwoMessages = await prisma.chatMessage.findMany({
+      where: { sessionId: latestSession?.id },
+      orderBy: { createdAt: 'desc' },
+      take: 2,
+    });
+
+    const sortedLastMessages = lastTwoMessages.reverse();
+
     const memoryResults = await searchMemory(userId, validatedData.content);
+
 
     const messagesForAPI: ChatMessage[] = [
       { role: 'system', content: satangSystem },
       ...memoryResults.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      })),
+      ...sortedLastMessages.map((m) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
       })),
@@ -125,9 +138,9 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       take: limit,
       ...(cursor
         ? {
-            skip: 1,
-            cursor: { id: Number(cursor) },
-          }
+          skip: 1,
+          cursor: { id: Number(cursor) },
+        }
         : {}),
     });
 

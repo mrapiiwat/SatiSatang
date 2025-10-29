@@ -9,6 +9,11 @@ router.get('/transaction', authenticateJWT, transactionController.getTransaction
 router.get('/transaction/:id', authenticateJWT, transactionController.getTransaction);
 router.get('/transaction/receipt/:id', authenticateJWT, transactionController.getReceipt);
 router.post(
+  '/transaction/upload',
+  authenticateJWT,
+  upload.single('receipt'),
+  transactionController.createTransactionByUpload);
+router.post(
   '/transaction',
   authenticateJWT,
   upload.single('receipt'),

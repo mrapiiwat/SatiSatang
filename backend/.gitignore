@@ -1,6 +1,8 @@
 /src/generated/prisma
 coverage
 
+/src/common/config/google-credentials.json
+
 # Logs
 logs
 *.log
