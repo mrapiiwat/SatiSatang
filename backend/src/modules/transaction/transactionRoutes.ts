@@ -12,7 +12,8 @@ router.post(
   '/transaction/upload',
   authenticateJWT,
   upload.single('receipt'),
-  transactionController.createTransactionByUpload);
+  transactionController.createTransactionByUpload,
+);
 router.post(
   '/transaction',
   authenticateJWT,

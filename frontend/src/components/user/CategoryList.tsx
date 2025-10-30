@@ -6,6 +6,7 @@ import IconSelector from '../user/IconSelector';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
 import type { CategoriesType, CategoryListProps } from '../../types/home';
+import { showSwalAlert } from '../../utils/SwalAlert';
 
 const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, setCategories }) => {
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);
@@ -29,13 +30,11 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
     if (!editingCategory) return;
 
     if (!editData.name.trim()) {
-      alert('กรุณากรอกชื่อหมวดหมู่');
-      return;
+      return showSwalAlert('กรุณากรอกชื่อหมวดหมู่', 'error');
     }
 
     if (!editData.iconId) {
-      alert('กรุณาเลือกไอคอน');
-      return;
+      return showSwalAlert('กรุณาเลือกไอคอน', 'error');
     }
 
     try {
@@ -49,7 +48,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
         { withCredentials: true },
       );
 
-      alert('แก้ไขหมวดหมู่สำเร็จ');
+      await showSwalAlert('แก้ไขหมวดหมู่สำเร็จ', 'success');
 
       setCategories((prev) =>
         prev.map((cat) =>
@@ -61,13 +60,12 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
 
       handleCloseModal();
     } catch (err: unknown) {
-      console.error('Error updating category:', err);
       if (isAxiosError(err)) {
-        alert(err.response?.data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้');
+        showSwalAlert(`${err.response?.data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้'}`, 'error');
       } else if (err instanceof Error) {
-        alert(err.message);
+        showSwalAlert(`${err.message}`, 'error');
       } else {
-        alert('เกิดข้อผิดพลาดไม่ทราบชนิด');
+        showSwalAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
     } finally {
       setLoading(false);
@@ -133,6 +131,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
                 <div className={loading ? 'opacity-50 pointer-events-none' : ''}>
                   <IconSelector
                     selectedIconId={editData.iconId}
+                    selectedIconUrl={editingCategory.icon}
                     onSelect={(id) => setEditData({ ...editData, iconId: id })}
                   />
                 </div>
@@ -148,8 +147,22 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
                 </button>
                 <button
                   onClick={handleUpdateCategory}
-                  disabled={loading || !editData.name.trim() || !editData.iconId}
-                  className="flex-1 bg-purple-600 text-white py-2.5 rounded-lg hover:bg-purple-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                  disabled={
+                    loading ||
+                    !editData.name.trim() ||
+                    !editData.iconId ||
+                    (editData.name === editingCategory?.name &&
+                      editData.iconId === editingCategory?.icon.split('/').pop())
+                  }
+                  className={`flex-1 py-2.5 rounded-lg font-medium transition ${
+                    loading ||
+                    !editData.name.trim() ||
+                    !editData.iconId ||
+                    (editData.name === editingCategory?.name &&
+                      editData.iconId === editingCategory?.icon.split('/').pop())
+                      ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                  }`}
                 >
                   {loading ? 'กำลังบันทึก...' : 'บันทึก'}
                 </button>

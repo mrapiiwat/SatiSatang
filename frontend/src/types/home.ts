@@ -90,6 +90,7 @@ export interface Icon {
 
 export interface IconSelectorProps {
   selectedIconId: string;
+  selectedIconUrl?: string;
   onSelect: (id: string) => void;
   disabled?: boolean;
 }

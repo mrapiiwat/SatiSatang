@@ -19,6 +19,14 @@ export const SatangChat = async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
     });
 
+    const lastTwoMessages = await prisma.chatMessage.findMany({
+      where: { sessionId: latestSession?.id },
+      orderBy: { createdAt: 'desc' },
+      take: 2,
+    });
+
+    const sortedLastMessages = lastTwoMessages.reverse();
+
     await prisma.chatMessage.create({
       data: {
         role: 'user',
@@ -28,16 +36,7 @@ export const SatangChat = async (req: Request, res: Response) => {
       },
     });
 
-    const lastTwoMessages = await prisma.chatMessage.findMany({
-      where: { sessionId: latestSession?.id },
-      orderBy: { createdAt: 'desc' },
-      take: 2,
-    });
-
-    const sortedLastMessages = lastTwoMessages.reverse();
-
     const memoryResults = await searchMemory(userId, validatedData.content);
-
 
     const messagesForAPI: ChatMessage[] = [
       { role: 'system', content: satangSystem },
@@ -138,9 +137,9 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       take: limit,
       ...(cursor
         ? {
-          skip: 1,
-          cursor: { id: Number(cursor) },
-        }
+            skip: 1,
+            cursor: { id: Number(cursor) },
+          }
         : {}),
     });
 

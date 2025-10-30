@@ -7,6 +7,7 @@ import type { ManualProps, OptionType } from '../../types/home';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
 import type { CategoryResponse, CategoryOption } from '../../types/home';
+import { showSwalAlert } from '../../utils/SwalAlert';
 
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
   const today = new Date();
@@ -62,9 +63,8 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedType || !selectedCategory) {
-      alert('กรุณาเลือกประเภทและหมวด');
-      return;
+    if (!selectedType || !selectedCategory || !amount || !detail) {
+      return showSwalAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
     }
 
     try {
@@ -75,18 +75,18 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
         amount: amount,
       });
 
-      alert('บันทึกสำเร็จ');
+      await showSwalAlert('บันทึกสำเร็จ', 'success');
+
       onSuccess();
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        alert(err.response?.data?.message || 'เกิดข้อผิดพลาด');
+        showSwalAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
       } else if (err instanceof Error) {
-        alert(err.message);
+        showSwalAlert(`${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
       } else {
-        alert('เกิดข้อผิดพลาดไม่ทราบชนิด');
+        showSwalAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
-      console.error(err);
     }
   };
 

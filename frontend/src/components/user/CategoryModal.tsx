@@ -5,6 +5,7 @@ import { isAxiosError } from 'axios';
 import Modal from '../../components/Modal';
 import IconSelector from '../user/IconSelector';
 import type { CategoryModalProps } from '../../types/home';
+import { showSwalAlert } from '../../utils/SwalAlert';
 
 const CategoryModal: React.FC<CategoryModalProps> = ({
   isOpen,
@@ -17,13 +18,11 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
 
   const handleCreateCategory = async () => {
     if (!newCategory.name.trim()) {
-      alert('กรุณากรอกชื่อหมวดหมู่');
-      return;
+      return showSwalAlert('กรุณากรอกชื่อหมวดหมู่', 'error');
     }
 
     if (!newCategory.iconId) {
-      alert('กรุณาเลือกไอคอน');
-      return;
+      return showSwalAlert('กรุณาเลือกไอคอน', 'error');
     }
 
     try {
@@ -38,18 +37,18 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
         { withCredentials: true },
       );
 
-      alert('เพิ่มหมวดหมู่สำเร็จ');
+      await showSwalAlert('เพิ่มหมวดหมู่สำเร็จ', 'success');
       setNewCategory({ name: '', iconId: '' });
       await refresh();
       onClose();
     } catch (err: unknown) {
       console.error('Error creating category:', err);
       if (isAxiosError(err)) {
-        alert(err.response?.data?.message || 'ไม่สามารถเพิ่มหมวดหมู่ได้');
+        showSwalAlert(`${err.response?.data?.message || 'ไม่สามารถเพิ่มหมวดหมู่ได้'}`, 'error');
       } else if (err instanceof Error) {
-        alert(err.message);
+        showSwalAlert(`${err.message}`, 'error');
       } else {
-        alert('เกิดข้อผิดพลาดไม่ทราบชนิด');
+        showSwalAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
     } finally {
       setLoading(false);

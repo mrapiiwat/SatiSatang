@@ -44,3 +44,9 @@ export type SidebarProps = {
   isOpen: boolean;
   onClose: () => void;
 };
+
+export interface AlertProps {
+  title?: string;
+  icon?: 'success' | 'error' | 'warning' | 'info' | 'question';
+  confirmText?: string;
+}

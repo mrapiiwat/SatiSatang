@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { RxCross2 } from 'react-icons/rx';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 import type { UploadProps } from '../../types/home';
+import { showSwalAlert } from '../../utils/SwalAlert';
 
 const Upload: React.FC<UploadProps> = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -23,7 +24,7 @@ const Upload: React.FC<UploadProps> = ({ onClose }) => {
 
   const handleUpload = () => {
     if (!selectedFile) return;
-    alert(`อัปโหลดไฟล์สำเร็จ: ${selectedFile.name}`);
+    showSwalAlert(`อัปโหลดไฟล์สำเร็จ: ${selectedFile.name}`, 'success');
     setSelectedFile(null);
     setPreviewUrl(null);
   };

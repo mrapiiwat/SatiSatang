@@ -5,7 +5,7 @@ import minioClient from '../../common/config/minioClient';
 import crypto from 'crypto';
 import * as transactionModels from './transactionModels';
 import prisma from '../../common/config/prismaClient';
-import { extractTextFromImage } from "../../common/config/ocr"
+import { extractTextFromImage } from '../../common/config/ocr';
 
 const BUCKET = process.env.MINIO_BUCKET!;
 
@@ -180,19 +180,19 @@ export const createTransaction = async (req: Request, res: Response) => {
 export const createTransactionByUpload = async (req: Request, res: Response) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "กรุณาอัปโหลดไฟล์ภาพ" });
+      return res.status(400).json({ error: 'กรุณาอัปโหลดไฟล์ภาพ' });
     }
 
     // ส่ง buffer ไป OCR
     const text = await extractTextFromImage(req.file.buffer);
 
     return res.json({
-      message: "OCR สำเร็จ",
-      extractedText: text ?? "",
+      message: 'OCR สำเร็จ',
+      extractedText: text ?? '',
     });
   } catch (error) {
-    console.error("[UPLOAD] เกิดข้อผิดพลาด:", error);
-    return res.status(500).json({ error: "ไม่สามารถประมวลผลรูปได้" });
+    console.error('[UPLOAD] เกิดข้อผิดพลาด:', error);
+    return res.status(500).json({ error: 'ไม่สามารถประมวลผลรูปได้' });
   }
 };
 

@@ -1,50 +1,52 @@
-import React, { useCallback } from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from '../../api/axios';
 import Image from '../Image';
-import Modal from '../../components/Modal';
 import type { IconSelectorProps, Icon } from '../../types/home';
 
 const IconSelector: React.FC<IconSelectorProps> = ({
   selectedIconId,
+  selectedIconUrl,
   onSelect,
   disabled = false,
 }) => {
   const [icons, setIcons] = useState<Icon[]>([]);
+  const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const selectedIcon = icons.find((icon) => icon.id.toString() === selectedIconId);
 
   const fetchIcons = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axios.get(`/icon${search ? `?search=${search}` : ''}`);
-      setIcons(res.data.data || []);
+      const iconsData: Icon[] = res.data.data || [];
+      setIcons(iconsData);
+
+      // ตั้งค่า selectedIcon ตอน fetch เสร็จ
+      if (selectedIconId) {
+        const found = iconsData.find((icon) => icon.id.toString() === selectedIconId);
+        if (found) setSelectedIcon(found);
+      }
     } catch (err) {
       console.error('Error fetching icons:', err);
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, selectedIconId]);
 
   useEffect(() => {
-    if (isModalOpen) {
-      fetchIcons();
-    }
+    if (isModalOpen) fetchIcons();
   }, [fetchIcons, isModalOpen]);
 
-  const handleSelectIcon = (id: string) => {
-    onSelect(id);
+  const handleSelectIcon = (icon: Icon) => {
+    setSelectedIcon(icon);
+    onSelect(icon.id.toString());
     setIsModalOpen(false);
     setSearch('');
   };
 
   const handleOpenModal = () => {
-    if (!disabled) {
-      setIsModalOpen(true);
-    }
+    if (!disabled) setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
@@ -69,10 +71,10 @@ const IconSelector: React.FC<IconSelectorProps> = ({
               : 'border-gray-300 bg-white hover:border-blue-600'
           }`}
         >
-          {selectedIcon ? (
+          {selectedIcon?.url || selectedIconUrl ? (
             <Image
-              src={selectedIcon.url}
-              alt={selectedIcon.description}
+              src={selectedIcon?.url || selectedIconUrl!}
+              alt={selectedIcon?.description || 'selected icon'}
               className="w-full h-full rounded-full object-cover"
             />
           ) : (
@@ -86,7 +88,10 @@ const IconSelector: React.FC<IconSelectorProps> = ({
           className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 backdrop-blur-sm"
           onClick={handleCloseModal}
         >
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm h-[520px] shadow-xl flex flex-col">
+          <div
+            className="bg-white rounded-3xl p-6 w-full max-w-sm h-[520px] shadow-xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-lg font-semibold text-center mb-4 text-gray-800">เลือกไอคอน</h3>
 
             <input
@@ -96,6 +101,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm mb-4 transition"
             />
+
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar mb-4 p-2">
               <div className="grid grid-cols-4 gap-4">
                 {loading ? (
@@ -111,7 +117,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                     <button
                       key={icon.id}
                       type="button"
-                      onClick={() => handleSelectIcon(icon.id.toString())}
+                      onClick={() => handleSelectIcon(icon)}
                       className={`w-full aspect-square rounded-full border-2 flex items-center justify-center transition-all p-px ${
                         selectedIconId === icon.id.toString()
                           ? 'border-blue-600 bg-purple-50 shadow-md scale-105'
@@ -129,6 +135,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                 )}
               </div>
             </div>
+
             <div className="pt-4 border-t border-gray-100">
               <button
                 type="button"

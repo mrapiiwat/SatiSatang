@@ -43,8 +43,6 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
     else onMonthChange(selectedMonth + 1, selectedYear);
   };
 
-  const handleCalendarClick = () => alert('เปิดปฏิทินเลือกเดือนและปี');
-
   return (
     <div className="flex items-center justify-center mb-8">
       <div className="flex items-center justify-center gap-2">
@@ -55,10 +53,7 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
           <IoIosArrowBack />
         </button>
 
-        <button
-          onClick={handleCalendarClick}
-          className="border border-black-900 rounded-[8px] px-4 py-1 text-sm font-semibold text-black-900"
-        >
+        <button className="border border-black-900 rounded-[8px] px-4 py-1 text-sm font-semibold text-black-900">
           {monthsThai[selectedMonth - 1]} {selectedYear + 543}
         </button>
 

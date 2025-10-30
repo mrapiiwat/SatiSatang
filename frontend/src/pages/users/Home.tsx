@@ -16,6 +16,7 @@ import type { Transaction } from '../../types/home';
 import axios from '../../api/axios';
 import DayTransactions from '../../components/user/DayTransactions';
 import AddMenu from '../../components/user/AddMenu';
+import { showSwalAlert } from '../../utils/SwalAlert';
 
 const Home = () => {
   const today = new Date();
@@ -35,7 +36,7 @@ const Home = () => {
       setTransactions(response.data.data || []);
     } catch (err) {
       console.error(err);
-      alert('เกิดข้อผิดพลาดในการดึงข้อมูล');
+      showSwalAlert('เกิดข้อผิดพลาดในการดึงข้อมูล', 'error');
     } finally {
       setIsLoading(false);
     }

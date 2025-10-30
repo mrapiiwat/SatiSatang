@@ -11,6 +11,7 @@ import type {
   CategoryOption,
   BudgetProps,
 } from '../../types/home';
+import { showSwalAlert } from '../../utils/SwalAlert';
 
 const frequencies: FrequencyOption[] = [
   { value: 'DAILY', label: 'รายวัน' },
@@ -59,8 +60,7 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
     setErrors(newErrors);
 
     if (Object.values(newErrors).some(Boolean)) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
-      return;
+      return showSwalAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
     }
 
     try {
@@ -70,16 +70,17 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
         amount: Number(amount),
       });
 
-      alert('ตั้งงบประมาณสำเร็จ');
+      await showSwalAlert('ตั้งงบประมาณสำเร็จ', 'success');
+
       onSuccess?.();
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        alert(err.response?.data?.message || 'เกิดข้อผิดพลาด');
+        showSwalAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
       } else if (err instanceof Error) {
-        alert(err.message);
+        showSwalAlert(`${err.message}`, 'error');
       } else {
-        alert('เกิดข้อผิดพลาดไม่ทราบชนิด');
+        showSwalAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
       console.error(err);
     }
@@ -136,9 +137,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                 singleValue: (base) => ({ ...base, color: '#111827' }),
               }}
             />
-            {errors.category && (
-              <p className="text-sm text-[#FF383C] mt-1">กรุณากรอกข้อมูลให้ครบถ้วน</p>
-            )}
           </div>
           <div className="flex flex-col gap-2">
             <label>รอบงบประมาณ</label>
@@ -177,9 +175,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                 singleValue: (base) => ({ ...base, color: '#111827' }),
               }}
             />
-            {errors.frequency && (
-              <p className="text-sm text-[#FF383C] mt-1">กรุณากรอกข้อมูลให้ครบถ้วน</p>
-            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -199,9 +194,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                   : 'border-[1px] border-black-500 focus:border-blue-600 focus:ring-0'
               }`}
             />
-            {errors.amount && (
-              <p className="text-sm text-[#FF383C] mt-1">กรุณากรอกข้อมูลให้ครบถ้วน</p>
-            )}
           </div>
 
           <div className="flex justify-center items-center mt-3">
