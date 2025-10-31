@@ -50,18 +50,16 @@ export const checkEmail = async (req: Request, res: Response) => {
         message: 'Validation error',
         errors: error,
       });
-    }
-
-    if (error instanceof Error) {
+    } else if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
     }
-
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: 'Internal server error',
-    });
   }
 };
 
@@ -76,6 +74,17 @@ export const register = async (req: Request, res: Response) => {
         name: validatedData.name,
       },
     });
+
+    const presetCategories = await prisma.category.findMany({ where: { userId: null } });
+
+    const userCategories = presetCategories.map((c) => ({
+      name: c.name,
+      type: c.type,
+      userId: user.id,
+      iconId: c.iconId,
+    }));
+
+    await prisma.category.createMany({ data: userCategories });
 
     await prisma.emailVerification.deleteMany({ where: { userId: user.id } });
 
@@ -94,17 +103,17 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -142,17 +151,17 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     )(req, res, next);
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -197,17 +206,17 @@ export const verifyEmail = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -274,17 +283,17 @@ export const resendOtp = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -303,6 +312,21 @@ export const googleAuthCallback = [
       const accessToken = generateAccessToken(user.id);
       const refreshRaw = await createRefreshToken(user.id);
 
+      const userCategoriesCount = await prisma.category.count({
+        where: { userId: user.id },
+      });
+
+      if (userCategoriesCount === 0) {
+        const presetCategories = await prisma.category.findMany({ where: { userId: null } });
+        const userCategories = presetCategories.map((c) => ({
+          name: c.name,
+          type: c.type,
+          userId: user.id,
+          iconId: c.iconId,
+        }));
+        await prisma.category.createMany({ data: userCategories });
+      }
+
       res.cookie('refreshToken', refreshRaw, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -313,12 +337,12 @@ export const googleAuthCallback = [
       res.redirect(`${process.env.FRONTEND_BASE_URL}/auth/callback?token=${accessToken}`);
     } catch (error) {
       if (error instanceof Error) {
-        res.status(httpStatus.BAD_REQUEST).json({
+        return res.status(httpStatus.BAD_REQUEST).json({
           message: 'Something went wrong!',
           errors: error.message,
         });
       } else {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
           message: 'Internal server error',
         });
       }
@@ -338,6 +362,21 @@ export const facebookAuthCallback = [
       const accessToken = generateAccessToken(user.id);
       const refreshRaw = await createRefreshToken(user.id);
 
+      const userCategoriesCount = await prisma.category.count({
+        where: { userId: user.id },
+      });
+
+      if (userCategoriesCount === 0) {
+        const presetCategories = await prisma.category.findMany({ where: { userId: null } });
+        const userCategories = presetCategories.map((c) => ({
+          name: c.name,
+          type: c.type,
+          userId: user.id,
+          iconId: c.iconId,
+        }));
+        await prisma.category.createMany({ data: userCategories });
+      }
+
       res.cookie('refreshToken', refreshRaw, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -348,12 +387,12 @@ export const facebookAuthCallback = [
       res.redirect(`${process.env.FRONTEND_BASE_URL}/auth/callback?token=${accessToken}`);
     } catch (error) {
       if (error instanceof Error) {
-        res.status(httpStatus.BAD_REQUEST).json({
+        return res.status(httpStatus.BAD_REQUEST).json({
           message: 'Something went wrong!',
           errors: error.message,
         });
       } else {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
           message: 'Internal server error',
         });
       }
@@ -385,12 +424,12 @@ export const refreshToken = async (req: Request, res: Response) => {
     res.json({ accessToken });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -411,12 +450,12 @@ export const logout = async (req: Request, res: Response) => {
     res.json({ message: 'Logged out' });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }

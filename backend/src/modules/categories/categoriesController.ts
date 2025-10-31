@@ -24,17 +24,17 @@ export const createCategory = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -54,7 +54,7 @@ export const getCategories = async (req: Request, res: Response) => {
           : undefined;
 
     const where = {
-      OR: [{ userId: req.user }, { userId: null }],
+      userId: Number(req.user),
       ...(type && { type: { equals: type } }),
       ...(search && {
         AND: [
@@ -86,12 +86,12 @@ export const getCategories = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -128,12 +128,12 @@ export const getCategory = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -177,17 +177,18 @@ export const updateCategory = async (req: Request, res: Response) => {
     });
   } catch (error: unknown) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: error.message,
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Unknown error',
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
       });
     }
   }
@@ -216,11 +217,11 @@ export const deleteCategory = async (req: Request, res: Response) => {
     return res.status(httpStatus.OK).json({ message: 'Category deleted successfully' });
   } catch (error: unknown) {
     if (error instanceof Error) {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Unknown error',
       });
     }

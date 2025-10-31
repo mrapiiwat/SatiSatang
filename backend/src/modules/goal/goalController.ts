@@ -24,12 +24,12 @@ export const getGoals = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -57,12 +57,12 @@ export const getGoal = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -88,17 +88,17 @@ export const createGoal = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -128,17 +128,17 @@ export const updateGoal = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -164,12 +164,12 @@ export const deleteGoal = async (req: Request, res: Response) => {
     return res.status(httpStatus.OK).json({ message: 'Goal deleted successfully' });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }

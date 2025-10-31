@@ -1,8 +1,19 @@
-interface userSchema {
+// types/store.ts
+export interface OAuthAccount {
+  id: string;
+  provider: string;
+  providerUserId: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: string | null;
+}
+
+export interface userSchema {
   id: string;
   email: string;
   name: string;
   balance: string;
+  oauthAccounts?: OAuthAccount[];
 }
 
 export interface formLogin {

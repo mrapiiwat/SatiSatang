@@ -1,216 +1,142 @@
-import { useState } from 'react';
-import { LuEye, LuEyeClosed } from 'react-icons/lu';
+import React, { useState, useEffect } from 'react';
+import axios from '../../api/axios';
+import { showSwalAlert } from '../../utils/SwalAlert';
+import useAuthStore from '../../store/authStore';
+import { isAxiosError } from 'axios';
+import PasswordChangeForm from '../../components/user/PasswordChangeForm';
 
-const mockUsers = [
-  {
-    id: 1,
-    name: 'Suda Local',
-    email: 'suda@email.com',
-    password: 'hashed_password_here',
-    provider: 'local',
-  },
-];
+const Account: React.FC = () => {
+  const user = useAuthStore((state) => state.user);
+  const actionSetUser = useAuthStore((state) => state.actionSetUser);
+  const [name, setName] = useState<string>('');
+  const [isEdited, setIsEdited] = useState<boolean>(false);
 
-const Account = ({ userId = 1 }) => {
-  const user = mockUsers.find((u) => u.id === userId);
-  const [name, setName] = useState(user?.name || '');
-  const [isEdited, setIsEdited] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
 
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupMessage, setPopupMessage] = useState('');
+  const [oldPassword, setOldPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
 
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get('/me');
+        actionSetUser(response.data);
+        setName(response.data.name || '');
+      } catch (error) {
+        console.error('Fetch user error:', error);
+      }
+    };
 
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+    if (!user) fetchUser();
+    else setName(user.name || '');
+  }, [user, actionSetUser]);
 
-  const handleSaveName = () => {
+  if (!user) return <div>Loading...</div>;
+
+  const isSSO = user.oauthAccounts && user.oauthAccounts.length > 0;
+
+  const handleSaveName = async () => {
     if (!name.trim()) return;
-    setIsEdited(false);
-    setPopupMessage('แก้ไขชื่อผู้ใช้งานสำเร็จ');
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 2000);
+    try {
+      const response = await axios.put('/update-name', { name });
+      actionSetUser({ ...user, name: response.data.name });
+      setIsEdited(false);
+      showSwalAlert('แก้ไขชื่อผู้ใช้งานสำเร็จ', 'success');
+    } catch (error) {
+      console.error(error);
+      showSwalAlert('เกิดข้อผิดพลาดในการแก้ไขชื่อ', 'error');
+    }
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
       setPasswordError('รหัสผ่านไม่ตรงกัน');
       return;
     }
-    setPasswordError('');
-    setPopupMessage('เปลี่ยนรหัสผ่านสำเร็จ');
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 2000);
-    setIsChangingPassword(false);
-    setOldPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    try {
+      setPasswordError('');
+      const response = await axios.put(
+        '/change-password',
+        { oldPassword, password: newPassword, confirmPassword },
+        { withCredentials: true },
+      );
+      showSwalAlert(response.data?.message || 'เปลี่ยนรหัสผ่านสำเร็จ', 'success');
+      setIsChangingPassword(false);
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: unknown) {
+      let msg = 'เกิดข้อผิดพลาด โปรดลองใหม่';
+      if (isAxiosError(error)) {
+        msg = error.response?.data?.message || msg;
+      }
+      setPasswordError(msg);
+      showSwalAlert(msg, 'error');
+    }
   };
 
-  if (!user) return <div>ไม่พบบัญชีผู้ใช้</div>;
+  if (isChangingPassword && !isSSO) {
+    return (
+      <PasswordChangeForm
+        oldPassword={oldPassword}
+        setOldPassword={setOldPassword}
+        newPassword={newPassword}
+        setNewPassword={setNewPassword}
+        confirmPassword={confirmPassword}
+        setConfirmPassword={setConfirmPassword}
+        passwordError={passwordError}
+        handlePasswordChange={handlePasswordChange}
+        cancel={() => setIsChangingPassword(false)}
+      />
+    );
+  }
 
   return (
     <div className="relative px-6 py-8 font-ibm text-black-900 min-h-screen">
-      <div
-        className={`fixed top-4 left-1/2 transform -translate-x-1/2 bg-black-300 text-black-900 px-6 py-2 rounded-lg text-sm shadow-md transition-all duration-500 ease-in-out ${
-          showPopup ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
-        }`}
-        style={{ zIndex: 9999 }}
-      >
-        {popupMessage}
-      </div>
-
-      <style>
-        {`
-          input:focus {
-            border-bottom-color: #2563eb !important; /* Tailwind's blue-600 */
-          }
-        `}
-      </style>
-
       <h1 className="text-center font-semibold mb-8">บัญชีผู้ใช้</h1>
 
-      {!isChangingPassword ? (
-        <>
-          <div className="mb-6">
-            <label className="block text-sm font-semibold mb-1">ชื่อผู้ใช้งาน</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setIsEdited(true);
-              }}
-              className={`w-full border-b focus:outline-none pb-1 ${
-                isEdited ? 'border-blue-600' : 'border-black-400'
-              }`}
-              placeholder="กรอกชื่อผู้ใช้งาน"
-            />
-          </div>
+      <div className="mb-6 max-w-md mx-auto">
+        <label className="block text-sm font-semibold mb-1">ชื่อผู้ใช้งาน</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setIsEdited(true);
+          }}
+          className={`w-full border-b focus:outline-none pb-1 ${isEdited ? 'border-blue-600' : 'border-black-400'}`}
+          placeholder="กรอกชื่อผู้ใช้งาน"
+        />
+      </div>
 
-          <div className="mb-8">
-            <label className="block text-sm font-semibold mb-1">รหัสผ่าน</label>
+      {!isSSO && (
+        <div className="mb-8 max-w-md mx-auto">
+          <label className="block text-sm font-semibold mb-1">รหัสผ่าน</label>
+          <button
+            onClick={() => setIsChangingPassword(true)}
+            className="w-full border-b border-black-400 text-black-900 text-left pb-1"
+          >
+            *************
+          </button>
+        </div>
+      )}
 
-            {user.provider === 'google' || user.provider === 'facebook' ? (
-              <input
-                type="password"
-                value="*************"
-                readOnly
-                className="w-full border-b border-black-400 text-black-500 bg-transparent cursor-not-allowed pb-1"
-              />
-            ) : (
-              <button
-                onClick={() => setIsChangingPassword(true)}
-                className="w-full border-b border-black-400 text-black-900 text-left pb-1"
-              >
-                *************
-              </button>
-            )}
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              disabled={!isEdited || !name.trim()}
-              onClick={handleSaveName}
-              className={`px-6 py-2 rounded-md text-white text-sm font-semibold ${
-                isEdited && name.trim() ? 'bg-blue-600' : 'bg-gray-400 cursor-not-allowed'
-              }`}
-            >
-              บันทึก
-            </button>
-          </div>
-
+      <div className="flex justify-end mb-6 max-w-md mx-auto">
+        <button
+          disabled={!isEdited || !name.trim()}
+          onClick={handleSaveName}
+          className={`px-6 py-2 rounded-md text-white text-sm font-semibold ${isEdited && name.trim() ? 'bg-blue-600' : 'bg-gray-400 cursor-not-allowed'}`}
+        >
+          บันทึก
+        </button>
+        {!isChangingPassword && (
           <div className="fixed left-0 bottom-8 w-full flex justify-center">
             <button className="text-[#FF5F57] font-medium">ลบบัญชี</button>
           </div>
-        </>
-      ) : (
-        <>
-          <h2 className="text-center font-semibold mb-6">เปลี่ยนรหัสผ่าน</h2>
-
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm mb-1">รหัสผ่านเก่า</label>
-              <div className="flex items-center border-b border-gray-300">
-                <input
-                  type={showOldPassword ? 'text' : 'password'}
-                  value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  className="flex-1 focus:outline-none py-1"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowOldPassword(!showOldPassword)}
-                  className="text-gray-600"
-                >
-                  {showOldPassword ? <LuEye /> : <LuEyeClosed />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm mb-1">รหัสผ่านใหม่</label>
-              <div className="flex items-center border-b border-gray-300">
-                <input
-                  type={showNewPassword ? 'text' : 'password'}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="flex-1 focus:outline-none py-1"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="text-gray-600"
-                >
-                  {showNewPassword ? <LuEye /> : <LuEyeClosed />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm mb-1">ยืนยันรหัสผ่าน</label>
-              <div className="flex items-center border-b border-gray-300">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="flex-1 focus:outline-none py-1"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="text-gray-600"
-                >
-                  {showConfirmPassword ? <LuEye /> : <LuEyeClosed />}
-                </button>
-              </div>
-              {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
-            </div>
-
-            <div className="flex justify-between items-center mt-6">
-              <button
-                type="button"
-                onClick={() => setIsChangingPassword(false)}
-                className="text-black-600 font-medium"
-              >
-                กลับ
-              </button>
-              <button
-                type="button"
-                onClick={handlePasswordChange}
-                className="px-6 py-2 rounded-md bg-blue-600 text-white font-semibold"
-              >
-                บันทึก
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 };

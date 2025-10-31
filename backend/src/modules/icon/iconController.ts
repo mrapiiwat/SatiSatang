@@ -44,18 +44,16 @@ export const createIcon = async (req: Request, res: Response) => {
         message: 'Validation error',
         errors: error,
       });
-    }
-
-    if (error instanceof Error) {
+    } else if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
     }
-
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: 'Internal server error',
-    });
   }
 };
 
@@ -101,12 +99,12 @@ export const getIcons = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -126,12 +124,12 @@ export const getIcon = async (req: Request, res: Response) => {
     stream.pipe(res);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
@@ -189,13 +187,14 @@ export const updateIcon = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Failed to update icon',
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
         errors: error.message,
       });
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
     }
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      message: 'Unknown error occurred while updating icon',
-    });
   }
 };
