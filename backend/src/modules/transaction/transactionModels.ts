@@ -14,6 +14,7 @@ export const transactionSchema = z.object({
     if (typeof val === 'string') return Number(val);
     return val;
   }, z.number()),
+  isGoal: z.boolean().optional(),
 });
 
 export interface WhereClause {

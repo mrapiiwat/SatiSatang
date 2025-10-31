@@ -4,6 +4,7 @@ import { showSwalAlert } from '../../utils/SwalAlert';
 import useAuthStore from '../../store/authStore';
 import { isAxiosError } from 'axios';
 import PasswordChangeForm from '../../components/user/PasswordChangeForm';
+import PageWrapper from '../../components/PageWrapper';
 
 const Account: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -94,50 +95,52 @@ const Account: React.FC = () => {
   }
 
   return (
-    <div className="relative px-6 py-8 font-ibm text-black-900 min-h-screen">
-      <h1 className="text-center font-semibold mb-8">บัญชีผู้ใช้</h1>
+    <PageWrapper animation="fade">
+      <div className="relative px-6 py-8 font-ibm text-black-900 min-h-screen">
+        <h1 className="text-center font-semibold mb-8">บัญชีผู้ใช้</h1>
 
-      <div className="mb-6 max-w-md mx-auto">
-        <label className="block text-sm font-semibold mb-1">ชื่อผู้ใช้งาน</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setIsEdited(true);
-          }}
-          className={`w-full border-b focus:outline-none pb-1 ${isEdited ? 'border-blue-600' : 'border-black-400'}`}
-          placeholder="กรอกชื่อผู้ใช้งาน"
-        />
-      </div>
-
-      {!isSSO && (
-        <div className="mb-8 max-w-md mx-auto">
-          <label className="block text-sm font-semibold mb-1">รหัสผ่าน</label>
-          <button
-            onClick={() => setIsChangingPassword(true)}
-            className="w-full border-b border-black-400 text-black-900 text-left pb-1"
-          >
-            *************
-          </button>
+        <div className="mb-6 max-w-md mx-auto">
+          <label className="block text-sm font-semibold mb-1">ชื่อผู้ใช้งาน</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setIsEdited(true);
+            }}
+            className={`w-full border-b focus:outline-none pb-1 ${isEdited ? 'border-blue-600' : 'border-black-400'}`}
+            placeholder="กรอกชื่อผู้ใช้งาน"
+          />
         </div>
-      )}
 
-      <div className="flex justify-end mb-6 max-w-md mx-auto">
-        <button
-          disabled={!isEdited || !name.trim()}
-          onClick={handleSaveName}
-          className={`px-6 py-2 rounded-md text-white text-sm font-semibold ${isEdited && name.trim() ? 'bg-blue-600' : 'bg-gray-400 cursor-not-allowed'}`}
-        >
-          บันทึก
-        </button>
-        {!isChangingPassword && (
-          <div className="fixed left-0 bottom-8 w-full flex justify-center">
-            <button className="text-[#FF5F57] font-medium">ลบบัญชี</button>
+        {!isSSO && (
+          <div className="mb-8 max-w-md mx-auto">
+            <label className="block text-sm font-semibold mb-1">รหัสผ่าน</label>
+            <button
+              onClick={() => setIsChangingPassword(true)}
+              className="w-full border-b border-black-400 text-black-900 text-left pb-1"
+            >
+              *************
+            </button>
           </div>
         )}
+
+        <div className="flex justify-end mb-6 max-w-md mx-auto">
+          <button
+            disabled={!isEdited || !name.trim()}
+            onClick={handleSaveName}
+            className={`px-6 py-2 rounded-md text-white text-sm font-semibold ${isEdited && name.trim() ? 'bg-blue-600' : 'bg-gray-400 cursor-not-allowed'}`}
+          >
+            บันทึก
+          </button>
+          {!isChangingPassword && (
+            <div className="fixed left-0 bottom-8 w-full flex justify-center">
+              <button className="text-[#FF5F57] font-medium">ลบบัญชี</button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 };
 

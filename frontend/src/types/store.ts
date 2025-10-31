@@ -1,4 +1,3 @@
-// types/store.ts
 export interface OAuthAccount {
   id: string;
   provider: string;

@@ -23,9 +23,14 @@ export interface AddMenuProps {
   onSelect: (type: string) => void;
   onClose: () => void;
 }
+
 export interface CategoryResponse {
   id: number;
   name: string;
+  type: 'INCOME' | 'EXPENSE';
+  userId: number;
+  iconId: string;
+  isGoal?: boolean;
 }
 
 export interface OptionType {
@@ -50,6 +55,7 @@ export interface DayTransactionsProps {
 export interface CategoryOption {
   value: number;
   label: string;
+  isGoal?: boolean;
 }
 
 export interface FrequencyOption {
@@ -97,4 +103,11 @@ export interface IconSelectorProps {
 
 export interface FloatingBubbleProps {
   onClick?: () => void;
+}
+
+export interface PaginationData {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }

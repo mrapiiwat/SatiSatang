@@ -65,7 +65,7 @@ export const SatangChat = async (req: Request, res: Response) => {
     await addMemory(userId, validatedData.content, 'user');
     await addMemory(userId, reply, 'assistant');
 
-    res.status(httpStatus.OK).json({ message: reply, memoryResults });
+    return res.status(httpStatus.OK).json({ message: reply, memoryResults });
   } catch (error) {
     if (error instanceof ZodError) {
       return res.status(httpStatus.BAD_REQUEST).json({

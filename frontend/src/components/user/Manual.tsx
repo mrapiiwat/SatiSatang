@@ -3,10 +3,8 @@ import Select from 'react-select';
 import type { SingleValue } from 'react-select';
 import { RxCross2 } from 'react-icons/rx';
 import { GoCalendar } from 'react-icons/go';
-import type { ManualProps, OptionType } from '../../types/home';
+import type { ManualProps, OptionType, CategoryOption, CategoryResponse } from '../../types/home';
 import axios from '../../api/axios';
-import { isAxiosError } from 'axios';
-import type { CategoryResponse, CategoryOption } from '../../types/home';
 import { showSwalAlert } from '../../utils/SwalAlert';
 
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
@@ -42,12 +40,13 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
       }
 
       try {
-        const res = await axios.get(`/categories?type=${selectedType.value}`);
-        const data = res.data.data;
+        const res = await axios.get(`/categories?type=${selectedType.value}&includeGoals=true`);
+        const data: CategoryResponse[] = res.data.data;
 
-        const formatted = data.map((cat: CategoryResponse) => ({
+        const formatted: CategoryOption[] = data.map((cat) => ({
           value: cat.id,
           label: cat.name,
+          isGoal: cat.isGoal || false,
         }));
 
         setCategories(formatted);
@@ -71,22 +70,16 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
       await axios.post('/transaction', {
         type: selectedType.value,
         description: detail,
-        categoryId: String(selectedCategory.value),
-        amount: amount,
+        categoryId: selectedCategory.value,
+        amount: Number(amount),
+        isGoal: selectedCategory.isGoal || false,
       });
 
       await showSwalAlert('บันทึกสำเร็จ', 'success');
-
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        showSwalAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
-      } else if (err instanceof Error) {
-        showSwalAlert(`${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
-      } else {
-        showSwalAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
-      }
+      showSwalAlert(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
     }
   };
 
@@ -174,6 +167,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
               className="border-[1px] text-black-900 border-black-500 w-full h-10 rounded-md p-1 px-3"
             />
           </div>
+
           <div className="flex justify-center items-center mt-3">
             <button className="bg-blue-600 px-6 py-3 rounded-xl text-white text-sm font-semibold">
               บันทึก

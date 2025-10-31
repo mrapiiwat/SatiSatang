@@ -42,7 +42,6 @@ const Upload: React.FC<UploadProps> = ({ onClose }) => {
           </div>
         </div>
 
-        {/* อัปโหลดไฟล์ */}
         <div className="flex flex-col items-center justify-center gap-5 mb-6">
           <label
             htmlFor="fileInput"
@@ -60,7 +59,6 @@ const Upload: React.FC<UploadProps> = ({ onClose }) => {
             />
           </label>
 
-          {/* preview file */}
           {selectedFile && (
             <div className="text-center">
               <p className="text-sm font-semibold text-black-900 mb-1 truncate overflow-hidden text-ellipsis whitespace-nowrap max-w-[250px] mx-auto text-center">
@@ -82,7 +80,6 @@ const Upload: React.FC<UploadProps> = ({ onClose }) => {
           )}
         </div>
 
-        {/* ปุ่มอัปโหลด */}
         <div>
           <button
             onClick={handleUpload}

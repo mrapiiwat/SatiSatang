@@ -3,7 +3,7 @@ import httpStatus from 'http-status';
 import { ZodError } from 'zod';
 import * as categoriesModels from './categoriesModels';
 import prisma from '../../common/config/prismaClient';
-import { TransactionType } from '@prisma/client';
+import { Category, Goals, TransactionType } from '@prisma/client';
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
@@ -18,7 +18,7 @@ export const createCategory = async (req: Request, res: Response) => {
 
     const category = await prisma.category.create({ data });
 
-    res.status(httpStatus.CREATED).json({
+    return res.status(httpStatus.CREATED).json({
       message: 'Category created successfully',
       data: category,
     });
@@ -45,6 +45,9 @@ export const getCategories = async (req: Request, res: Response) => {
   try {
     const search = req.query.search as string | undefined;
     const typeParam = req.query.type as string | undefined;
+    const includeGoalsParam = req.query.includeGoals as string | undefined;
+
+    const includeGoals = includeGoalsParam === 'true' || includeGoalsParam === '1' ? true : false;
 
     const type =
       typeParam === 'INCOME'
@@ -67,64 +70,41 @@ export const getCategories = async (req: Request, res: Response) => {
       }),
     };
 
-    const category = await prisma.category.findMany({
+    const categories: Category[] = await prisma.category.findMany({
       where,
       orderBy: { createdAt: 'desc' },
     });
 
-    const data = category.map((cate) => ({
-      id: cate.id,
-      name: cate.name,
-      type: cate.type,
-      userId: cate.userId,
-      icon: `${process.env.APP_BASE_URL}/api/icon/${cate.iconId}`,
-    }));
-
-    return res.status(httpStatus.OK).json({
-      message: 'Categories fetched successfully',
-      data: data,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        message: 'Something went wrong!',
-        errors: error.message,
-      });
-    } else {
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Internal server error',
+    let goals: Goals[] = [];
+    if (includeGoals && (type === TransactionType.EXPENSE || !type)) {
+      goals = await prisma.goals.findMany({
+        where: { userId: Number(req.user) },
       });
     }
-  }
-};
 
-export const getCategory = async (req: Request, res: Response) => {
-  try {
-    const categoryId = Number(req.params.id);
-
-    if (isNaN(categoryId)) {
-      return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid Category id' });
-    }
-
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId, userId: req.user },
-    });
-
-    if (!category) {
-      return res.status(httpStatus.NOT_FOUND).json({ message: 'Category not found' });
-    }
-
-    const formattedCategory = {
-      id: category.id,
-      name: category.name,
-      type: category.type,
-      userId: category.userId,
-      icon: `${process.env.APP_BASE_URL}/api/icon/${category.iconId}`,
-    };
+    const combined = [
+      ...categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        userId: c.userId,
+        icon: `${process.env.APP_BASE_URL}/api/icon/${c.iconId}`,
+        isGoal: false,
+      })),
+      ...(includeGoals
+        ? goals.map((g) => ({
+            id: g.id,
+            name: g.name,
+            type: 'EXPENSE' as const,
+            userId: g.userId,
+            isGoal: true,
+          }))
+        : []),
+    ];
 
     return res.status(httpStatus.OK).json({
-      message: 'Icons fetched successfully',
-      data: formattedCategory,
+      message: `Categories${includeGoals ? ' (and goals)' : ''} fetched successfully`,
+      data: combined,
     });
   } catch (error) {
     if (error instanceof Error) {

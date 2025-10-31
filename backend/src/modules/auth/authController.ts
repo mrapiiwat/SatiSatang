@@ -97,7 +97,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
     await sendVerificationEmail(validatedData.email, otp);
-    res.status(httpStatus.OK).json({
+    return res.status(httpStatus.OK).json({
       userId: user.id,
       message: 'Please check your email to verify your account.',
     });
@@ -146,7 +146,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
           maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
         });
 
-        res.status(httpStatus.OK).json({ message: 'Login successful', accessToken: accessToken });
+        return res
+          .status(httpStatus.OK)
+          .json({ message: 'Login successful', accessToken: accessToken });
       },
     )(req, res, next);
   } catch (error) {
@@ -200,7 +202,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
       maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
     });
 
-    res.status(httpStatus.OK).json({
+    return res.status(httpStatus.OK).json({
       message: 'Email verified successfully',
       accessToken: accessToken,
     });
@@ -277,7 +279,7 @@ export const resendOtp = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(httpStatus.OK).json({
+    return res.status(httpStatus.OK).json({
       message: 'OTP sent successfully',
       userId: user.id,
     });
@@ -421,7 +423,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000,
     });
 
-    res.json({ accessToken });
+    return res.json({ accessToken });
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -447,7 +449,7 @@ export const logout = async (req: Request, res: Response) => {
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production',
     });
-    res.json({ message: 'Logged out' });
+    return res.json({ message: 'Logged out' });
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({

@@ -100,13 +100,23 @@ CREATE TABLE "Goals" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
-    "currentAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "deadline" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Goals_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "GoalTransaction" (
+    "id" SERIAL NOT NULL,
+    "goalId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "GoalTransaction_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -199,9 +209,6 @@ CREATE UNIQUE INDEX "EmailVerification_otpHash_key" ON "EmailVerification"("otpH
 CREATE INDEX "Transaction_userId_createdAt_idx" ON "Transaction"("userId", "createdAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Goals_name_key" ON "Goals"("name");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Stock_symbol_key" ON "Stock"("symbol");
 
 -- CreateIndex
@@ -236,6 +243,9 @@ ALTER TABLE "Icon" ADD CONSTRAINT "Icon_userId_fkey" FOREIGN KEY ("userId") REFE
 
 -- AddForeignKey
 ALTER TABLE "Goals" ADD CONSTRAINT "Goals_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "GoalTransaction" ADD CONSTRAINT "GoalTransaction_goalId_fkey" FOREIGN KEY ("goalId") REFERENCES "Goals"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Budgets" ADD CONSTRAINT "Budgets_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

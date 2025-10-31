@@ -15,7 +15,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <div
         className={`
-          fixed bg-white text-black-900 p-4 transition-transform duration-300 z-40
+          fixed bg-white text-black-900 p-4 transition-transform duration-300 z-50
           w-full h-[calc(100%-80px)] bottom-0 left-0 rounded-t-3xl
           ${isOpen ? 'translate-y-0' : 'translate-y-full'}
           md:w-1/3 md:h-full md:top-0 md:right-0 md:left-auto md:rounded-none md:rounded-l-3xl min-w-96

@@ -7,53 +7,22 @@ import * as goalModels from './goalModels';
 export const getGoals = async (req: Request, res: Response) => {
   try {
     const goals = await prisma.goals.findMany({
-      where: {
-        userId: Number(req.user),
-      },
+      where: { userId: Number(req.user) },
+      include: { goalTransactions: true },
     });
 
     if (!goals || goals.length === 0) {
-      return res.status(httpStatus.NOT_FOUND).json({
-        message: 'No goals found for this user',
-      });
+      return res.status(httpStatus.NOT_FOUND).json({ message: 'No goals found for this user' });
     }
+
+    const goalsWithCurrentAmount = goals.map((goal) => ({
+      ...goal,
+      currentAmount: goal.goalTransactions.reduce((sum, t) => sum + t.amount, 0),
+    }));
 
     return res.status(httpStatus.OK).json({
       message: 'Goals fetched successfully',
-      data: goals,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        message: 'Something went wrong!',
-        errors: error.message,
-      });
-    } else {
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Internal server error',
-      });
-    }
-  }
-};
-
-export const getGoal = async (req: Request, res: Response) => {
-  try {
-    const goalId = Number(req.params.id);
-
-    if (isNaN(goalId)) {
-      return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid Goal id' });
-    }
-
-    const goal = await prisma.goals.findUnique({
-      where: { id: goalId, userId: Number(req.user) },
-    });
-
-    if (!goal) {
-      return res.status(httpStatus.NOT_FOUND).json({ message: 'Goal not found' });
-    }
-    return res.status(httpStatus.OK).json({
-      message: 'Goal fetched successfully',
-      data: goal,
+      data: goalsWithCurrentAmount,
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -77,12 +46,11 @@ export const createGoal = async (req: Request, res: Response) => {
       data: {
         name: validatedData.name,
         amount: validatedData.amount,
-        currentAmount: validatedData.currentAmount,
         deadline: validatedData.deadline,
         userId: Number(req.user),
       },
     });
-    res.status(httpStatus.CREATED).json({
+    return res.status(httpStatus.CREATED).json({
       message: 'Goal created successfully',
       data: goal,
     });
@@ -122,6 +90,7 @@ export const updateGoal = async (req: Request, res: Response) => {
       where: { id: goalId },
       data: validatedData,
     });
+
     return res.status(httpStatus.OK).json({
       message: 'Goal updated successfully',
       data: updatedGoal,

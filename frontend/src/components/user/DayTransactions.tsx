@@ -24,7 +24,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
     fetchCategories();
   }, []);
 
-  if (sortedDates.length === 0) return null;
+  if (sortedDates.length === 0)
+    return (
+      <p className="absolute inset-x-0 flex items-center justify-center text-black-600 text-base">
+        ยังไม่มีรายการ
+      </p>
+    );
 
   return (
     <div className="w-5/6 md:w-[70%]">

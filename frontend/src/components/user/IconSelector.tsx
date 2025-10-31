@@ -22,7 +22,6 @@ const IconSelector: React.FC<IconSelectorProps> = ({
       const iconsData: Icon[] = res.data.data || [];
       setIcons(iconsData);
 
-      // ตั้งค่า selectedIcon ตอน fetch เสร็จ
       if (selectedIconId) {
         const found = iconsData.find((icon) => icon.id.toString() === selectedIconId);
         if (found) setSelectedIcon(found);

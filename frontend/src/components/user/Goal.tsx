@@ -30,8 +30,6 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
     { value: '12', label: 'ธันวาคม' },
   ];
 
-  const currentYear = new Date().getFullYear();
-
   const validateInputs = () => {
     const newErrors: Record<string, string> = {};
 
@@ -57,36 +55,32 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
   };
 
   const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    let value = e.target.value;
 
     if (value.length > 4) return;
 
-    setYear(value);
-
-    if (value && value.length === 4 && Number(value) < currentYear) {
-      setYear('');
+    if (Number(value) >= 2500) {
+      value = String(Number(value) - 543);
     }
+
+    setYear(value);
   };
 
   const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    // ไม่อนุญาตให้ติดลบหรือมากกว่า 31
     if (Number(value) < 0 || Number(value) > 31) return;
 
-    // ถ้ามีการเลือกเดือนแล้ว ตรวจสอบจำนวนวันในเดือนนั้น
     if (month && value) {
       const selectedMonth = Number(month.value);
       const selectedYear = year ? Number(year) : new Date().getFullYear();
       let maxDays = 31;
 
-      // เดือนที่มี 30 วัน
       if ([4, 6, 9, 11].includes(selectedMonth)) {
         maxDays = 30;
       }
       // เดือนกุมภาพันธ์
       else if (selectedMonth === 2) {
-        // ตรวจสอบปีอธิกสุรทิน
         const isLeapYear =
           (selectedYear % 4 === 0 && selectedYear % 100 !== 0) || selectedYear % 400 === 0;
         maxDays = isLeapYear ? 29 : 28;
@@ -177,7 +171,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                   type="number"
                   value={year}
                   onChange={handleYearChange}
-                  placeholder="ปี"
+                  placeholder="ปี (ค.ศ.)"
                   className={`w-full border ${
                     errors.year ? 'border-red-500' : 'border-black-500'
                   } rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none`}
@@ -190,7 +184,6 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                   value={month}
                   onChange={(option: SingleValue<OptionType>) => {
                     setMonth(option);
-                    // ถ้ามีวันที่กรอกไว้แล้ว ให้ตรวจสอบใหม่
                     if (day && option) {
                       const selectedMonth = Number(option.value);
                       const selectedYear = year ? Number(year) : new Date().getFullYear();

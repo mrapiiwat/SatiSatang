@@ -15,6 +15,10 @@ export const getTransactions = async (req: Request, res: Response) => {
     const month = req.query.month ? parseInt(req.query.month as string) : undefined;
     const year = req.query.year ? parseInt(req.query.year as string) : undefined;
 
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const skip = (page - 1) * limit;
+
     let where: transactionModels.WhereClause = { userId: Number(req.user) };
 
     if (search) {
@@ -33,9 +37,13 @@ export const getTransactions = async (req: Request, res: Response) => {
       };
     }
 
+    const total = await prisma.transaction.count({ where });
+
     const transactions = await prisma.transaction.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
     });
 
     const formattedTransactions = transactions.map((t) => ({
@@ -46,45 +54,12 @@ export const getTransactions = async (req: Request, res: Response) => {
     return res.status(httpStatus.OK).json({
       message: 'Transactions fetched successfully',
       data: formattedTransactions,
-    });
-  } catch (error) {
-    if (error instanceof Error) {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        message: 'Something went wrong!',
-        errors: error.message,
-      });
-    } else {
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Internal server error',
-      });
-    }
-  }
-};
-
-export const getTransaction = async (req: Request, res: Response) => {
-  try {
-    const transactionId = Number(req.params.id);
-
-    if (isNaN(transactionId)) {
-      return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid transaction id' });
-    }
-
-    const transaction = await prisma.transaction.findFirst({
-      where: { id: transactionId, userId: req.user },
-    });
-
-    if (!transaction) {
-      return res.status(httpStatus.NOT_FOUND).json({ message: 'Transaction not found' });
-    }
-
-    const formattedTransactions = {
-      ...transaction,
-      receipt: `${process.env.APP_BASE_URL}/api/transaction/receipt/${transaction.id}`,
-    };
-
-    return res.status(httpStatus.OK).json({
-      message: 'Transaction fetched successfully',
-      data: formattedTransactions,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -143,17 +118,39 @@ export const createTransaction = async (req: Request, res: Response) => {
     if (file) {
       const ext = file.originalname.split('.').pop();
       filename = `${crypto.randomUUID()}.${ext}`;
-
       await minioClient.putObject(BUCKET, filename, file.buffer, file.size, {
         'Content-Type': file.mimetype,
       });
     }
 
+    const userId = Number(req.user);
+
+    let goalTransaction = null;
+
+    if (validatedData.isGoal) {
+      goalTransaction = await prisma.goalTransaction.create({
+        data: {
+          goalId: validatedData.categoryId,
+          userId,
+          amount: validatedData.amount,
+        },
+      });
+      return res.status(httpStatus.CREATED).json({
+        message: 'Goal transaction created successfully',
+        data: goalTransaction,
+      });
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
-        ...validatedData,
+        type: validatedData.type,
+        description: validatedData.description,
+        amount: validatedData.amount,
+        categoryId: validatedData.categoryId,
         receipt: filename,
-        userId: Number(req.user),
+        userId: userId,
+        toAccount: validatedData.toAccount,
+        fromAccount: validatedData.fromAccount,
       },
     });
 
@@ -163,17 +160,17 @@ export const createTransaction = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Validation error',
         errors: error,
       });
     } else if (error instanceof Error) {
-      res.status(httpStatus.BAD_REQUEST).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         message: 'Something went wrong!',
         errors: error.message,
       });
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
       });
     }
