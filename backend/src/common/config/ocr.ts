@@ -1,4 +1,6 @@
 import { ImageAnnotatorClient } from '@google-cloud/vision';
+import type { protos } from '@google-cloud/vision';
+
 import path from 'path';
 
 const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
@@ -7,25 +9,29 @@ const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
 
 const client = new ImageAnnotatorClient(credentialsPath ? { keyFilename: credentialsPath } : {});
 
-export async function extractTextFromImage(image: string | Buffer): Promise<string | null> {
+export async function extractTextFromImage(image: string | Buffer): Promise<string> {
   try {
-    let result;
+    let result: protos.google.cloud.vision.v1.IAnnotateImageResponse | undefined;
 
     if (Buffer.isBuffer(image)) {
-      // ถ้าเป็น buffer ส่ง content ให้ Google Vision
       [result] = await client.textDetection({ image: { content: image } });
     } else {
-      // path หรือ URL
-      [result] = await client.textDetection(image);
+      [result] = await client.textDetection({ image: { source: { imageUri: image } } });
     }
 
-    const detections = result.textAnnotations;
+    const detections = result?.textAnnotations;
+    if (!detections?.length || !detections[0].description) {
+      console.warn('[OCR] ไม่พบข้อความในภาพ');
+      return '';
+    }
 
-    if (!detections || detections.length === 0) return '';
-
-    return detections[0].description?.trim() ?? '';
-  } catch (error: any) {
-    console.error('[OCR] เกิดข้อผิดพลาด:', error.message || error);
-    return null;
+    return detections[0].description.trim();
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('[OCR] เกิดข้อผิดพลาด:', error.message);
+    } else {
+      console.error('[OCR] เกิดข้อผิดพลาดที่ไม่ทราบประเภท');
+    }
+    return '';
   }
 }

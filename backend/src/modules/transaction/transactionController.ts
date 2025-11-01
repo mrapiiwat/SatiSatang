@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import * as transactionModels from './transactionModels';
 import prisma from '../../common/config/prismaClient';
 import { extractTextFromImage } from '../../common/config/ocr';
+import { checkSlipType, extractTransactionData } from '../../common/config/openai';
 
 const BUCKET = process.env.MINIO_BUCKET!;
 
@@ -177,30 +178,37 @@ export const createTransaction = async (req: Request, res: Response) => {
   }
 };
 
-export const createTransactionByUpload = async (req: Request, res: Response) => {
+export const transactionByUpload = async (req: Request, res: Response) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'กรุณาอัปโหลดไฟล์ภาพ' });
+      return res.status(httpStatus.BAD_REQUEST).json({ error: 'กรุณาอัปโหลดไฟล์ภาพ' });
     }
 
-    // ส่ง buffer ไป OCR
     const text = await extractTextFromImage(req.file.buffer);
+    if (!text)
+      return res.status(httpStatus.BAD_REQUEST).json({ error: 'ไม่สามารถอ่านข้อความจากภาพได้' });
 
-    return res.json({
-      message: 'OCR สำเร็จ',
-      extractedText: text ?? '',
+    const isSlip = await checkSlipType(text);
+    if (!isSlip)
+      return res.status(httpStatus.BAD_REQUEST).json({ error: 'รูปที่อัปโหลดไม่ใช่สลิปการเงิน' });
+
+    const userId = Number(req.user);
+    const categories = await prisma.category.findMany({
+      where: { userId },
+      select: { id: true, name: true, type: true },
+    });
+
+    const transactionData = await extractTransactionData(text, categories);
+
+    return res.status(httpStatus.OK).json({
+      message: 'OCR และการแปลงข้อมูลสำเร็จ',
+      transactionData,
     });
   } catch (error) {
-    if (error instanceof Error) {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        message: 'Something went wrong!',
-        errors: error.message,
-      });
-    } else {
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'Internal server error',
-      });
-    }
+    console.error(error);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Internal server error',
+    });
   }
 };
 

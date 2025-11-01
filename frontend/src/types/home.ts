@@ -1,4 +1,5 @@
 import React from 'react';
+import type { SingleValue } from 'react-select';
 
 export interface ManualProps {
   onClose: () => void;
@@ -31,11 +32,6 @@ export interface CategoryResponse {
   userId: number;
   iconId: string;
   isGoal?: boolean;
-}
-
-export interface OptionType {
-  value: string;
-  label: string;
 }
 
 export interface Transaction {
@@ -110,4 +106,59 @@ export interface PaginationData {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface OptionType {
+  value: string;
+  label: string;
+}
+
+export interface CategoryOptions {
+  value: string;
+  label: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface FileUploadProps {
+  selectedFile: File | null;
+  previewUrl: string | null;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export interface TransactionFormProps {
+  transactionData: {
+    date: string;
+    description: string;
+    type: string;
+    categoryId: string;
+    amount: string;
+    fromAccount: string;
+    toAccount: string;
+  };
+  selectedTypeOption: OptionType | null;
+  selectedCategoryOption: CategoryOptions | null;
+  categories: CategoryOptions[];
+  formattedDate: string;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectChange: (name: string, option: SingleValue<OptionType | CategoryOptions>) => void;
+  onSave: () => void;
+}
+
+export interface SlipPreviewProps {
+  transactionData: {
+    fromAccount: string;
+    toAccount: string;
+  };
+  previewUrl: string | null;
+  onPreviewClick: () => void;
+}
+
+export interface ImageModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  previewUrl: string | null;
 }

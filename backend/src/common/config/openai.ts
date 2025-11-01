@@ -1,4 +1,5 @@
 import { OpenAI } from 'openai';
+import { checkSlipTypePrompt } from '../utils/prompt';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -53,21 +54,80 @@ export async function Satang(messages: ChatMessage[]) {
   }
 }
 
-export async function chatWithAI(prompt: string) {
+export async function checkSlipType(text: string): Promise<boolean> {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: 'gpt-5-nano',
       messages: [
         {
           role: 'system',
-          content: `You are a helpful assistant that provides concise and accurate information.`,
+          content: checkSlipTypePrompt,
         },
-        { role: 'user', content: prompt },
+        {
+          role: 'user',
+          content: text,
+        },
       ],
     });
 
-    return response.choices[0]?.message?.content;
+    const answer = response.choices[0].message?.content?.toLowerCase().trim();
+    return answer?.includes('yes') ?? false;
   } catch (error) {
-    console.error('Error:', error);
+    console.error('[checkSlipType] Error:', error);
+    throw new Error('Failed to connect to OpenAI');
+  }
+}
+
+interface Category {
+  id: number;
+  name: string;
+  type: 'INCOME' | 'EXPENSE';
+}
+
+export async function extractTransactionData(text: string, categories: Category[]) {
+  try {
+    const categoryListText = categories.map((c) => `${c.id}: ${c.name} (${c.type})`).join('\n');
+
+    const prompt = `
+      คุณเป็นระบบแปลงข้อมูลสลิปเป็น JSON
+      โดยต้องส่งข้อมูลในรูปแบบ:
+      {
+        "type": "INCOME หรือ EXPENSE",
+        "description": "คำอธิบาย",
+        "amount": ตัวเลข,
+        "toAccount": "ชื่อบัญชีปลายทาง",
+        "fromAccount": "ชื่อบัญชีต้นทาง",
+        "categoryId": "เลือก id ของ category ให้ตรงที่สุดจาก list"
+      }
+
+      Category list ของผู้ใช้:
+      ${categoryListText}
+
+      ข้อความสลิป:
+      "${text}"
+
+      ตอบเป็น JSON เท่านั้น
+      `;
+
+    const jsonResponse = await openai.chat.completions.create({
+      model: 'gpt-5-nano',
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: prompt },
+        { role: 'user', content: text },
+      ],
+    });
+
+    const content = jsonResponse.choices[0].message?.content;
+
+    if (!content) {
+      throw new Error('No JSON content returned from OpenAI');
+    }
+
+    const parsed = JSON.parse(content);
+    return parsed;
+  } catch (error) {
+    console.error('[extractTransactionData] Error:', error);
+    throw new Error('Failed to extract transaction data from OpenAI');
   }
 }

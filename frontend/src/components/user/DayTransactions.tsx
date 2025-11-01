@@ -59,7 +59,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
               {dayTransactions.map((transaction) => (
                 <div key={transaction.id} className="flex items-center justify-between px-4 h-16">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
                       {categoryMap[transaction.categoryId] ? (
                         <Image
                           src={categoryMap[transaction.categoryId]}
@@ -75,10 +75,13 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
                         {transaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
                       </p>
                       {transaction.description && (
-                        <p className="text-sm text-gray-700">{transaction.description}</p>
+                        <p className="text-sm text-gray-700 line-clamp-1">
+                          {transaction.description}
+                        </p>
                       )}
                     </div>
                   </div>
+
                   <div className="text-right">
                     <p className="font-semibold text-blue-600 text-base">
                       {transaction.amount.toLocaleString()}
