@@ -90,6 +90,11 @@ export async function searchStock(query: string, limit = 3): Promise<Record<stri
   }
 }
 
+export function isStockQuery(query: string): boolean {
+  const keywords = ['หุ้น', 'stock', 'ราคาหุ้น', 'symbol', 'ตลาดหุ้น', 'price'];
+  return keywords.some((kw) => query.toLowerCase().includes(kw));
+}
+
 export async function listCollections() {
   const res = await qdrant.getCollections();
   return res.collections;

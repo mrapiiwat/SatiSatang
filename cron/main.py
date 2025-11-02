@@ -1,4 +1,5 @@
 import os
+import time
 import uuid
 from datetime import datetime
 
@@ -17,6 +18,22 @@ QDRANT_HOST = os.getenv("QDRANT_HOST")
 QDRANT_PORT = os.getenv("QDRANT_PORT")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+
+MAX_RETRIES = 5
+RETRY_DELAY = 5
+
+for attempt in range(MAX_RETRIES):
+    try:
+        qdrant_client = QdrantClient(host=QDRANT_HOST, port=int(QDRANT_PORT))
+        qdrant_client.get_collections()
+        break
+    except Exception as e:
+        print(f"Qdrant not ready (attempt {attempt+1}): {e}")
+        time.sleep(RETRY_DELAY)
+else:
+    raise RuntimeError("Qdrant not ready after retries")
+
 
 qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)

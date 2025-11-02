@@ -4,9 +4,11 @@ import { ZodError } from 'zod';
 import * as satangModels from './satangModels';
 import prisma from '../../common/config/prismaClient';
 import { Satang } from '../../common/config/openai';
-import { searchMemory, addMemory } from '../../common/utils/qdrant';
+import { searchMemory, addMemory, searchStock, isStockQuery } from '../../common/utils/qdrant';
 import { ChatMessage } from '../../common/config/openai';
 import { satangSystem } from '../../common/utils/prompt';
+import { Stock } from '@prisma/client';
+
 
 export const SatangChat = async (req: Request, res: Response) => {
   try {
@@ -38,6 +40,11 @@ export const SatangChat = async (req: Request, res: Response) => {
 
     const memoryResults = await searchMemory(userId, validatedData.content);
 
+    let stockResults: Record<string, Stock>[] = [];
+    if (isStockQuery(validatedData.content)) {
+      stockResults = await searchStock(validatedData.content, 3);
+    }
+
     const messagesForAPI: ChatMessage[] = [
       { role: 'system', content: satangSystem },
       ...memoryResults.map((m) => ({
@@ -48,9 +55,12 @@ export const SatangChat = async (req: Request, res: Response) => {
         role: m.role as 'user' | 'assistant',
         content: m.content,
       })),
+      ...stockResults.map((stock) => ({
+        role: 'system',
+        content: `Stock info: ${JSON.stringify(stock)}`,
+      })),
       { role: 'user', content: validatedData.content },
     ];
-
     const reply = await Satang(messagesForAPI);
 
     await prisma.chatMessage.create({
@@ -137,9 +147,9 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       take: limit,
       ...(cursor
         ? {
-            skip: 1,
-            cursor: { id: Number(cursor) },
-          }
+          skip: 1,
+          cursor: { id: Number(cursor) },
+        }
         : {}),
     });
 
