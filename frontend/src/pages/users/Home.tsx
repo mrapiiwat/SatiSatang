@@ -17,7 +17,7 @@ import type { Transaction } from '../../types/home';
 import axios from '../../api/axios';
 import DayTransactions from '../../components/user/DayTransactions';
 import AddMenu from '../../components/user/AddMenu';
-import { showSwalAlert } from '../../utils/SwalAlert';
+import { showToastAlert } from '../../components/user/ToastAlert';
 
 interface PaginationData {
   total: number;
@@ -54,7 +54,7 @@ const Home = () => {
       setPagination(response.data.pagination);
     } catch (err) {
       console.error(err);
-      showSwalAlert('เกิดข้อผิดพลาดในการดึงข้อมูล', 'error');
+      showToastAlert('เกิดข้อผิดพลาดในการดึงข้อมูล', 'error');
     } finally {
       setIsLoading(false);
     }

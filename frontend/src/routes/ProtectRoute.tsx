@@ -1,12 +1,18 @@
+import React from 'react';
+
+interface ProtectRouteProps {
+  element: React.ReactElement;
+}
+
+/*
+  Original ProtectRoute implementation (commented out temporarily).
+  Keep this here so you can re-enable it after backend/auth is fixed.
+
 import React, { useState, useEffect } from 'react';
 import { me } from '../api/auth';
 import useAuthStore from '../store/authStore';
 import LoadingToRedirect from './LoadingToRedirect';
 import { AxiosError } from 'axios';
-
-interface ProtectRouteProps {
-  element: React.ReactElement;
-}
 
 const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
   const [loading, setLoading] = useState(true);
@@ -44,6 +50,13 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
 
   if (loading) return <LoadingToRedirect />;
   return pass ? element : <LoadingToRedirect />;
+};
+
+*/
+
+// Temporary: protection disabled so you can access UI while backend/login is down.
+const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
+  return element;
 };
 
 export default ProtectRoute;

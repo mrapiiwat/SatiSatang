@@ -29,21 +29,21 @@ services:
       - minio
       - qdrant
 
-  python-cron:
-    build: ./cron
-    container_name: python-cron
-    restart: unless-stopped
-    volumes:
-      - ./cron:/app
-    env_file:
-      - ./cron/.env.local
-    environment:
-      - TZ=Asia/Bangkok
-    depends_on:
-      - backend
-      - postgres
-      - minio
-      - qdrant
+  # python-cron:
+  #   build: ./cron
+  #   container_name: python-cron
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./cron:/app
+  #   env_file:
+  #     - ./cron/.env.local
+  #   environment:
+  #     - TZ=Asia/Bangkok
+  #   depends_on:
+  #     - backend
+  #     - postgres
+  #     - minio
+  #     - qdrant
 
   postgres:
     image: postgres:16

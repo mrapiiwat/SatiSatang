@@ -5,7 +5,7 @@ import { RxCross2 } from 'react-icons/rx';
 import { GoCalendar } from 'react-icons/go';
 import type { ManualProps, OptionType, CategoryOption, CategoryResponse } from '../../types/home';
 import axios from '../../api/axios';
-import { showSwalAlert } from '../../utils/SwalAlert';
+import { showToastAlert } from '../../components/user/ToastAlert';
 
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
   const today = new Date();
@@ -63,7 +63,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
     e.preventDefault();
 
     if (!selectedType || !selectedCategory || !amount || !detail) {
-      return showSwalAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
     }
 
     try {
@@ -75,11 +75,11 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
         isGoal: selectedCategory.isGoal || false,
       });
 
-      await showSwalAlert('บันทึกสำเร็จ', 'success');
+      await showToastAlert('บันทึกสำเร็จ', 'success');
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      showSwalAlert(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+      showToastAlert(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
     }
   };
 

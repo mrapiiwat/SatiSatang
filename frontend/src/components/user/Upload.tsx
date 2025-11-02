@@ -4,7 +4,7 @@ import { RxCross2 } from 'react-icons/rx';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
 import useAuthStore from '../../store/authStore';
-import { showSwalAlert } from '../../utils/SwalAlert';
+import { showToastAlert } from './ToastAlert';
 import FileUploadArea from './FileUploadArea';
 import TransactionForm from './TransactionForm';
 import ImageModal from './ImageModal';
@@ -101,9 +101,9 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       setIsOpen(true);
     } catch (error: unknown) {
       if (isAxiosError(error))
-        showSwalAlert(error.response?.data?.error || 'ไม่สามารถอ่านข้อมูลจากสลิปได้', 'error');
-      else if (error instanceof Error) showSwalAlert(error.message, 'error');
-      else showSwalAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
+        showToastAlert(error.response?.data?.error || 'ไม่สามารถอ่านข้อมูลจากสลิปได้', 'error');
+      else if (error instanceof Error) showToastAlert(error.message, 'error');
+      else showToastAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
     } finally {
       setLoading(false);
     }
@@ -131,7 +131,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       !transactionData.categoryId ||
       !transactionData.amount
     )
-      return showSwalAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
 
     try {
       const formData = new FormData();
@@ -141,16 +141,16 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       await axios.post('/transaction', formData, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
       });
-      showSwalAlert('สร้างธุรกรรมสำเร็จ', 'success');
+      showToastAlert('สร้างธุรกรรมสำเร็จ', 'success');
       setIsOpen(false);
       setSelectedFile(null);
       setPreviewUrl(null);
       onClose();
     } catch (error: unknown) {
       if (isAxiosError(error))
-        showSwalAlert(error.response?.data?.message || 'เกิดข้อผิดพลาด', 'error');
-      else if (error instanceof Error) showSwalAlert(error.message, 'error');
-      else showSwalAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
+        showToastAlert(error.response?.data?.message || 'เกิดข้อผิดพลาด', 'error');
+      else if (error instanceof Error) showToastAlert(error.message, 'error');
+      else showToastAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
     }
   };
 
