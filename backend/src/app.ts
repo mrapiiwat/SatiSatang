@@ -15,6 +15,7 @@ import categoriesRoutes from './modules/categories/categoriesRoutes';
 import satangRouter from './modules/satang/satangRoutes';
 import goalRouter from './modules/goal/goalRoutes';
 import summaryRouter from './modules/summary/summaryRoutes';
+import stockRouter from './modules/stock/stockRoutes';
 
 const app = express();
 
@@ -48,5 +49,6 @@ app.use('/api', categoriesRoutes);
 app.use('/api', satangRouter);
 app.use('/api', goalRouter);
 app.use('/api', summaryRouter);
+app.use('/api', stockRouter);
 
 export default app;

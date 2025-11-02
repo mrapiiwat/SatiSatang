@@ -14,6 +14,7 @@ import Account from '../pages/users/Account';
 import Categories from '../pages/users/Categories';
 import Satang from '../pages/users/Satang';
 import Summary from '../pages/users/Summary';
+import Stock, { StockDetail } from '../pages/users/Stock';
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,8 @@ const router = createBrowserRouter([
       { path: 'categories', element: <Categories /> },
       { path: 'satang', element: <Satang /> },
       { path: 'summary', element: <Summary /> },
+      { path: 'stock', element: <Stock /> },
+      { path: 'stock-detail', element: <StockDetail /> },
       { path: '*', element: <NotFound /> },
     ],
   },
