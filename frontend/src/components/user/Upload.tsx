@@ -4,7 +4,7 @@ import { RxCross2 } from 'react-icons/rx';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
 import useAuthStore from '../../store/authStore';
-import { showToastAlert } from './ToastAlert';
+import { showToastAlert } from '../../store/toastStore';
 import FileUploadArea from './FileUploadArea';
 import TransactionForm from './TransactionForm';
 import ImageModal from './ImageModal';
@@ -155,7 +155,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   return (
-    <div className="flex justify-center items-center px-6">
+    <div className="flex justify-center items-center">
       {!isOpen && !isImageModalOpen && (
         <div className="bg-white w-full max-w-96 min-h-[350px] rounded-2xl py-7 px-8 shadow-md flex flex-col">
           <div className="flex justify-between items-center mb-6">
@@ -179,7 +179,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             disabled={!selectedFile || loading}
             className={`w-full py-3 rounded-full font-semibold text-white transition ${selectedFile && !loading ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
           >
-            {loading ? 'กำลังตรวจสอบ...' : selectedFile ? 'อัปโหลด' : 'เลือกไฟล์ก่อน'}
+            {loading ? 'กำลังตรวจสอบ' : selectedFile ? 'อัปโหลด' : 'เลือกไฟล์ก่อน'}
           </button>
         </div>
       )}

@@ -46,7 +46,6 @@ export const getCategories = async (req: Request, res: Response) => {
     const search = req.query.search as string | undefined;
     const typeParam = req.query.type as string | undefined;
     const includeGoalsParam = req.query.includeGoals as string | undefined;
-
     const includeGoals = includeGoalsParam === 'true' || includeGoalsParam === '1' ? true : false;
 
     const type =

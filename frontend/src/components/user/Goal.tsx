@@ -5,7 +5,7 @@ import type { SingleValue } from 'react-select';
 import type { GoalProps, OptionType } from '../../types/home';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
-import { showToastAlert } from '../../components/user/ToastAlert';
+import { showToastAlert } from '../../store/toastStore';
 
 const Goal: React.FC<GoalProps> = ({ onClose }) => {
   const [goalName, setGoalName] = useState('');
@@ -122,7 +122,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="flex justify-center items-center px-6">
+    <div className="flex justify-center items-center">
       <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-6">
           <h4 className="font-semibold">เป้าหมาย</h4>

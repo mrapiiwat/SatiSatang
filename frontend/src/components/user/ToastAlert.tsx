@@ -1,51 +1,17 @@
-/*
-  The react-refresh rule warns when a file exports non-component values alongside components.
-  This file intentionally exports the toast store and helper function together with the
-  ToastAlert component for convenience. Disable the rule here so ESLint/fast-refresh
-  doesn't report a warning.
-*/
-/* eslint-disable react-refresh/only-export-components */
-
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { create } from 'zustand';
-
-type ToastType = 'success' | 'error' | 'warning' | 'info';
-
-interface ToastState {
-  message: string;
-  type: ToastType;
-  visible: boolean;
-  showToast: (message: string, type: ToastType) => void;
-  hideToast: () => void;
-}
-
-export const useToastStore = create<ToastState>((set) => ({
-  message: '',
-  type: 'info',
-  visible: false,
-  showToast: (message, type) => {
-    set({ message, type, visible: true });
-    setTimeout(() => set({ visible: false }), 3000); // auto-hide 3 วิ
-  },
-  hideToast: () => set({ visible: false }),
-}));
-
-export const showToastAlert = (message: string, type: ToastType) => {
-  useToastStore.getState().showToast(message, type);
-};
+import { useToastStore, type ToastType } from '../../store/toastStore';
 
 const ToastAlert: React.FC = () => {
   const { message, type, visible, hideToast } = useToastStore();
 
-  const colors = {
+  const colors: Record<ToastType, string> = {
     success: '#22c55e',
     error: '#ef4444',
     warning: '#f59e0b',
     info: '#3b82f6',
   };
 
-  // Reset scroll lock ถ้ามีการปัดออกเร็ว
   useEffect(() => {
     if (!visible) return;
     const timeout = setTimeout(() => hideToast(), 3000);
@@ -66,7 +32,7 @@ const ToastAlert: React.FC = () => {
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.5}
             onDragEnd={(_, info) => {
-              if (Math.abs(info.offset.x) > 100) hideToast(); // ปัดออก
+              if (Math.abs(info.offset.x) > 100) hideToast();
             }}
           >
             <span className="w-3 h-3 rounded-full" style={{ backgroundColor: colors[type] }}></span>

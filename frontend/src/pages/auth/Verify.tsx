@@ -4,6 +4,7 @@ import { AxiosError } from 'axios';
 import axios from '../../api/axios';
 import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { showToastAlert } from '../../store/toastStore';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -73,12 +74,13 @@ const Verify: React.FC = () => {
       const { accessToken } = res.data;
 
       setSuccess('ยืนยันอีเมลสำเร็จ! กำลังพาคุณเข้าสู่ระบบ...');
-
       actionSetToken(accessToken);
 
       sessionStorage.removeItem('pendingVerification');
       sessionStorage.removeItem('pendingUserId');
       sessionStorage.removeItem('userEmail');
+
+      showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
 
       navigate('/user');
     } catch (error: unknown) {

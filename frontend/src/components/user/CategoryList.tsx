@@ -6,7 +6,7 @@ import IconSelector from '../user/IconSelector';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
 import type { CategoriesType, CategoryListProps } from '../../types/home';
-import { showToastAlert } from '../../components/user/ToastAlert';
+import { showToastAlert } from '../../store/toastStore';
 
 const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, setCategories }) => {
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);

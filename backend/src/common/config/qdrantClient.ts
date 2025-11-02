@@ -34,7 +34,6 @@ export async function ensureQdrantConnection(): Promise<void> {
   }
 }
 
-
 ensureQdrantConnection().catch((err) => {
   console.error('Qdrant init error:', err);
 });

@@ -23,7 +23,7 @@ export interface formLogin {
 export interface AuthStore {
   user: userSchema | null;
   token: string | null;
-  actionSetUser: (user: userSchema) => void;
+  actionSetUser: (user: userSchema | null) => void;
   actionSetToken: (token: string) => void;
   actionClearAuth: () => void;
   actionLogin: (form: formLogin) => void;

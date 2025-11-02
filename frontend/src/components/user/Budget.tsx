@@ -11,7 +11,7 @@ import type {
   CategoryOption,
   BudgetProps,
 } from '../../types/home';
-import { showToastAlert } from '../../components/user/ToastAlert';
+import { showToastAlert } from '../../store/toastStore';
 
 const frequencies: FrequencyOption[] = [
   { value: 'DAILY', label: 'รายวัน' },
@@ -87,7 +87,7 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
   };
 
   return (
-    <div className="flex justify-center items-center px-6">
+    <div className="flex justify-center items-center">
       <div className="bg-white w-full max-w-96 min-h-[420px] rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-5">
           <h4 className="font-medium">ตั้งงบประมาณ</h4>

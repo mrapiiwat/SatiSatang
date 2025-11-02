@@ -11,6 +11,7 @@ import InputField from '../../components/InputField';
 import Logo from '../../components/Logo';
 import PageWrapper from '../../components/PageWrapper';
 import { AxiosError } from 'axios';
+import { showToastAlert } from '../../store/toastStore';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -75,9 +76,10 @@ const Login: React.FC = () => {
       if (isUser === 'Login') {
         try {
           await actionLogin(LoginForm!);
+          showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
           navigate('/user');
         } catch (error) {
-          console.error('Login error:', error);
+          console.log(error);
           setError('เกิดข้อผิดพลาดในการล็อกอิน');
         }
         return;

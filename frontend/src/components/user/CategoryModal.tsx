@@ -5,7 +5,7 @@ import { isAxiosError } from 'axios';
 import Modal from '../../components/Modal';
 import IconSelector from '../user/IconSelector';
 import type { CategoryModalProps } from '../../types/home';
-import { showToastAlert } from '../../components/user/ToastAlert';
+import { showToastAlert } from '../../store/toastStore';
 
 const CategoryModal: React.FC<CategoryModalProps> = ({
   isOpen,

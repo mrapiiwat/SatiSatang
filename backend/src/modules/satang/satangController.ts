@@ -9,7 +9,6 @@ import { ChatMessage } from '../../common/config/openai';
 import { satangSystem } from '../../common/utils/prompt';
 import { Stock } from '@prisma/client';
 
-
 export const SatangChat = async (req: Request, res: Response) => {
   try {
     const userId = String(req.user);
@@ -147,9 +146,9 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       take: limit,
       ...(cursor
         ? {
-          skip: 1,
-          cursor: { id: Number(cursor) },
-        }
+            skip: 1,
+            cursor: { id: Number(cursor) },
+          }
         : {}),
     });
 

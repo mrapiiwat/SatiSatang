@@ -5,7 +5,7 @@ import { RxCross2 } from 'react-icons/rx';
 import { GoCalendar } from 'react-icons/go';
 import type { ManualProps, OptionType, CategoryOption, CategoryResponse } from '../../types/home';
 import axios from '../../api/axios';
-import { showToastAlert } from '../../components/user/ToastAlert';
+import { showToastAlert } from '../../store/toastStore';
 
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
   const today = new Date();
@@ -84,7 +84,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
   };
 
   return (
-    <div className="flex justify-center items-center px-6">
+    <div className="flex justify-center items-center">
       <div className="bg-white w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-5">
           <h4 className="font-medium">บันทึกรายรับรายจ่าย</h4>

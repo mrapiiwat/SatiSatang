@@ -7,5 +7,6 @@ const router = Router();
 router.get('/me', authenticateJWT, userController.me);
 router.put('/change-password', authenticateJWT, userController.changePassword);
 router.put('/update-name', authenticateJWT, userController.updateName);
+router.delete('/user/:id', authenticateJWT, userController.deleteUser);
 
 export default router;

@@ -137,3 +137,71 @@ export const changePassword = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const userId = Number(req.params.id);
+
+    const validatedData = userModels.deleteUserSchema.parse(req.body);
+
+    if (isNaN(userId)) {
+      return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid user id' });
+    }
+
+    if (userId !== req.user) {
+      return res
+        .status(httpStatus.FORBIDDEN)
+        .json({ message: 'You are not allowed to delete this user' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(httpStatus.NOT_FOUND).json({ message: 'User not found' });
+    }
+
+    if (validatedData.confirm !== user.email) {
+      return res
+        .status(httpStatus.BAD_REQUEST)
+        .json({ message: 'Email confirmation does not match' });
+    }
+
+    await prisma.$transaction([
+      prisma.goalTransaction.deleteMany({ where: { userId } }),
+      prisma.goals.deleteMany({ where: { userId } }),
+      prisma.transaction.deleteMany({ where: { userId } }),
+      prisma.budgets.deleteMany({ where: { userId } }),
+      prisma.category.deleteMany({ where: { userId } }),
+      prisma.chatMessage.deleteMany({ where: { userId } }),
+      prisma.chatSession.deleteMany({ where: { userId } }),
+      prisma.refreshToken.deleteMany({ where: { userId } }),
+      prisma.oAuthAccount.deleteMany({ where: { userId } }),
+      prisma.emailVerification.deleteMany({ where: { userId } }),
+      prisma.icon.deleteMany({ where: { userId } }),
+      prisma.user.delete({ where: { id: userId } }),
+    ]);
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+    });
+
+    return res.status(httpStatus.OK).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Validation error',
+        errors: error.flatten(),
+      });
+    }
+    if (error instanceof Error) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        error: error.message,
+      });
+    }
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Internal server error',
+    });
+  }
+};

@@ -24,6 +24,10 @@ export const userPasswordSchema = z
     path: ['confirmPassword'],
   });
 
+export const deleteUserSchema = z.object({
+  confirm: z.string().min(1),
+});
+
 export const updateNameSchema = z.object({
   name: z.string().min(1, 'Name is required'),
 });
