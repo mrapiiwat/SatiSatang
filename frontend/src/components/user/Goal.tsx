@@ -5,7 +5,7 @@ import type { SingleValue } from 'react-select';
 import type { GoalProps, OptionType } from '../../types/home';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
-import { showSwalAlert } from '../../utils/SwalAlert';
+import { showToastAlert } from '../../components/user/ToastAlert';
 
 const Goal: React.FC<GoalProps> = ({ onClose }) => {
   const [goalName, setGoalName] = useState('');
@@ -107,15 +107,15 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
         deadline: deadline,
       });
 
-      await showSwalAlert('บันทึกสำเร็จ', 'success');
+      await showToastAlert('บันทึกสำเร็จ', 'success');
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        showSwalAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
+        showToastAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
       } else if (err instanceof Error) {
-        showSwalAlert(`${err.message}`, 'error');
+        showToastAlert(`${err.message}`, 'error');
       } else {
-        showSwalAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
       console.error(err);
     }

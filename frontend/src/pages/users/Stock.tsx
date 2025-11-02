@@ -1,12 +1,19 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import axios from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import type { StockProps } from '../../types/stock';
 import { useLocation } from 'react-router-dom';
 import type { StockDetailType } from '../../types/stock';
+import { GrSearch } from 'react-icons/gr';
+import { MdClear } from 'react-icons/md';
+import { motion } from 'framer-motion';
 
 export default function Stock() {
   const [stocks, setStocks] = useState<StockProps[]>([]);
+  const [query, setQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -42,15 +49,67 @@ export default function Stock() {
     fetchStocks();
   }, [page]);
 
-  const handleClickStock = (id: number) => {
-    navigate(`/user/stock-detail?id=${id}`);
-  };
+  const handleClickStock = useCallback(
+    (id: number) => {
+      navigate(`/user/stock-detail?id=${id}`);
+    },
+    [navigate],
+  );
 
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Stock Overview</h1>
+          {/* Search bar */}
+          <div className="mt-3">
+            <div className="relative max-w-md mx-auto">
+              <div
+                className={`flex items-center h-10 rounded-lg bg-white border border-[#e5e7eb] shadow-sm transition-all duration-200 hover:shadow-md hover:border-gray-300 focus-within:shadow-md focus-within:border-blue-500 overflow-hidden`}
+              >
+                <motion.button
+                  onClick={() => {
+                    setIsSearching(true);
+                    setTimeout(() => setIsSearching(false), 700);
+                    searchInputRef.current?.focus();
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  animate={{ rotate: isSearching ? 360 : 0 }}
+                  transition={{ duration: 0.7, ease: 'easeInOut' }}
+                  className={`h-10 flex items-center justify-center px-3 transition-colors duration-150 ${
+                    query || isSearchFocused ? 'text-[#111827]' : 'text-gray-400'
+                  } hover:text-blue-600`}
+                  aria-label="Search"
+                >
+                  <GrSearch size={18} />
+                </motion.button>
+
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setIsSearchFocused(false)}
+                  placeholder="ค้นหาหุ้น เช่น AAPL, TSLA หรือชื่อบริษัท"
+                  className="w-full h-10 pr-10 text-[#111827] placeholder-gray-400 focus:outline-none"
+                />
+
+                {query && (
+                  <button
+                    onClick={() => {
+                      setQuery('');
+                      searchInputRef.current?.focus();
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-[#111827] transition-colors flex items-center justify-center"
+                    aria-label="Clear search"
+                  >
+                    <MdClear size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
           {stocks.length > 0 && stocks[0]?.updatedAt && (
             <p className="text-sm text-gray-500">
               Latest update: {new Date(stocks[0].updatedAt).toLocaleString('th-TH')}
@@ -59,42 +118,54 @@ export default function Stock() {
         </div>
 
         <div className="space-y-3">
-          {stocks.map((s, i) => {
-            const isLast = i === stocks.length - 1;
-            const isPositive = s.regularMarketChangePercent && s.regularMarketChangePercent >= 0;
+          {useMemo(() => {
+            const filtered = stocks.filter((s) => {
+              if (!query) return true;
+              const q = query.toLowerCase();
+              return (
+                String(s.symbol).toLowerCase().includes(q) ||
+                String(s.name ?? '')
+                  .toLowerCase()
+                  .includes(q)
+              );
+            });
+            return filtered.map((s, i) => {
+              const isLast = i === filtered.length - 1;
+              const isPositive = s.regularMarketChangePercent && s.regularMarketChangePercent >= 0;
 
-            return (
-              <div
-                ref={isLast ? lastStockRef : null}
-                key={`${s.id}-${i}`}
-                onClick={() => handleClickStock(s.id)}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer p-5 border border-black-200"
-              >
-                <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 items-center">
-                  <div className="min-w-0">
-                    <h3 className="text-lg font-bold text-gray-900 truncate">{s.symbol}</h3>
-                    {s.name && <p className="text-sm text-gray-500 truncate mt-0.5">{s.name}</p>}
-                  </div>
+              return (
+                <div
+                  ref={isLast ? lastStockRef : null}
+                  key={`${s.id}-${i}`}
+                  onClick={() => handleClickStock(s.id)}
+                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer p-5 border border-black-200"
+                >
+                  <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 items-center">
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-bold text-gray-900 truncate">{s.symbol}</h3>
+                      {s.name && <p className="text-sm text-gray-500 truncate mt-0.5">{s.name}</p>}
+                    </div>
 
-                  <div className="text-left truncate">
-                    <p className="text-xl font-bold text-gray-900">
-                      ${s.regularMarketPrice?.toFixed(2) ?? '-'}
-                    </p>
-                  </div>
+                    <div className="text-left truncate">
+                      <p className="text-xl font-bold text-gray-900">
+                        ${s.regularMarketPrice?.toFixed(2) ?? '-'}
+                      </p>
+                    </div>
 
-                  <div
-                    className={`text-right font-bold text-lg truncate ${
-                      isPositive ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {s.regularMarketChangePercent
-                      ? `${s.regularMarketChangePercent >= 0 ? '+' : ''}${s.regularMarketChangePercent.toFixed(2)}%`
-                      : '-'}
+                    <div
+                      className={`text-right font-bold text-lg truncate ${
+                        isPositive ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
+                      {s.regularMarketChangePercent
+                        ? `${s.regularMarketChangePercent >= 0 ? '+' : ''}${s.regularMarketChangePercent.toFixed(2)}%`
+                        : '-'}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            });
+          }, [stocks, query, handleClickStock, lastStockRef])}
         </div>
 
         {loading && <p className="text-center py-8 text-gray-600">กำลังโหลด...</p>}

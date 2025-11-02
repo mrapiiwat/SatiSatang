@@ -6,7 +6,7 @@ import IconSelector from '../user/IconSelector';
 import axios from '../../api/axios';
 import { isAxiosError } from 'axios';
 import type { CategoriesType, CategoryListProps } from '../../types/home';
-import { showSwalAlert } from '../../utils/SwalAlert';
+import { showToastAlert } from '../../components/user/ToastAlert';
 
 const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, setCategories }) => {
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);
@@ -30,11 +30,11 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
     if (!editingCategory) return;
 
     if (!editData.name.trim()) {
-      return showSwalAlert('กรุณากรอกชื่อหมวดหมู่', 'error');
+      return showToastAlert('กรุณากรอกชื่อหมวดหมู่', 'error');
     }
 
     if (!editData.iconId) {
-      return showSwalAlert('กรุณาเลือกไอคอน', 'error');
+      return showToastAlert('กรุณาเลือกไอคอน', 'error');
     }
 
     try {
@@ -48,7 +48,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
         { withCredentials: true },
       );
 
-      await showSwalAlert('แก้ไขหมวดหมู่สำเร็จ', 'success');
+      await showToastAlert('แก้ไขหมวดหมู่สำเร็จ', 'success');
 
       setCategories((prev) =>
         prev.map((cat) =>
@@ -61,11 +61,11 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
       handleCloseModal();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        showSwalAlert(`${err.response?.data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้'}`, 'error');
+        showToastAlert(`${err.response?.data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้'}`, 'error');
       } else if (err instanceof Error) {
-        showSwalAlert(`${err.message}`, 'error');
+        showToastAlert(`${err.message}`, 'error');
       } else {
-        showSwalAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
     } finally {
       setLoading(false);

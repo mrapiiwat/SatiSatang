@@ -11,7 +11,7 @@ import type {
   CategoryOption,
   BudgetProps,
 } from '../../types/home';
-import { showSwalAlert } from '../../utils/SwalAlert';
+import { showToastAlert } from '../../components/user/ToastAlert';
 
 const frequencies: FrequencyOption[] = [
   { value: 'DAILY', label: 'รายวัน' },
@@ -60,7 +60,7 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
     setErrors(newErrors);
 
     if (Object.values(newErrors).some(Boolean)) {
-      return showSwalAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
     }
 
     try {
@@ -70,17 +70,17 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
         amount: Number(amount),
       });
 
-      await showSwalAlert('ตั้งงบประมาณสำเร็จ', 'success');
+      await showToastAlert('ตั้งงบประมาณสำเร็จ', 'success');
 
       onSuccess?.();
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        showSwalAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
+        showToastAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
       } else if (err instanceof Error) {
-        showSwalAlert(`${err.message}`, 'error');
+        showToastAlert(`${err.message}`, 'error');
       } else {
-        showSwalAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
       console.error(err);
     }
