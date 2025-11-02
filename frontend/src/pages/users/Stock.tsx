@@ -83,8 +83,9 @@ export default function Stock() {
                   </div>
 
                   <div
-                    className={`text-right font-bold text-lg truncate ${isPositive ? 'text-green-600' : 'text-red-600'
-                      }`}
+                    className={`text-right font-bold text-lg truncate ${
+                      isPositive ? 'text-green-600' : 'text-red-600'
+                    }`}
                   >
                     {s.regularMarketChangePercent
                       ? `${s.regularMarketChangePercent >= 0 ? '+' : ''}${s.regularMarketChangePercent.toFixed(2)}%`
@@ -104,7 +105,7 @@ export default function Stock() {
       </div>
     </div>
   );
-};
+}
 
 export const StockDetail: React.FC = () => {
   const location = useLocation();
@@ -214,7 +215,3 @@ export const StockDetail: React.FC = () => {
     </div>
   );
 };
-
-
-
-
