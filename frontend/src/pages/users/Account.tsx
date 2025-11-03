@@ -12,18 +12,14 @@ const Account: React.FC = () => {
   const actionSetUser = useAuthStore((state) => state.actionSetUser);
   const [name, setName] = useState<string>('');
   const [isEdited, setIsEdited] = useState<boolean>(false);
-
   const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
-
   const [oldPassword, setOldPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
-
-  // State สำหรับ Modal ลบผู้ใช้
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteEmail, setDeleteEmail] = useState('');
-  const [deleteError, setDeleteError] = useState('');
+  const [deleteEmail, setDeleteEmail] = useState<string>('');
+  const [deleteError, setDeleteError] = useState<string>('');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -177,11 +173,8 @@ const Account: React.FC = () => {
 
         <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
           <div className="relative bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-10 w-full max-w-md border border-gray-100">
-            {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-full blur-3xl opacity-30 -z-10"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-gray-100 rounded-full blur-2xl opacity-40 -z-10"></div>
-
-            {/* Icon warning with gradient */}
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 rounded-full blur-lg opacity-30 animate-pulse"></div>
@@ -202,16 +195,12 @@ const Account: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Header */}
             <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-3">
               ยืนยันการลบบัญชี
             </h2>
             <p className="text-center text-gray-500 mb-8 text-sm font-medium tracking-wide">
               การดำเนินการนี้ไม่สามารถย้อนกลับได้
             </p>
-
-            {/* Input field with premium styling */}
             <div className="mb-8">
               <label className="block text-sm font-semibold text-gray-700 mb-3">
                 กรุณากรอก email ของคุณเพื่อยืนยัน
@@ -242,7 +231,6 @@ const Account: React.FC = () => {
               )}
             </div>
 
-            {/* Premium buttons */}
             <div className="flex gap-4">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}

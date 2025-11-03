@@ -92,7 +92,7 @@ export default function Stock() {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
-                placeholder="ค้นหาหุ้น เช่น AAPL, TSLA"
+                placeholder="ค้นหาหุ้น เช่น CPALL BTS"
                 className="pr-10 text-gray-900 placeholder-gray-400 focus:outline-none"
               />
 

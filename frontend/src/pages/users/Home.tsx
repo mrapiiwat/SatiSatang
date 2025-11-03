@@ -17,7 +17,7 @@ import type { Transaction } from '../../types/home';
 import axios from '../../api/axios';
 import DayTransactions from '../../components/user/DayTransactions';
 import AddMenu from '../../components/user/AddMenu';
-import { showToastAlert } from '../../components/user/ToastAlert';
+import { showToastAlert } from '../../store/toastStore';
 
 interface PaginationData {
   total: number;
