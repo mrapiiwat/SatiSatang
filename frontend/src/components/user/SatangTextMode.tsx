@@ -52,7 +52,6 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
     prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
-
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -87,8 +86,9 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`p-2 my-1 rounded-xl w-fit max-w-[70%] break-words whitespace-normal ${msg.role === 'user' ? 'bg-blue-200 ml-auto' : 'bg-gray-200'
-                }`}
+              className={`p-2 my-1 rounded-xl w-fit max-w-[70%] break-words whitespace-normal ${
+                msg.role === 'user' ? 'bg-blue-200 ml-auto' : 'bg-gray-200'
+              }`}
             >
               {msg.content}
             </div>

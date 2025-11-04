@@ -37,8 +37,7 @@ export async function embedding(text: string): Promise<number[]> {
   }
 }
 
-export async function Satang(messages: ChatMessage[], onData: (chunk: string) => void
-) {
+export async function Satang(messages: ChatMessage[], onData: (chunk: string) => void) {
   try {
     const stream = await openai.chat.completions.create({
       model: 'gpt-5-nano',
@@ -50,7 +49,7 @@ export async function Satang(messages: ChatMessage[], onData: (chunk: string) =>
     });
 
     for await (const chunk of stream) {
-      const content = chunk.choices?.[0]?.delta?.content || "";
+      const content = chunk.choices?.[0]?.delta?.content || '';
       if (content) onData(content);
     }
   } catch (error) {

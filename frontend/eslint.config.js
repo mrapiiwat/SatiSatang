@@ -17,9 +17,15 @@ export default tseslint.config([
       reactRefresh.configs.vite,
     ],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+        RequestInit: 'readonly',
+      },
     },
+
     plugins: {
       prettier: pluginPrettier,
     },
@@ -27,7 +33,6 @@ export default tseslint.config([
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       'no-unused-vars': 'off',
-
       '@typescript-eslint/no-unused-vars': [
         'error',
         {

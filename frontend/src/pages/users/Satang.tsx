@@ -3,7 +3,7 @@ import SatangTextMode from '../../components/user/SatangTextMode';
 import SatangVoiceMode from '../../components/user/SatangVoiceMode';
 import type { ChatMessage } from '../../types/satang';
 import axios from '../../api/axios';
-import { fetchWithAuth } from "../../api/fetch"
+import { fetchWithAuth } from '../../api/fetch';
 
 const Satang: React.FC = () => {
   const [isVoiceMode, setIsVoiceMode] = useState(true);
@@ -99,12 +99,12 @@ const Satang: React.FC = () => {
 
         setMessages((prev) => {
           const existingBot = prev.find(
-            (m) => m.role === 'assistant' && m.id === userMessage.id + 1
+            (m) => m.role === 'assistant' && m.id === userMessage.id + 1,
           );
 
           if (existingBot) {
             return prev.map((m) =>
-              m.id === existingBot.id ? { ...m, content: partialMessage } : m
+              m.id === existingBot.id ? { ...m, content: partialMessage } : m,
             );
           } else {
             return [
@@ -121,7 +121,6 @@ const Satang: React.FC = () => {
       }
 
       if (firstChunk) setIsTyping(false);
-
     } catch (error) {
       console.error('Error streaming message:', error);
       setIsTyping(false);

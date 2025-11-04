@@ -10,21 +10,21 @@ import { satangSystem } from '../../common/utils/prompt';
 import { Stock } from '@prisma/client';
 
 export const SatangChat = async (req: Request, res: Response) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
   try {
     const userId = String(req.user);
     const validatedData = satangModels.satangChatSchema.parse(req.body);
 
     const latestSession = await prisma.chatSession.findFirst({
       where: { userId: Number(userId) },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
 
     const lastTwoMessages = await prisma.chatMessage.findMany({
       where: { sessionId: latestSession?.id },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       take: 2,
     });
 
@@ -32,7 +32,7 @@ export const SatangChat = async (req: Request, res: Response) => {
 
     await prisma.chatMessage.create({
       data: {
-        role: "user",
+        role: 'user',
         content: validatedData.content,
         userId: Number(userId),
         sessionId: Number(latestSession?.id),
@@ -47,23 +47,23 @@ export const SatangChat = async (req: Request, res: Response) => {
     }
 
     const messagesForAPI: ChatMessage[] = [
-      { role: "system", content: satangSystem },
+      { role: 'system', content: satangSystem },
       ...memoryResults.map((m) => ({
-        role: m.role as "user" | "assistant",
+        role: m.role as 'user' | 'assistant',
         content: m.content,
       })),
       ...sortedLastMessages.map((m) => ({
-        role: m.role as "user" | "assistant",
+        role: m.role as 'user' | 'assistant',
         content: m.content,
       })),
       ...stockResults.map((stock) => ({
-        role: "system",
+        role: 'system',
         content: `Stock info: ${JSON.stringify(stock)}`,
       })),
-      { role: "user", content: validatedData.content },
+      { role: 'user', content: validatedData.content },
     ];
 
-    let fullReply = "";
+    let fullReply = '';
 
     await Satang(messagesForAPI, (chunk) => {
       fullReply += chunk;
@@ -72,15 +72,15 @@ export const SatangChat = async (req: Request, res: Response) => {
 
     await prisma.chatMessage.create({
       data: {
-        role: "assistant",
+        role: 'assistant',
         content: fullReply,
         userId: Number(userId),
         sessionId: Number(latestSession?.id),
       },
     });
 
-    await addMemory(userId, validatedData.content, "user");
-    await addMemory(userId, fullReply, "assistant");
+    await addMemory(userId, validatedData.content, 'user');
+    await addMemory(userId, fullReply, 'assistant');
 
     res.end();
   } catch (error) {
@@ -101,7 +101,6 @@ export const SatangChat = async (req: Request, res: Response) => {
     }
   }
 };
-
 
 export const getOrCreateLatestSatangSession = async (req: Request, res: Response) => {
   try {
@@ -135,9 +134,9 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       take: limit,
       ...(cursor
         ? {
-          skip: 1,
-          cursor: { id: Number(cursor) },
-        }
+            skip: 1,
+            cursor: { id: Number(cursor) },
+          }
         : {}),
     });
 
@@ -166,4 +165,3 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
     }
   }
 };
-
