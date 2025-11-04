@@ -37,17 +37,22 @@ export async function embedding(text: string): Promise<number[]> {
   }
 }
 
-export async function Satang(messages: ChatMessage[]) {
+export async function Satang(messages: ChatMessage[], onData: (chunk: string) => void
+) {
   try {
-    const response = await openai.chat.completions.create({
+    const stream = await openai.chat.completions.create({
       model: 'gpt-5-nano',
+      stream: true,
       messages: messages.map((msg) => ({
         role: msg.role as 'user' | 'assistant' | 'system',
         content: msg.content,
       })),
     });
 
-    return response.choices?.[0]?.message?.content ?? 'No response';
+    for await (const chunk of stream) {
+      const content = chunk.choices?.[0]?.delta?.content || "";
+      if (content) onData(content);
+    }
   } catch (error) {
     console.error('Satang Error:', error);
     throw new Error('Failed to connect to OpenAI');

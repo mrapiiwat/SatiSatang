@@ -10,19 +10,21 @@ import { satangSystem } from '../../common/utils/prompt';
 import { Stock } from '@prisma/client';
 
 export const SatangChat = async (req: Request, res: Response) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
   try {
     const userId = String(req.user);
-
     const validatedData = satangModels.satangChatSchema.parse(req.body);
 
     const latestSession = await prisma.chatSession.findFirst({
       where: { userId: Number(userId) },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     const lastTwoMessages = await prisma.chatMessage.findMany({
       where: { sessionId: latestSession?.id },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 2,
     });
 
@@ -30,7 +32,7 @@ export const SatangChat = async (req: Request, res: Response) => {
 
     await prisma.chatMessage.create({
       data: {
-        role: 'user',
+        role: "user",
         content: validatedData.content,
         userId: Number(userId),
         sessionId: Number(latestSession?.id),
@@ -45,36 +47,42 @@ export const SatangChat = async (req: Request, res: Response) => {
     }
 
     const messagesForAPI: ChatMessage[] = [
-      { role: 'system', content: satangSystem },
+      { role: "system", content: satangSystem },
       ...memoryResults.map((m) => ({
-        role: m.role as 'user' | 'assistant',
+        role: m.role as "user" | "assistant",
         content: m.content,
       })),
       ...sortedLastMessages.map((m) => ({
-        role: m.role as 'user' | 'assistant',
+        role: m.role as "user" | "assistant",
         content: m.content,
       })),
       ...stockResults.map((stock) => ({
-        role: 'system',
+        role: "system",
         content: `Stock info: ${JSON.stringify(stock)}`,
       })),
-      { role: 'user', content: validatedData.content },
+      { role: "user", content: validatedData.content },
     ];
-    const reply = await Satang(messagesForAPI);
+
+    let fullReply = "";
+
+    await Satang(messagesForAPI, (chunk) => {
+      fullReply += chunk;
+      res.write(chunk);
+    });
 
     await prisma.chatMessage.create({
       data: {
-        role: 'assistant',
-        content: reply,
+        role: "assistant",
+        content: fullReply,
         userId: Number(userId),
         sessionId: Number(latestSession?.id),
       },
     });
 
-    await addMemory(userId, validatedData.content, 'user');
-    await addMemory(userId, reply, 'assistant');
+    await addMemory(userId, validatedData.content, "user");
+    await addMemory(userId, fullReply, "assistant");
 
-    return res.status(httpStatus.OK).json({ message: reply, memoryResults });
+    res.end();
   } catch (error) {
     if (error instanceof ZodError) {
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -94,23 +102,20 @@ export const SatangChat = async (req: Request, res: Response) => {
   }
 };
 
+
 export const getOrCreateLatestSatangSession = async (req: Request, res: Response) => {
   try {
     const userId = Number(req.user);
     const cursor = req.query.cursor as string | undefined;
     const limit = Number(req.query.limit) || 20;
 
-    // หา session ล่าสุด
     const latestSession = await prisma.chatSession.findFirst({
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
 
-    const now = new Date();
-    const oneMonthMs = 30 * 24 * 60 * 60 * 1000;
-
-    // ถ้าไม่มี session ให้สร้างใหม่
     if (!latestSession) {
+      const now = new Date();
       const session = await prisma.chatSession.create({
         data: {
           title: `Satang ${now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`,
@@ -124,38 +129,22 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       });
     }
 
-    // ถ้า session เก่ากว่า 1 เดือน ให้สร้างใหม่
-    const createdAt = new Date(latestSession.createdAt);
-    if (now.getTime() - createdAt.getTime() >= oneMonthMs) {
-      const newSession = await prisma.chatSession.create({
-        data: {
-          title: `Satang ${now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`,
-          userId,
-        },
-      });
-
-      return res.status(httpStatus.CREATED).json({
-        message: 'New Satang session created (older than 1 month)',
-        data: { ...newSession, messages: [], nextCursor: null, hasMore: false },
-      });
-    }
-
     const messages = await prisma.chatMessage.findMany({
       where: { sessionId: latestSession.id },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit,
       ...(cursor
         ? {
-            skip: 1,
-            cursor: { id: Number(cursor) },
-          }
+          skip: 1,
+          cursor: { id: Number(cursor) },
+        }
         : {}),
     });
 
     const hasMore = messages.length === limit;
 
     return res.status(httpStatus.OK).json({
-      message: 'Latest Satang session fetched successfully',
+      message: 'Existing Satang session fetched successfully',
       data: {
         ...latestSession,
         messages: messages.reverse(),
@@ -177,3 +166,4 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
     }
   }
 };
+

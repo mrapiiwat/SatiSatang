@@ -3,6 +3,7 @@ import SatangTextMode from '../../components/user/SatangTextMode';
 import SatangVoiceMode from '../../components/user/SatangVoiceMode';
 import type { ChatMessage } from '../../types/satang';
 import axios from '../../api/axios';
+import { fetchWithAuth } from "../../api/fetch"
 
 const Satang: React.FC = () => {
   const [isVoiceMode, setIsVoiceMode] = useState(true);
@@ -67,25 +68,72 @@ const Satang: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const res = await axios.post('/satang', { content: msgText });
-      const botMessage: ChatMessage = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: res.data.message,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, botMessage]);
+      const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/satang`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: msgText }),
+      });
+
+      if (!response.body) {
+        throw new Error('No response body');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let partialMessage = '';
+      let firstChunk = true;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        partialMessage += chunk;
+
+        if (firstChunk && chunk.trim() !== '') {
+          setIsTyping(false);
+          firstChunk = false;
+        }
+
+        setMessages((prev) => {
+          const existingBot = prev.find(
+            (m) => m.role === 'assistant' && m.id === userMessage.id + 1
+          );
+
+          if (existingBot) {
+            return prev.map((m) =>
+              m.id === existingBot.id ? { ...m, content: partialMessage } : m
+            );
+          } else {
+            return [
+              ...prev,
+              {
+                id: userMessage.id + 1,
+                role: 'assistant',
+                content: chunk,
+                createdAt: new Date().toISOString(),
+              },
+            ];
+          }
+        });
+      }
+
+      if (firstChunk) setIsTyping(false);
+
     } catch (error) {
-      console.log('Error sending message:', error);
-      const botMessage: ChatMessage = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: 'เกิดข้อผิดพลาดในการตอบ AI',
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, botMessage]);
-    } finally {
+      console.error('Error streaming message:', error);
       setIsTyping(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: 'เกิดข้อผิดพลาดในการตอบ AI',
+          createdAt: new Date().toISOString(),
+        },
+      ]);
     }
   };
 

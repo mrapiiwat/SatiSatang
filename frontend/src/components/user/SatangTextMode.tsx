@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useLayoutEffect } from 'react';
 import { GoArrowUp } from 'react-icons/go';
 import Face from '../../assets/Page-1.svg';
 import type { SatangTextModeProps } from '../../types/satang';
@@ -43,19 +43,15 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
     if (container) container.scrollTop = container.scrollHeight;
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
-    const prevLength = prevMessagesLengthRef.current;
-    const newMessagesCount = messages.length - prevLength;
-
-    if (newMessagesCount > 0 && !isUserScrolledRef.current) {
-      container.scrollTop = container.scrollHeight;
+    if (!isUserScrolledRef.current) {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
     }
-
     prevMessagesLengthRef.current = messages.length;
   }, [messages]);
+
 
   useEffect(() => {
     const container = containerRef.current;
@@ -91,9 +87,8 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`p-2 my-1 rounded-xl w-fit max-w-[70%] break-words whitespace-normal ${
-                msg.role === 'user' ? 'bg-blue-200 ml-auto' : 'bg-gray-200'
-              }`}
+              className={`p-2 my-1 rounded-xl w-fit max-w-[70%] break-words whitespace-normal ${msg.role === 'user' ? 'bg-blue-200 ml-auto' : 'bg-gray-200'
+                }`}
             >
               {msg.content}
             </div>
