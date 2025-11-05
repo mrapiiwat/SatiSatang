@@ -162,3 +162,10 @@ export interface ImageModalProps {
   onClose: () => void;
   previewUrl: string | null;
 }
+
+export interface SatiProps {
+  handleCloseChatModal: () => void;
+  isMenuOpen: boolean;
+  setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  handleMenuSelect: (type: string) => void;
+}
