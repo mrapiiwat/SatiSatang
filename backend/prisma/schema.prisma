@@ -107,6 +107,7 @@ model Goals {
   id               Int               @id @default(autoincrement())
   name             String
   amount           Float
+  finished         Boolean           @default(false)
   deadline         DateTime?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt

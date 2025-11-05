@@ -169,3 +169,25 @@ export interface SatiProps {
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleMenuSelect: (type: string) => void;
 }
+
+export interface GoalTransaction {
+  id: number;
+  goalId: number;
+  userId: number;
+  amount: number;
+  createdAt: string;
+}
+
+export interface MyGoal {
+  id: number;
+  name: string;
+  amount: number;
+  deadline?: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+  goalTransactions: GoalTransaction[];
+  currentAmount: number;
+  totalAmount: number;
+  finished: boolean;
+}

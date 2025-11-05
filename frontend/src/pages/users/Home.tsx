@@ -10,7 +10,7 @@ import Manual from '../../components/user/Manual';
 import Upload from '../../components/user/Upload';
 import Budget from '../../components/user/Budget';
 import Goal from '../../components/user/Goal';
-import type { Transaction, PaginationData } from '../../types/home';
+import type { Transaction, PaginationData, MyGoal } from '../../types/home';
 import axios from '../../api/axios';
 import DayTransactions from '../../components/user/DayTransactions';
 import { showToastAlert } from '../../store/toastStore';
@@ -27,12 +27,27 @@ const Home = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [goals, setGoals] = useState<MyGoal[]>([]);
+  const [goalIndex, setGoalIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
     limit: 20,
     totalPages: 0,
   });
+
+  const fetchGoals = useCallback(async () => {
+    try {
+      const res = await axios.get(`/goal?month=${selectedMonth}&year=${selectedYear}`);
+      setGoals(res.data.data || []);
+      setGoalIndex(0);
+    } catch (err) {
+      console.error(err);
+      showToastAlert('เกิดข้อผิดพลาดในการดึง goal', 'error');
+    }
+  }, [selectedMonth, selectedYear]);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -53,14 +68,26 @@ const Home = () => {
   useEffect(() => {
     fetchTransactions();
   }, [selectedMonth, selectedYear, currentPage, fetchTransactions]);
+  useEffect(() => {
+    fetchGoals();
+  }, [selectedMonth, selectedYear, fetchGoals]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedMonth, selectedYear]);
 
+  useEffect(() => {
+    if (isHovered || goals.length <= 1) return;
+    const interval = setInterval(() => {
+      setGoalIndex((prev) => (prev + 1) % goals.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [goalIndex, isHovered, goals.length]);
+
   const handleClosePopupAndRefetch = () => {
     setActivePopup(null);
     fetchTransactions();
+    fetchGoals();
   };
 
   const handleGoToSummary = () => {
@@ -167,7 +194,81 @@ const Home = () => {
           </div>
         ) : (
           <>
-            <div className="flex flex-row overflow-y-auto max-h-[460px] md:flex md:justify-center">
+            {goals.length > 0 && (
+              <div className="flex justify-center mb-4">
+                <div
+                  className="relative w-full max-w-2xl mx-auto bg-gray-100 p-3 rounded-lg"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-semibold text-base">เป้าหมาย</h4>
+                    <p className="text-xs text-black-500">
+                      {goals[goalIndex].deadline
+                        ? new Date(goals[goalIndex].deadline).toLocaleDateString('th-TH', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                        : 'ไม่มีระยะเวลากำหนด'}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-sm text-black">{goals[goalIndex].name}</span>
+                    <div className="text-xs text-gray-700">
+                      <span className="text-green-600 font-semibold">
+                        ฿ {goals[goalIndex].totalAmount.toLocaleString()}
+                      </span>
+                      <span className="text-gray-500">
+                        {' '}
+                        / ฿ {goals[goalIndex].amount.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1">
+                    <div
+                      className="bg-green-600 h-1.5 rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(
+                          (goals[goalIndex].totalAmount / goals[goalIndex].amount) * 100,
+                          100,
+                        )}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex justify-center gap-1 mt-3">
+                    {goals.length > 1 && (
+                      <>
+                        {goals
+                          .slice(
+                            Math.min(Math.max(goalIndex - 2, 0), Math.max(goals.length - 5, 0)),
+                            Math.min(Math.max(goalIndex - 2, 0) + 5, goals.length),
+                          )
+                          .map((_, idx) => {
+                            const startIndex = Math.min(
+                              Math.max(goalIndex - 2, 0),
+                              Math.max(goals.length - 5, 0),
+                            );
+                            const realIndex = startIndex + idx;
+                            return (
+                              <span
+                                key={realIndex}
+                                onClick={() => setGoalIndex(realIndex)}
+                                className={`w-2 h-2 rounded-full cursor-pointer transition-all ${goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
+                                  }`}
+                              />
+                            );
+                          })}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-row md:flex md:justify-center">
               <div className="w-1/6 md:w-[7%]">
                 {sortedDates.map((date) => {
                   const dayTransactions = groupedByDate[date];
@@ -191,15 +292,18 @@ const Home = () => {
                       style={{ height: `${totalHeight}px` }}
                     >
                       <div
-                        className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'} absolute top-0 left-0 h-14`}
+                        className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'
+                          } absolute top-0 left-0 h-14`}
                       />
                       <p
-                        className={`text-base font-medium ${isToday ? 'text-blue-600' : 'text-black-700'}`}
+                        className={`text-base font-medium ${isToday ? 'text-blue-600' : 'text-black-700'
+                          }`}
                       >
                         {dayLabel}
                       </p>
                       <p
-                        className={`text-base font-bold ${isToday ? 'text-blue-600' : 'text-black-700'} leading-tight`}
+                        className={`text-base font-bold ${isToday ? 'text-blue-600' : 'text-black-700'
+                          } leading-tight`}
                       >
                         {dayNumber}
                       </p>
@@ -225,13 +329,12 @@ const Home = () => {
                     key={index}
                     onClick={() => typeof page === 'number' && handlePageClick(page)}
                     disabled={page === '...'}
-                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${
-                      page === currentPage
+                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${page === currentPage
                         ? 'bg-blue-600 text-white font-semibold'
                         : page === '...'
                           ? 'cursor-default'
                           : 'border border-black-300 hover:bg-black-200'
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
@@ -250,8 +353,7 @@ const Home = () => {
         )}
       </div>
 
-      {isChatOpen ? null : <FloatingBubble onClick={handleBubbleClick} />}
-
+      {!isChatOpen && <FloatingBubble onClick={handleBubbleClick} />}
       {isChatOpen && (
         <Sati
           handleCloseChatModal={handleCloseChatModal}

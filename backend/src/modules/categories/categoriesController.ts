@@ -76,8 +76,15 @@ export const getCategories = async (req: Request, res: Response) => {
 
     let goals: Goals[] = [];
     if (includeGoals && (type === TransactionType.EXPENSE || !type)) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       goals = await prisma.goals.findMany({
-        where: { userId: Number(req.user) },
+        where: {
+          userId: Number(req.user),
+          finished: false,
+          OR: [{ deadline: { gte: today } }, { deadline: null }],
+        },
       });
     }
 

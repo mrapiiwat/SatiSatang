@@ -6,23 +6,67 @@ import * as goalModels from './goalModels';
 
 export const getGoals = async (req: Request, res: Response) => {
   try {
+    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    const isFinished =
+      req.query.isFinished === 'true' ? true : req.query.isFinished === 'false' ? false : undefined;
+    const userId = Number(req.user);
+
+    const now = new Date();
+    const startDate =
+      month && year ? new Date(year, month - 1, 1) : new Date(now.getFullYear(), now.getMonth(), 1);
+    const endDate =
+      month && year
+        ? new Date(year, month, 0, 23, 59, 59, 999)
+        : new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
     const goals = await prisma.goals.findMany({
-      where: { userId: Number(req.user) },
+      where: {
+        userId,
+        createdAt: { lte: endDate },
+        OR: [{ deadline: { gte: startDate } }, { deadline: null }],
+      },
       include: { goalTransactions: true },
+      orderBy: { createdAt: 'desc' },
     });
 
-    if (!goals || goals.length === 0) {
-      return res.status(httpStatus.NOT_FOUND).json({ message: 'No goals found for this user' });
-    }
+    const goalsWithAmounts = await Promise.all(
+      goals.map(async (goal) => {
+        const totalAmount = goal.goalTransactions.reduce((sum, gt) => sum + gt.amount, 0);
+        const currentAmount = goal.goalTransactions
+          .filter((gt) => {
+            const date = new Date(gt.createdAt);
+            return date >= startDate && date <= endDate;
+          })
+          .reduce((sum, gt) => sum + gt.amount, 0);
 
-    const goalsWithCurrentAmount = goals.map((goal) => ({
-      ...goal,
-      currentAmount: goal.goalTransactions.reduce((sum, t) => sum + t.amount, 0),
-    }));
+        if (!goal.finished && totalAmount >= goal.amount) {
+          await prisma.goals.update({
+            where: { id: goal.id },
+            data: { finished: true },
+          });
+          goal.finished = true;
+        }
+
+        return { ...goal, totalAmount, currentAmount };
+      }),
+    );
+
+    const filteredGoals = goalsWithAmounts.filter((goal) =>
+      isFinished === undefined ? true : goal.finished === isFinished,
+    );
+
+    const totalGoalAmount = filteredGoals.reduce((sum, g) => sum + g.amount, 0);
+    const totalCurrentAmount = filteredGoals.reduce((sum, g) => sum + g.currentAmount, 0);
 
     return res.status(httpStatus.OK).json({
-      message: 'Goals fetched successfully',
-      data: goalsWithCurrentAmount,
+      message: 'Goals summary fetched successfully',
+      data: filteredGoals,
+      summary: {
+        totalGoals: filteredGoals.length,
+        totalGoalAmount,
+        totalCurrentAmount,
+      },
     });
   } catch (error) {
     if (error instanceof Error) {

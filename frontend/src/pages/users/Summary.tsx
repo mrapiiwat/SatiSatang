@@ -12,6 +12,7 @@ const Summary: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());
   const [showIncomeDetail, setShowIncomeDetail] = useState(false);
   const [showExpenseDetail, setShowExpenseDetail] = useState(false);
+  const [showGoalDetail, setShowGoalDetail] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
 
@@ -202,20 +203,48 @@ const Summary: React.FC = () => {
         </div>
 
         <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
-          <p className="font-semibold text-gray-700 mb-2">เป้าหมาย</p>
-          {filteredGoals.length === 0 ? (
-            <p className="text-black-600 text-sm">ไม่มีเป้าหมาย</p>
-          ) : (
-            filteredGoals.map((goal) => (
-              <div key={goal.id} className="flex justify-between items-center text-sm mb-1">
-                <span>{goal.name}</span>
-                <span className="text-green-500 font-semibold text-lg">
-                  ฿{goal.currentAmount.toLocaleString()}
-                </span>
-              </div>
-            ))
-          )}
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-semibold text-gray-700">เป้าหมาย</span>
+            <button
+              onClick={() => setShowGoalDetail(!showGoalDetail)}
+              className="flex items-center gap-1 bg-black-200 border border-black-400 rounded-[8px] px-2 py-[2px] text-sm text-black-700 hover:bg-black-300 transition"
+            >
+              <span>ดูเพิ่มเติม</span>
+              {showGoalDetail ? (
+                <MdKeyboardArrowUp className="text-lg" />
+              ) : (
+                <MdKeyboardArrowDown className="text-lg" />
+              )}
+            </button>
+          </div>
+
+          <p className="text-green-600 font-semibold text-xl mb-2">
+            ฿{totalGoal.toLocaleString()}
+          </p>
+
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${showGoalDetail ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
+              }`}
+          >
+            {showGoalDetail && (
+              <>
+                <p className="text-sm text-black-600 mb-2">จำนวนเป้าหมาย {filteredGoals.length}</p>
+
+                {filteredGoals.length === 0 ? (
+                  <p className="text-black-600 text-sm">ไม่มีเป้าหมาย</p>
+                ) : (
+                  filteredGoals.map((goal) => (
+                    <div key={goal.id} className="flex justify-between items-center text-sm mb-1">
+                      <span>{goal.name}</span>
+                      <span className="text-green-600 font-medium">฿{goal.currentAmount.toLocaleString()}</span>
+                    </div>
+                  ))
+                )}
+              </>
+            )}
+          </div>
         </div>
+
       </div>
     </PageWrapper>
   );
