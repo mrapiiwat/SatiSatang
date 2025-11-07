@@ -35,3 +35,11 @@ export async function rotateRefreshToken(oldRaw: string, userId: number) {
   const newRaw = await createRefreshToken(userId);
   return newRaw;
 }
+
+export function generateResetToken(bytes = 32) {
+  return crypto.randomBytes(bytes).toString('hex');
+}
+
+export function hashResetToken(token: string) {
+  return crypto.createHash('sha256').update(process.env.APP_SECRET!).update(token).digest('hex');
+}

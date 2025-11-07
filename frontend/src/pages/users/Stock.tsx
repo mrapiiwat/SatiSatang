@@ -151,7 +151,7 @@ export default function Stock() {
 
                     <div className="text-left">
                       <p className="text-lg font-semibold text-gray-900">
-                        {s.regularMarketPrice?.toFixed(2) ?? '-'} 
+                        {s.regularMarketPrice?.toFixed(2) ?? '-'}
                       </p>
                     </div>
 

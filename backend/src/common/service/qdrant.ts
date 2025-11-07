@@ -1,6 +1,6 @@
 import qdrant from '../config/qdrantClient';
-import { generateUUIDFromString } from './uuid';
-import { embedding } from '../config/openai';
+import { generateUUIDFromString } from '../utils/uuid';
+import { embedding } from './openai';
 import { Stock } from '@prisma/client';
 
 const CHAT_COLLECTION = process.env.CHAT_COLLECTION ?? 'memory';

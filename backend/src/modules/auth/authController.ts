@@ -9,15 +9,21 @@ import {
 } from '../../common/utils/token';
 import httpStatus from 'http-status';
 import { ZodError } from 'zod';
-import { sendVerificationEmail, generateOTP } from '../../common/utils/mail';
+import { sendVerificationEmail, generateOTP } from '../../common/service/mail';
 import * as authModels from './authModels';
 import prisma from '../../common/config/prismaClient';
 import passport from 'passport';
 import { User } from '@prisma/client';
+import { sendResetEmail } from '../../common/service/mail';
+import {
+  createPasswordResetToken,
+  findValidResetTokenByRaw,
+  markResetTokenUsed,
+} from '../../common/service/passwordReset';
 
 export const checkEmail = async (req: Request, res: Response) => {
   try {
-    const validatedData = authModels.CheckEmailSchema.parse(req.body);
+    const validatedData = authModels.emailSchema.parse(req.body);
 
     const user = await prisma.user.findUnique({
       where: { email: validatedData.email },
@@ -227,7 +233,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
 
 export const resendOtp = async (req: Request, res: Response) => {
   try {
-    const validateData = authModels.CheckEmailSchema.parse(req.body);
+    const validateData = authModels.emailSchema.parse(req.body);
     const { email } = validateData;
 
     if (!email) return res.status(httpStatus.BAD_REQUEST).json({ message: 'Missing email' });
@@ -283,6 +289,82 @@ export const resendOtp = async (req: Request, res: Response) => {
       message: 'OTP sent successfully',
       userId: user.id,
     });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Validation error',
+        errors: error,
+      });
+    } else if (error instanceof Error) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
+      });
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = authModels.emailSchema.parse(req.body);
+    res.status(httpStatus.OK).json({
+      message: "If that email is registered, you'll receive password reset instructions.",
+    });
+
+    void (async () => {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) return;
+
+      const rawToken = await createPasswordResetToken(user.id);
+      const resetUrl = `${process.env.FRONTEND_BASE_URL}/reset-password?token=${encodeURIComponent(rawToken)}&uid=${user.id}`;
+      await sendResetEmail(user.email!, resetUrl);
+    })();
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Validation error',
+        errors: error,
+      });
+    } else if (error instanceof Error) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
+      });
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, uid, newPassword } = authModels.resetPasswordSchema.parse(req.body);
+    const resetRecord = await findValidResetTokenByRaw(token);
+    if (!resetRecord || resetRecord.userId !== Number(uid)) {
+      return res.status(httpStatus.BAD_REQUEST).json({ message: 'Invalid or expired token' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: Number(uid) },
+      data: { password: hashed },
+    });
+
+    await markResetTokenUsed(resetRecord.id);
+
+    await prisma.refreshToken.updateMany({
+      where: { userId: Number(uid), revoked: false },
+      data: { revoked: true },
+    });
+
+    return res.status(httpStatus.OK).json({ message: 'Password reset successful' });
   } catch (error) {
     if (error instanceof ZodError) {
       return res.status(httpStatus.BAD_REQUEST).json({

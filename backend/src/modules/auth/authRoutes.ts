@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as authController from './authController';
 import passport from 'passport';
 import { authenticateJWT } from '../../common/middleware/authenticateJWT';
+import { forgotLimiter } from '../../common/utils/limiter';
 
 const router = Router();
 
@@ -11,6 +12,8 @@ router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/verify-email', authController.verifyEmail);
 router.post('/resend-otp', authController.resendOtp);
+router.post('/forgot-password', forgotLimiter, authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 
 //logout
 router.post('/logout', authenticateJWT, authController.logout);

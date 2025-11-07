@@ -33,6 +33,25 @@ export async function sendVerificationEmail(to: string, otp: string) {
   return result;
 }
 
+export async function sendResetEmail(to: string, resetUrl: string) {
+  const templatePath = path.join(process.cwd(), '/src/common/view/reset-password-email.html');
+
+  await fs.access(templatePath);
+  let html = await fs.readFile(templatePath, 'utf-8');
+
+  html = html
+    .replace(/{{RESET_URL}}/g, resetUrl)
+    .replace(/{{EXPIRES_MINUTES}}/g, (process.env.RESET_TOKEN_EXPIRES_MINUTES ?? 15).toString())
+    .replace(/{{CURRENT_YEAR}}/g, new Date().getFullYear().toString());
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: 'รีเซ็ตรหัสผ่านของคุณ',
+    html,
+  });
+}
+
 export function generateOTP(length = 6) {
   let otp = '';
   for (let i = 0; i < length; i++) {

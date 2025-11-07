@@ -6,7 +6,7 @@ import crypto from 'crypto';
 import * as transactionModels from './transactionModels';
 import prisma from '../../common/config/prismaClient';
 import { extractTextFromImage } from '../../common/config/ocr';
-import { checkSlipType, extractTransactionData } from '../../common/config/openai';
+import { checkSlipType, extractTransactionData } from '../../common/service/openai';
 
 const BUCKET = process.env.MINIO_BUCKET!;
 

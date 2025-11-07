@@ -218,13 +218,12 @@ const Summary: React.FC = () => {
             </button>
           </div>
 
-          <p className="text-green-600 font-semibold text-xl mb-2">
-            ฿{totalGoal.toLocaleString()}
-          </p>
+          <p className="text-green-600 font-semibold text-xl mb-2">฿{totalGoal.toLocaleString()}</p>
 
           <div
-            className={`transition-all duration-300 ease-in-out overflow-hidden ${showGoalDetail ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
-              }`}
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              showGoalDetail ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
+            }`}
           >
             {showGoalDetail && (
               <>
@@ -236,7 +235,9 @@ const Summary: React.FC = () => {
                   filteredGoals.map((goal) => (
                     <div key={goal.id} className="flex justify-between items-center text-sm mb-1">
                       <span>{goal.name}</span>
-                      <span className="text-green-600 font-medium">฿{goal.currentAmount.toLocaleString()}</span>
+                      <span className="text-green-600 font-medium">
+                        ฿{goal.currentAmount.toLocaleString()}
+                      </span>
                     </div>
                   ))
                 )}
@@ -244,7 +245,6 @@ const Summary: React.FC = () => {
             )}
           </div>
         </div>
-
       </div>
     </PageWrapper>
   );

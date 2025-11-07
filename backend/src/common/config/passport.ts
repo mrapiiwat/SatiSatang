@@ -63,7 +63,6 @@ passport.use(
             include: { oauthAccounts: true },
           });
         } else {
-          // upsert oauth account
           await prisma.oAuthAccount.upsert({
             where: { provider_providerUserId: { provider: 'google', providerUserId: profile.id } },
             update: { accessToken, refreshToken },

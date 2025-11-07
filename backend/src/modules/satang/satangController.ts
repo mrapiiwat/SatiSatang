@@ -3,9 +3,8 @@ import httpStatus from 'http-status';
 import { ZodError } from 'zod';
 import * as satangModels from './satangModels';
 import prisma from '../../common/config/prismaClient';
-import { Satang } from '../../common/config/openai';
-import { searchMemory, addMemory, searchStock, isStockQuery } from '../../common/utils/qdrant';
-import { ChatMessage } from '../../common/config/openai';
+import { searchMemory, addMemory, searchStock, isStockQuery } from '../../common/service/qdrant';
+import { Satang, ChatMessage } from '../../common/service/openai';
 import { satangSystem } from '../../common/utils/prompt';
 import { Stock } from '@prisma/client';
 

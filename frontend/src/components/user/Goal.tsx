@@ -141,8 +141,9 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
               type="text"
               value={goalName}
               onChange={(e) => setGoalName(e.target.value)}
-              className={`border ${errors.goalName ? 'border-red-500' : 'border-black-500'
-                } w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none`}
+              className={`border ${
+                errors.goalName ? 'border-red-500' : 'border-black-500'
+              } w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none`}
             />
             {errors.goalName && <p className="text-red-500 text-xs mt-1">{errors.goalName}</p>}
           </div>
@@ -153,8 +154,9 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className={`border ${errors.amount ? 'border-red-500' : 'border-black-500'
-                } w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none`}
+              className={`border ${
+                errors.amount ? 'border-red-500' : 'border-black-500'
+              } w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none`}
             />
             {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount}</p>}
           </div>
@@ -168,8 +170,9 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                   value={year}
                   onChange={handleYearChange}
                   placeholder="ปี"
-                  className={`w-full border ${errors.year ? 'border-red-500' : 'border-black-500'
-                    } rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none`}
+                  className={`w-full border ${
+                    errors.year ? 'border-red-500' : 'border-black-500'
+                  } rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none`}
                 />
                 {errors.year && <p className="text-red-500 text-xs mt-1">{errors.year}</p>}
               </div>
@@ -221,8 +224,9 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                   onChange={handleDayChange}
                   min="1"
                   placeholder="วัน"
-                  className={`w-full border ${errors.day ? 'border-red-500' : 'border-black-500'
-                    } rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none`}
+                  className={`w-full border ${
+                    errors.day ? 'border-red-500' : 'border-black-500'
+                  } rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none`}
                 />
                 {errors.day && <p className="text-red-500 text-xs mt-1">{errors.day}</p>}
               </div>
