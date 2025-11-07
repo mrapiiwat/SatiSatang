@@ -16,6 +16,7 @@ import Satang from '../pages/users/Satang';
 import Summary from '../pages/users/Summary';
 import Stock, { StockDetail } from '../pages/users/Stock';
 import ResetPassword from '../pages/auth/ResetPassword';
+import Recovery from '../pages/auth/Recovery';
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
       { path: '/verify', element: <Verify /> },
       { path: '/auth/callback', element: <AuthCallback /> },
       { path: '/reset-password', element: <ResetPassword /> },
+      { path: '/recovery', element: <Recovery /> },
       { path: '*', element: <NotFound /> },
     ],
   },

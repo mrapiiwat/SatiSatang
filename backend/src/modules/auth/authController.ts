@@ -342,6 +342,37 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
+export const validateResetToken = async (req: Request, res: Response) => {
+  try {
+    const { token, uid } = req.query;
+
+    if (!token || !uid) {
+      return res.status(httpStatus.BAD_REQUEST).json({ valid: false });
+    }
+
+    const record = await findValidResetTokenByRaw(token as string);
+
+    if (!record || record.userId !== Number(uid)) {
+      return res.json({ valid: false });
+    }
+
+    return res.json({ valid: true });
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
+        valid: false,
+      });
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+        valid: false,
+      });
+    }
+  }
+};
+
 export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { token, uid, newPassword } = authModels.resetPasswordSchema.parse(req.body);

@@ -10,18 +10,33 @@ export default function ResetPassword() {
   const tokenFromUrl = searchParams.get('token') || '';
   const uidFromUrl = searchParams.get('uid') || '';
 
-  const [newPassword, setNewPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirm, setConfirm] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!tokenFromUrl || !uidFromUrl) {
-      navigate('/');
-      return;
-    }
+    const verifyLink = async () => {
+      try {
+        if (!tokenFromUrl || !uidFromUrl) {
+          navigate('/');
+          return;
+        }
+        const res = await axios.get('/reset-password/verify', {
+          params: { token: tokenFromUrl, uid: uidFromUrl },
+        });
 
-    window.history.replaceState({}, '', '/reset-password');
+        if (!res.data.valid) {
+          navigate('/');
+        } else {
+          window.history.replaceState({}, '', '/reset-password');
+        }
+      } catch {
+        navigate('/');
+      }
+    };
+
+    verifyLink();
   }, [tokenFromUrl, uidFromUrl, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {

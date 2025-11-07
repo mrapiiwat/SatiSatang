@@ -80,7 +80,7 @@ const Login: React.FC = () => {
           navigate('/user');
         } catch (error) {
           console.log(error);
-          setError('เกิดข้อผิดพลาดในการล็อกอิน');
+          showToastAlert('อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'error');
         }
         return;
       }
@@ -105,8 +105,6 @@ const Login: React.FC = () => {
           navigate(`/verify?userId=${userId}`);
         } catch (error: unknown) {
           const axiosError = error as AxiosError;
-          console.error('Registration error:', axiosError);
-
           const responseData = axiosError.response?.data as
             | { errors?: { message?: string } }
             | undefined;
@@ -205,6 +203,24 @@ const Login: React.FC = () => {
       facebookLogin,
     ],
   );
+  const handleResetPassword = async () => {
+    if (!email) {
+      showToastAlert('กรุณากรอกอีเมล', 'error');
+      return;
+    }
+    sessionStorage.setItem('userEmail', email);
+    try {
+      await axios.post(`/forgot-password`, { email });
+      navigate('/recovery');
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<{ message?: string }>;
+        showToastAlert(String(axiosError.response?.data), 'error');
+      } else {
+        showToastAlert('เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+      }
+    }
+  };
 
   return (
     <PageWrapper animation="scale-fade">
@@ -267,6 +283,14 @@ const Login: React.FC = () => {
             </div>
           )}
 
+          {isUser === 'Login' ? (
+            <div className="text-sky-600 text-sm text-center ">
+              ลืมรหัสผ่าน?{' '}
+              <a onClick={handleResetPassword} className="underline cursor-pointer">
+                คลิกที่นี่
+              </a>
+            </div>
+          ) : null}
           {error && (
             <div className="text-red-500 text-sm text-center mb-2" role="alert" aria-live="polite">
               {error}
