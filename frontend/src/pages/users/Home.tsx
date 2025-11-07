@@ -204,14 +204,19 @@ const Home = () => {
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-semibold text-base">เป้าหมาย</h4>
                     <p className="text-xs text-black-500">
-                      {goals[goalIndex].deadline
-                        ? new Date(goals[goalIndex].deadline).toLocaleDateString('th-TH', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })
-                        : 'ไม่มีระยะเวลากำหนด'}
+                      {goals[goalIndex].deadline ? (
+                        new Date(goals[goalIndex].deadline) < new Date()
+                          ? "ครบกำหนด"
+                          : new Date(goals[goalIndex].deadline).toLocaleDateString("th-TH", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })
+                      ) : (
+                        "ไม่มีระยะเวลากำหนด"
+                      )}
                     </p>
+
                   </div>
                   <div className="flex justify-between items-start mb-1">
                     <span className="text-sm text-black">{goals[goalIndex].name}</span>
@@ -330,10 +335,10 @@ const Home = () => {
                     onClick={() => typeof page === 'number' && handlePageClick(page)}
                     disabled={page === '...'}
                     className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${page === currentPage
-                        ? 'bg-blue-600 text-white font-semibold'
-                        : page === '...'
-                          ? 'cursor-default'
-                          : 'border border-black-300 hover:bg-black-200'
+                      ? 'bg-blue-600 text-white font-semibold'
+                      : page === '...'
+                        ? 'cursor-default'
+                        : 'border border-black-300 hover:bg-black-200'
                       }`}
                   >
                     {page}

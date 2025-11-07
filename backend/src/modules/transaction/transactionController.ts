@@ -198,7 +198,16 @@ export const transactionByUpload = async (req: Request, res: Response) => {
       select: { id: true, name: true, type: true },
     });
 
-    const transactionData = await extractTransactionData(text, categories);
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+
+    if (!user) {
+      return res.status(httpStatus.BAD_REQUEST).json({ error: 'User not found' });
+    }
+
+    const transactionData = await extractTransactionData(text, categories, user);
 
     return res.status(httpStatus.OK).json({
       message: 'OCR และการแปลงข้อมูลสำเร็จ',

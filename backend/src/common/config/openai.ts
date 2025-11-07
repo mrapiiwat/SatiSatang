@@ -10,6 +10,16 @@ export interface ChatMessage {
   content: string;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  type: 'INCOME' | 'EXPENSE';
+}
+
+interface User {
+  name: string;
+}
+
 export async function embedding(text: string): Promise<number[]> {
   try {
     if (!text || text.trim() === '') {
@@ -82,26 +92,32 @@ export async function checkSlipType(text: string): Promise<boolean> {
   }
 }
 
-interface Category {
-  id: number;
-  name: string;
-  type: 'INCOME' | 'EXPENSE';
-}
-
-export async function extractTransactionData(text: string, categories: Category[]) {
+export async function extractTransactionData(text: string, categories: Category[], user: User) {
   try {
     const categoryListText = categories.map((c) => `${c.id}: ${c.name} (${c.type})`).join('\n');
 
     const prompt = `
       คุณเป็นระบบแปลงข้อมูลสลิปเป็น JSON
-      โดยต้องส่งข้อมูลในรูปแบบ:
+
+      ให้วิเคราะห์ว่าเป็น "INCOME" หรือ "EXPENSE" โดยใช้กฎต่อไปนี้ (สำคัญมาก):
+      - ให้ใช้การเทียบชื่อแบบ Fuzzy Matching
+      - ชื่อผู้ใช้จริงคือ "${user.name}"
+      - ชื่อในสลิปอาจสะกดต่างออกไป เช่น คนละภาษา (ไทย/อังกฤษ), สะกดคลาดเคลื่อน, เพิ่ม/ลดตัวอักษร หรือออกเสียงใกล้เคียง
+      - ถ้าชื่อผู้ใช้หรือชื่อที่ “ออกเสียง/อ่านใกล้เคียง” ปรากฏในตำแหน่ง **ผู้รับเงิน** → ให้ type = "INCOME"
+      - ถ้าปรากฏในตำแหน่ง **ผู้จ่ายเงิน** → ให้ type = "EXPENSE"
+
+      ถ้าไม่พบชื่อผู้ใช้:
+      - ถ้าพบคำที่สื่อถึงการจ่าย เช่น "จ่าย", "โอนออก", "ชำระ", "ซื้อ" → ให้ type = "EXPENSE"
+      - ถ้าพบคำที่สื่อถึงการได้รับ เช่น "ได้รับ", "โอนเข้า", "เงินเข้า", "รับเงิน" → ให้ type = "INCOME"
+
+      รูปแบบข้อมูล JSON ที่ต้องตอบกลับ:
       {
         "type": "INCOME หรือ EXPENSE",
         "description": "คำอธิบาย",
         "amount": ตัวเลข,
         "toAccount": "ชื่อบัญชีปลายทาง",
         "fromAccount": "ชื่อบัญชีต้นทาง",
-        "categoryId": "เลือก id ของ category ให้ตรงที่สุดจาก list"
+        "categoryId": "เลือก id ของ category ที่เหมาะสมที่สุดจาก list"
       }
 
       Category list ของผู้ใช้:
@@ -110,7 +126,7 @@ export async function extractTransactionData(text: string, categories: Category[
       ข้อความสลิป:
       "${text}"
 
-      ตอบเป็น JSON เท่านั้น
+      ตอบเป็น JSON เท่านั้น โดยไม่ต้องมีคำอธิบายเพิ่มเติม
       `;
 
     const jsonResponse = await openai.chat.completions.create({

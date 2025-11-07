@@ -11,10 +11,12 @@ model User {
   id                 Int                 @id @default(autoincrement())
   email              String?             @unique
   password           String?
-  name               String?
+  name               String
   balance            Float               @default(0)
   isEmailVerified    Boolean             @default(false)
   createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  
   budgets            Budgets[]
   categories         Category[]
   chatMessages       ChatMessage[]
@@ -37,6 +39,7 @@ model OAuthAccount {
   refreshToken   String?
   expiresAt      DateTime?
   userId         Int
+
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerUserId])
@@ -49,6 +52,7 @@ model RefreshToken {
   createdAt DateTime @default(now())
   expiresAt DateTime
   userId    Int
+
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -58,6 +62,7 @@ model EmailVerification {
   expiresAt DateTime
   createdAt DateTime @default(now())
   userId    Int
+
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -73,6 +78,7 @@ model Transaction {
   updatedAt   DateTime         @updatedAt
   userId      Int
   categoryId  Int
+
   category    Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -87,9 +93,11 @@ model Category {
   updatedAt    DateTime        @updatedAt
   userId       Int?
   iconId       Int
+
   icon         Icon            @relation(fields: [iconId], references: [id], onDelete: Cascade)
   user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  budgets      Budgets[]
 }
 
 model Icon {
@@ -99,6 +107,7 @@ model Icon {
   userId      Int?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
   user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   categories  Category[]
 }
@@ -112,6 +121,7 @@ model Goals {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   userId           Int
+
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   goalTransactions GoalTransaction[]
 }
@@ -128,14 +138,16 @@ model GoalTransaction {
 
 model Budgets {
   id            Int       @id @default(autoincrement())
-  name          String
   amount        Float
   currentAmount Float     @default(0)
+  categoryId    Int
   frequency     Frequency
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   userId        Int
+
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
 
 model ChatSession {
@@ -144,8 +156,9 @@ model ChatSession {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   userId    Int
-  messages  ChatMessage[]
+
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
 }
 
 model ChatMessage {
@@ -156,6 +169,7 @@ model ChatMessage {
   updatedAt DateTime    @updatedAt
   userId    Int
   sessionId Int
+
   session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
