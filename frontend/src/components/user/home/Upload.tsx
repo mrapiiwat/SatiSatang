@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { RxCross2 } from 'react-icons/rx';
-import axios from '../../api/axios';
+import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
-import useAuthStore from '../../store/authStore';
-import { showToastAlert } from '../../store/toastStore';
+import useAuthStore from '../../../store/authStore';
+import { showToastAlert } from '../../../store/toastStore';
 import FileUploadArea from './FileUploadArea';
 import TransactionForm from './TransactionForm';
 import ImageModal from './ImageModal';
-import type { OptionType, CategoryOptions, Category } from '../../types/home';
+import type { OptionType, CategoryOptions, Category } from '../../../types/home';
 import type { SingleValue } from 'react-select';
 
 const transactionTypes: OptionType[] = [

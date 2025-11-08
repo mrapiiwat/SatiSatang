@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
+import { showToastAlert } from '../../store/toastStore';
 import { me } from '../../api/auth';
 
 const AuthCallback: React.FC = () => {
@@ -18,10 +19,12 @@ const AuthCallback: React.FC = () => {
       me()
         .then((res) => {
           actionSetUser(res.data);
+          showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
           navigate('/user');
         })
         .catch((err) => {
           console.error('Failed to fetch user:', err);
+          showToastAlert('เข้าสู่ระบบล้มเหลว', 'error');
           navigate('/login');
         });
     } else {

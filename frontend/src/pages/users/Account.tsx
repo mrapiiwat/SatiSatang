@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import useAuthStore from '../../store/authStore';
 import { isAxiosError } from 'axios';
-import PasswordChangeForm from '../../components/user/PasswordChangeForm';
+import PasswordChangeForm from '../../components/user/account/PasswordChangeForm';
 import PageWrapper from '../../components/PageWrapper';
 import { showToastAlert } from '../../store/toastStore';
 import Modal from '../../components/Modal';

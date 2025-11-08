@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import ToastAlert from '../components/user/ToastAlert';
+import ToastAlert from '../components/ToastAlert';
 
 const Layout: React.FC = () => {
   return (

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { RxCross2 } from 'react-icons/rx';
 import Select from 'react-select';
 import type { SingleValue } from 'react-select';
-import type { GoalProps, OptionType } from '../../types/home';
-import axios from '../../api/axios';
+import type { GoalProps, OptionType } from '../../../types/home';
+import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
-import { showToastAlert } from '../../store/toastStore';
+import { showToastAlert } from '../../../store/toastStore';
 
 const Goal: React.FC<GoalProps> = ({ onClose }) => {
   const [goalName, setGoalName] = useState('');
@@ -13,7 +13,6 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
   const [year, setYear] = useState('');
   const [month, setMonth] = useState<SingleValue<OptionType>>(null);
   const [day, setDay] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const monthOptions: OptionType[] = [
     { value: '1', label: 'มกราคม' },
@@ -33,12 +32,14 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
   const validateInputs = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!goalName.trim()) newErrors.goalName = 'กรุณากรอกชื่อเป้าหมาย';
-    if (!amount.trim() || parseFloat(amount) <= 0) newErrors.amount = 'จำนวนเงินต้องมากกว่า 0';
-
-    if (month && (Number(month.value) < 1 || Number(month.value) > 12))
-      newErrors.month = 'เดือนต้องอยู่ระหว่าง 1 - 12';
-    if (day && (Number(day) < 1 || Number(day) > 31)) newErrors.day = 'วันต้องอยู่ระหว่าง 1 - 31';
+    if (!goalName.trim()) {
+      newErrors.goalName = 'กรุณากรอกชื่อเป้าหมาย';
+      showToastAlert(newErrors.goalName, 'error');
+    }
+    if (!amount.trim() || parseFloat(amount) <= 0) {
+      newErrors.amount = 'จำนวนเงินต้องมากกว่า 0';
+      showToastAlert(newErrors.amount, 'error');
+    }
 
     if (year && month && day) {
       const selectedDate = new Date(Number(year), Number(month.value) - 1, Number(day));
@@ -47,10 +48,10 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
 
       if (selectedDate < today) {
         newErrors.deadline = 'ตั้งเป้าหมายวันในอนาคตกันเถอะ!';
+        showToastAlert(newErrors.deadline, 'error');
       }
     }
 
-    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -58,17 +59,40 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
     let value = e.target.value;
 
     if (value.length > 4) return;
-
-    if (Number(value) >= 2500) {
-      value = String(Number(value) - 543);
-    }
+    if (Number(value) >= 2500) value = String(Number(value) - 543);
 
     setYear(value);
+
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    if (month && Number(value) === currentYear && Number(month.value) < currentMonth) {
+      setMonth(null);
+      setDay('');
+      return;
+    }
+
+    if (month && day) {
+      const selectedYear = Number(value);
+      const selectedMonth = Number(month.value);
+
+      let maxDays = 31;
+      if ([4, 6, 9, 11].includes(selectedMonth)) maxDays = 30;
+      else if (selectedMonth === 2) {
+        const isLeapYear =
+          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) ||
+          selectedYear % 400 === 0;
+        maxDays = isLeapYear ? 29 : 28;
+      }
+
+      if (Number(day) > maxDays) setDay('');
+    }
   };
+
+
 
   const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-
     if (Number(value) < 0 || Number(value) > 31) return;
 
     if (month && value) {
@@ -76,13 +100,11 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
       const selectedYear = year ? Number(year) : new Date().getFullYear();
       let maxDays = 31;
 
-      if ([4, 6, 9, 11].includes(selectedMonth)) {
-        maxDays = 30;
-      }
-      // เดือนกุมภาพันธ์
+      if ([4, 6, 9, 11].includes(selectedMonth)) maxDays = 30;
       else if (selectedMonth === 2) {
         const isLeapYear =
-          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) || selectedYear % 400 === 0;
+          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) ||
+          selectedYear % 400 === 0;
         maxDays = isLeapYear ? 29 : 28;
       }
 
@@ -94,26 +116,30 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateInputs()) return;
+    if (!validateInputs()) {
+      showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      return;
+    }
 
     try {
       const deadline =
         year && month && day
           ? `${year}-${month.value.padStart(2, '0')}-${day.padStart(2, '0')}`
           : null;
+
       await axios.post('/goal', {
         name: goalName,
         amount: Number(amount),
-        deadline: deadline,
+        deadline,
       });
 
       await showToastAlert('บันทึกสำเร็จ', 'success');
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        showToastAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
+        showToastAlert(err.response?.data?.message || 'เกิดข้อผิดพลาด', 'error');
       } else if (err instanceof Error) {
-        showToastAlert(`${err.message}`, 'error');
+        showToastAlert(err.message, 'error');
       } else {
         showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
@@ -141,11 +167,8 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
               type="text"
               value={goalName}
               onChange={(e) => setGoalName(e.target.value)}
-              className={`border ${
-                errors.goalName ? 'border-red-500' : 'border-black-500'
-              } w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none`}
+              className='border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none'
             />
-            {errors.goalName && <p className="text-red-500 text-xs mt-1">{errors.goalName}</p>}
           </div>
 
           <div className="flex flex-col gap-1">
@@ -154,11 +177,8 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className={`border ${
-                errors.amount ? 'border-red-500' : 'border-black-500'
-              } w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none`}
+              className='border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none'
             />
-            {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount}</p>}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -170,53 +190,37 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                   value={year}
                   onChange={handleYearChange}
                   placeholder="ปี"
-                  className={`w-full border ${
-                    errors.year ? 'border-red-500' : 'border-black-500'
-                  } rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none`}
+                  className='w-full border border-black-500 rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none'
                 />
-                {errors.year && <p className="text-red-500 text-xs mt-1">{errors.year}</p>}
               </div>
+
               <div className="flex flex-col flex-1 min-w-0">
                 <Select<OptionType, false>
                   options={monthOptions}
                   value={month}
-                  onChange={(option: SingleValue<OptionType>) => {
-                    setMonth(option);
-                    if (day && option) {
-                      const selectedMonth = Number(option.value);
-                      const selectedYear = year ? Number(year) : new Date().getFullYear();
-                      let maxDays = 31;
-
-                      if ([4, 6, 9, 11].includes(selectedMonth)) {
-                        maxDays = 30;
-                      } else if (selectedMonth === 2) {
-                        const isLeapYear =
-                          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) ||
-                          selectedYear % 400 === 0;
-                        maxDays = isLeapYear ? 29 : 28;
-                      }
-
-                      if (Number(day) > maxDays) {
-                        setDay('');
-                      }
-                    }
-                  }}
+                  onChange={(option: SingleValue<OptionType>) => setMonth(option)}
                   placeholder="เดือน"
                   isClearable
+                  isOptionDisabled={(option) => {
+                    if (!year) return false;
+                    const currentYear = new Date().getFullYear();
+                    const currentMonth = new Date().getMonth() + 1;
+                    return Number(year) === currentYear && Number(option.value) < currentMonth;
+                  }}
                   styles={{
                     control: (base) => ({
                       ...base,
                       height: 36,
                       minHeight: 36,
                       borderRadius: 6,
-                      borderColor: errors.month ? '#ef4444' : '#B1B0AD',
+                      borderColor: '#B1B0AD',
                     }),
                     singleValue: (base) => ({ ...base, color: '#111827' }),
                     indicatorsContainer: (base) => ({ ...base, display: 'none' }),
                   }}
                 />
-                {errors.month && <p className="text-red-500 text-xs mt-1">{errors.month}</p>}
               </div>
+
               <div className="flex flex-col flex-1 min-w-0">
                 <input
                   type="number"
@@ -224,15 +228,12 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                   onChange={handleDayChange}
                   min="1"
                   placeholder="วัน"
-                  className={`w-full border ${
-                    errors.day ? 'border-red-500' : 'border-black-500'
-                  } rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none`}
+                  className='w-full border border-black-500 rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none'
                 />
-                {errors.day && <p className="text-red-500 text-xs mt-1">{errors.day}</p>}
               </div>
             </div>
-            {errors.deadline && <p className="text-red-500 text-xs mt-1">{errors.deadline}</p>}
           </div>
+
           <div className="flex justify-center mt-2">
             <button
               onClick={handleSubmit}

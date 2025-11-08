@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState, useCallback } from 'react';
 import Google from '../../assets/Google.svg';
 import Facebook from '../../assets/Facebook.svg';
@@ -12,14 +12,10 @@ import Logo from '../../components/Logo';
 import PageWrapper from '../../components/PageWrapper';
 import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
+import type { LoginForm } from '../../types/auth';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
-
-interface LoginForm {
-  email: string;
-  password: string;
-}
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -64,6 +60,13 @@ const Login: React.FC = () => {
 
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
+  }, []);
+
+  useEffect(() => {
+    const storeEmail = sessionStorage.getItem('userEmail');
+    if (storeEmail) {
+      sessionStorage.removeItem('userEmail');
+    }
   }, []);
 
   const handleSubmit = useCallback(
@@ -284,7 +287,7 @@ const Login: React.FC = () => {
           )}
 
           {isUser === 'Login' ? (
-            <div className="text-sky-600 text-sm text-center ">
+            <div className="text-sky-700 text-sm text-center ">
               ลืมรหัสผ่าน?{' '}
               <a onClick={handleResetPassword} className="underline cursor-pointer">
                 คลิกที่นี่

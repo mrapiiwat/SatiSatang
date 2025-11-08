@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from '../../api/axios';
-import type { CategoriesType } from '../../types/home';
-import CategoryHeader from '../../components/user/CategoryHeader';
-import CategoryList from '../../components/user/CategoryList';
-import CategoryModal from '../../components/user/CategoryModal';
+import type { CategoriesType } from '../../types/category';
+import CategoryHeader from '../../components/user/category/CategoryHeader';
+import CategoryList from '../../components/user/category/CategoryList';
+import CategoryModal from '../../components/user/category/CategoryModal';
 import PageWrapper from '../../components/PageWrapper';
 
 const Categories = () => {

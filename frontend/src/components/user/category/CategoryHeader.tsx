@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRef, useEffect } from 'react';
-import type { CategoryHeaderProps } from '../../types/home';
+import type { CategoryHeaderProps } from '../../../types/category';
 
 const CategoryHeader: React.FC<CategoryHeaderProps> = ({ selectedType, setSelectedType }) => {
   const incomeRef = useRef<HTMLButtonElement>(null);

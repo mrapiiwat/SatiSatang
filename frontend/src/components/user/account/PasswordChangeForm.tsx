@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LuEye, LuEyeClosed } from 'react-icons/lu';
-import type { PasswordChangeFormProps } from '../../types/account';
+import type { PasswordChangeFormProps } from '../../../types/account';
 
 const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
   oldPassword,

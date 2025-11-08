@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { RxCross2 } from 'react-icons/rx';
 import { FaPlus } from 'react-icons/fa6';
 import { GoArrowUp } from 'react-icons/go';
 import AddMenu from './AddMenu';
-import PageWrapper from '../PageWrapper';
-import type { SatiProps } from '../../types/home';
+import PageWrapper from '../../PageWrapper';
+import type { SatiProps } from '../../../types/home';
 
 const Sati: React.FC<SatiProps> = ({
   handleCloseChatModal,
@@ -13,18 +13,6 @@ const Sati: React.FC<SatiProps> = ({
   handleMenuSelect,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        handleCloseChatModal();
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [handleCloseChatModal]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-end">

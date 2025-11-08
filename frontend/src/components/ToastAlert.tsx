@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToastStore, type ToastType } from '../../store/toastStore';
+import { useToastStore, type ToastType } from '../store/toastStore';
 
 const ToastAlert: React.FC = () => {
   const { message, type, visible, hideToast } = useToastStore();

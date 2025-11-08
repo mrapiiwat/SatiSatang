@@ -1,20 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
-import PageWrapper from '../../components/PageWrapper';
-import FloatingBubble from '../../components/user/FloatingBubble';
-import MonthHeader from '../../components/user/MonthHeader';
 import { PiChartPieSliceLight } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../../components/Modal';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
-import Manual from '../../components/user/Manual';
-import Upload from '../../components/user/Upload';
-import Budget from '../../components/user/Budget';
-import Goal from '../../components/user/Goal';
 import type { Transaction, PaginationData, MyGoal } from '../../types/home';
 import axios from '../../api/axios';
-import DayTransactions from '../../components/user/DayTransactions';
 import { showToastAlert } from '../../store/toastStore';
-import Sati from '../../components/user/Sati';
+import PageWrapper from '../../components/PageWrapper';
+import FloatingBubble from '../../components/user/home/FloatingBubble';
+import MonthHeader from '../../components/user/MonthHeader';
+import DayTransactions from '../../components/user/home/DayTransactions';
+import Manual from '../../components/user/home/Manual';
+import Upload from '../../components/user/home/Upload';
+import Budget from '../../components/user/home/Budget';
+import Goal from '../../components/user/home/Goal';
+import Sati from '../../components/user/home/Sati';
 
 const Home = () => {
   const today = new Date();
@@ -208,10 +208,10 @@ const Home = () => {
                         ? new Date(goals[goalIndex].deadline) < new Date()
                           ? 'ครบกำหนด'
                           : new Date(goals[goalIndex].deadline).toLocaleDateString('th-TH', {
-                              day: 'numeric',
-                              month: 'long',
-                              year: 'numeric',
-                            })
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })
                         : 'ไม่มีระยะเวลากำหนด'}
                     </p>
                   </div>
@@ -258,9 +258,8 @@ const Home = () => {
                               <span
                                 key={realIndex}
                                 onClick={() => setGoalIndex(realIndex)}
-                                className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
-                                  goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
-                                }`}
+                                className={`w-2 h-2 rounded-full cursor-pointer transition-all ${goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
+                                  }`}
                               />
                             );
                           })}
@@ -295,21 +294,18 @@ const Home = () => {
                       style={{ height: `${totalHeight}px` }}
                     >
                       <div
-                        className={`border-l-4 ${
-                          isToday ? 'border-blue-600' : 'border-black-700'
-                        } absolute top-0 left-0 h-14`}
+                        className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'
+                          } absolute top-0 left-0 h-14`}
                       />
                       <p
-                        className={`text-base font-medium ${
-                          isToday ? 'text-blue-600' : 'text-black-700'
-                        }`}
+                        className={`text-base font-medium ${isToday ? 'text-blue-600' : 'text-black-700'
+                          }`}
                       >
                         {dayLabel}
                       </p>
                       <p
-                        className={`text-base font-bold ${
-                          isToday ? 'text-blue-600' : 'text-black-700'
-                        } leading-tight`}
+                        className={`text-base font-bold ${isToday ? 'text-blue-600' : 'text-black-700'
+                          } leading-tight`}
                       >
                         {dayNumber}
                       </p>
@@ -335,13 +331,12 @@ const Home = () => {
                     key={index}
                     onClick={() => typeof page === 'number' && handlePageClick(page)}
                     disabled={page === '...'}
-                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${
-                      page === currentPage
-                        ? 'bg-blue-600 text-white font-semibold'
-                        : page === '...'
-                          ? 'cursor-default'
-                          : 'border border-black-300 hover:bg-black-200'
-                    }`}
+                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${page === currentPage
+                      ? 'bg-blue-600 text-white font-semibold'
+                      : page === '...'
+                        ? 'cursor-default'
+                        : 'border border-black-300 hover:bg-black-200'
+                      }`}
                   >
                     {page}
                   </button>

@@ -16,3 +16,8 @@ export interface OAuthButtonProps {
   label: string;
   logo: string;
 }
+
+export interface LoginForm {
+  email: string;
+  password: string;
+}

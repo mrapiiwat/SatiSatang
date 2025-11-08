@@ -1,11 +1,11 @@
 import React from 'react';
 import { useState } from 'react';
-import axios from '../../api/axios';
+import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
-import Modal from '../../components/Modal';
-import IconSelector from '../user/IconSelector';
-import type { CategoryModalProps } from '../../types/home';
-import { showToastAlert } from '../../store/toastStore';
+import Modal from '../../../components/Modal';
+import IconSelector from '../account/IconSelector';
+import type { CategoryModalProps } from '../../../types/category';
+import { showToastAlert } from '../../../store/toastStore';
 
 const CategoryModal: React.FC<CategoryModalProps> = ({
   isOpen,

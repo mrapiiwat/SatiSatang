@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import type { SingleValue } from 'react-select';
 import { RxCross2 } from 'react-icons/rx';
-import axios from '../../api/axios';
+import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
 import { IoChevronDownSharp } from 'react-icons/io5';
 import type {
@@ -10,8 +10,8 @@ import type {
   FrequencyOption,
   CategoryOption,
   BudgetProps,
-} from '../../types/home';
-import { showToastAlert } from '../../store/toastStore';
+} from '../../../types/home';
+import { showToastAlert } from '../../../store/toastStore';
 
 const frequencies: FrequencyOption[] = [
   { value: 'DAILY', label: 'รายวัน' },
@@ -109,7 +109,7 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                 setSelectedCategory(option);
                 if (option) setErrors((prev) => ({ ...prev, category: false }));
               }}
-              placeholder="กรุณาเลือกหมวด"
+              placeholder=""
               components={{
                 IndicatorSeparator: () => null,
                 DropdownIndicator: () => (
@@ -147,7 +147,7 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                 setSelectedFrequency(option);
                 if (option) setErrors((prev) => ({ ...prev, frequency: false }));
               }}
-              placeholder="กรุณาเลือกรอบงบประมาณ"
+              placeholder=""
               components={{
                 IndicatorSeparator: () => null,
                 DropdownIndicator: () => (
@@ -187,7 +187,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                 setAmount(e.target.value);
                 if (e.target.value) setErrors((prev) => ({ ...prev, amount: false }));
               }}
-              placeholder="เช่น 3,000"
               className={`text-black-900 w-full h-10 rounded-md p-1 px-3 focus:outline-none transition ${
                 errors.amount
                   ? 'border-[1px] border-[#FF383C]'

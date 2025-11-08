@@ -9,3 +9,16 @@ export interface PasswordChangeFormProps {
   handlePasswordChange: () => void;
   cancel: () => void;
 }
+
+export interface IconSelectorProps {
+  selectedIconId: string;
+  selectedIconUrl?: string;
+  onSelect: (id: string) => void;
+  disabled?: boolean;
+}
+
+export interface Icon {
+  id: number;
+  url: string;
+  description: string;
+}

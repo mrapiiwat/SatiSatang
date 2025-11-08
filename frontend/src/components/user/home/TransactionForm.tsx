@@ -2,22 +2,23 @@ import React from 'react';
 import Select, { type StylesConfig } from 'react-select';
 import { GoCalendar } from 'react-icons/go';
 import { RxCross2 } from 'react-icons/rx';
-import type { TransactionFormProps, OptionType } from '../../types/home';
+import type { TransactionFormProps, OptionType } from '../../../types/home';
 import SlipPreview from './SlipPreview';
 
 const categorySelectStyles: StylesConfig<OptionType, false> = {
-  control: (base) => ({
+  control: (base, state) => ({
     ...base,
     height: 40,
     minHeight: 40,
     borderRadius: 6,
-    borderColor: '#D1D5DB',
-    backgroundColor: 'white',
+    borderColor: '#B1B0AD',
+    backgroundColor: state.isDisabled ? '#F3F4F6' : 'white',
+    cursor: state.isDisabled ? 'not-allowed' : 'default',
   }),
   singleValue: (base) => ({ ...base, color: '#111827' }),
   indicatorsContainer: (base) => ({ ...base, display: 'none' }),
-  placeholder: (base) => ({ ...base, color: '#9CA3AF' }),
 };
+
 
 const transactionTypes = [
   { value: 'INCOME', label: 'รายรับ' },
@@ -66,8 +67,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
           name="description"
           value={transactionData.description}
           onChange={onInputChange}
-          placeholder="ข้อมูลจากสลิป"
-          className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -77,7 +77,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
           options={transactionTypes}
           value={selectedTypeOption}
           onChange={(option) => onSelectChange('type', option)}
-          placeholder="เลือกประเภทรายการ"
+          placeholder=""
           isClearable
           styles={categorySelectStyles}
         />
@@ -89,7 +89,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
           options={categories}
           value={selectedCategoryOption}
           onChange={(option) => onSelectChange('categoryId', option)}
-          placeholder={transactionData.type ? 'เลือกหมวดหมู่' : 'เลือกประเภทรายการก่อน'}
+          placeholder=""
           isDisabled={!transactionData.type}
           isClearable
           styles={categorySelectStyles}
@@ -103,8 +103,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
           type="number"
           value={transactionData.amount}
           onChange={onInputChange}
-          placeholder="จำนวนเงิน"
-          className="border border-gray-300 rounded-md px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
@@ -123,14 +122,13 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
           !transactionData.categoryId ||
           !transactionData.amount
         }
-        className={`w-full py-2.5 rounded-xl font-semibold text-white transition ${
-          transactionData.description &&
+        className={`w-full py-2.5 rounded-xl font-semibold text-white transition ${transactionData.description &&
           transactionData.type &&
           transactionData.categoryId &&
           transactionData.amount
-            ? 'bg-blue-600 hover:bg-blue-700'
-            : 'bg-gray-400 cursor-not-allowed'
-        }`}
+          ? 'bg-blue-600 hover:bg-blue-700'
+          : 'bg-gray-400 cursor-not-allowed'
+          }`}
       >
         บันทึก
       </button>

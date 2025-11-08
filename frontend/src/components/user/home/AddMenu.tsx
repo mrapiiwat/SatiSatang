@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AddMenuProps } from '../../types/home';
+import type { AddMenuProps } from '../../../types/home';
 
 const AddMenu: React.FC<AddMenuProps> = ({ isOpen, onSelect, onClose }) => (
   <>

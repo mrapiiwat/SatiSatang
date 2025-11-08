@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import type { DayTransactionsProps, CategoriesType } from '../../types/home';
-import Image from '../Image';
-import axios from '../../api/axios';
+import type { DayTransactionsProps } from '../../../types/home';
+import type { CategoriesType } from '../../../types/category';
+import Image from '../../Image';
+import axios from '../../../api/axios';
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sortedDates }) => {
   const [categoryMap, setCategoryMap] = useState<Record<number, string>>({});

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useLayoutEffect } from 'react';
 import { GoArrowUp } from 'react-icons/go';
-import Face from '../../assets/Page-1.svg';
-import type { SatangTextModeProps } from '../../types/satang';
+import Face from '../../../assets/Page-1.svg';
+import type { SatangTextModeProps } from '../../../types/satang';
 import TypingIndicator from './TypingIndicator';
-import PageWrapper from '../PageWrapper';
+import PageWrapper from '../../PageWrapper';
 
 const SatangTextMode: React.FC<SatangTextModeProps> = ({
   toggleVoiceMode,

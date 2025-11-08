@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../../components/user/Navbar';
-import ToastAlert from '../../components/user/ToastAlert';
+import ToastAlert from '../../components/ToastAlert';
 
 const Layout: React.FC = () => {
   return (

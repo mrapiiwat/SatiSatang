@@ -1,7 +1,7 @@
 import React from 'react';
 import { Dialog } from '@headlessui/react';
 import { RxCross2 } from 'react-icons/rx';
-import type { ImageModalProps } from '../../types/home';
+import type { ImageModalProps } from '../../../types/home';
 
 const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, previewUrl }) => (
   <Dialog open={isOpen} onClose={onClose} className="relative z-[100]">

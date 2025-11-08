@@ -59,44 +59,6 @@ export interface FrequencyOption {
   label: string;
 }
 
-export type CategoriesType = {
-  id: number;
-  name: string;
-  type: 'INCOME' | 'EXPENSE';
-  icon: string;
-};
-
-export interface CategoryHeaderProps {
-  selectedType: 'INCOME' | 'EXPENSE';
-  setSelectedType: (type: 'INCOME' | 'EXPENSE') => void;
-}
-
-export interface CategoryListProps {
-  categories: CategoriesType[];
-  setCategories: React.Dispatch<React.SetStateAction<CategoriesType[]>>;
-  onAddClick: () => void;
-}
-
-export interface CategoryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedType: 'INCOME' | 'EXPENSE';
-  refresh: () => Promise<void>;
-}
-
-export interface Icon {
-  id: number;
-  url: string;
-  description: string;
-}
-
-export interface IconSelectorProps {
-  selectedIconId: string;
-  selectedIconUrl?: string;
-  onSelect: (id: string) => void;
-  disabled?: boolean;
-}
-
 export interface FloatingBubbleProps {
   onClick?: () => void;
 }
