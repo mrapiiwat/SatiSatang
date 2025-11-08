@@ -3,7 +3,12 @@ import Select from 'react-select';
 import type { SingleValue } from 'react-select';
 import { RxCross2 } from 'react-icons/rx';
 import { GoCalendar } from 'react-icons/go';
-import type { ManualProps, OptionType, CategoryOption, CategoryResponse } from '../../../types/home';
+import type {
+  ManualProps,
+  OptionType,
+  CategoryOption,
+  CategoryResponse,
+} from '../../../types/home';
 import axios from '../../../api/axios';
 import { showToastAlert } from '../../../store/toastStore';
 

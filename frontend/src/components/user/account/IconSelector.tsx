@@ -60,13 +60,15 @@ const IconSelector: React.FC<IconSelectorProps> = ({
           type="button"
           onClick={handleOpenModal}
           disabled={disabled}
-          className={`w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all ${disabled
+          className={`w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all ${
+            disabled
               ? 'opacity-50 cursor-not-allowed bg-gray-100'
               : 'cursor-pointer hover:scale-105 hover:shadow-md'
-            } ${selectedIconId
+          } ${
+            selectedIconId
               ? 'border-blue-600 bg-white shadow-sm'
               : 'border-gray-300 bg-white hover:border-blue-600'
-            }`}
+          }`}
         >
           {selectedIcon?.url || selectedIconUrl ? (
             <Image
@@ -115,10 +117,11 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                       key={icon.id}
                       type="button"
                       onClick={() => handleSelectIcon(icon)}
-                      className={`w-full aspect-square rounded-full border-2 flex items-center justify-center transition-all p-px ${selectedIconId === icon.id.toString()
+                      className={`w-full aspect-square rounded-full border-2 flex items-center justify-center transition-all p-px ${
+                        selectedIconId === icon.id.toString()
                           ? 'border-blue-600 bg-purple-50 shadow-md scale-105'
                           : 'border-gray-200 hover:border-blue-600 hover:scale-110 bg-white'
-                        }`}
+                      }`}
                       title={icon.description}
                     >
                       <Image

@@ -80,16 +80,13 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
       if ([4, 6, 9, 11].includes(selectedMonth)) maxDays = 30;
       else if (selectedMonth === 2) {
         const isLeapYear =
-          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) ||
-          selectedYear % 400 === 0;
+          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) || selectedYear % 400 === 0;
         maxDays = isLeapYear ? 29 : 28;
       }
 
       if (Number(day) > maxDays) setDay('');
     }
   };
-
-
 
   const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -103,8 +100,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
       if ([4, 6, 9, 11].includes(selectedMonth)) maxDays = 30;
       else if (selectedMonth === 2) {
         const isLeapYear =
-          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) ||
-          selectedYear % 400 === 0;
+          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) || selectedYear % 400 === 0;
         maxDays = isLeapYear ? 29 : 28;
       }
 
@@ -167,7 +163,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
               type="text"
               value={goalName}
               onChange={(e) => setGoalName(e.target.value)}
-              className='border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none'
+              className="border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none"
             />
           </div>
 
@@ -177,7 +173,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className='border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none'
+              className="border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none"
             />
           </div>
 
@@ -190,7 +186,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                   value={year}
                   onChange={handleYearChange}
                   placeholder="ปี"
-                  className='w-full border border-black-500 rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none'
+                  className="w-full border border-black-500 rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none"
                 />
               </div>
 
@@ -228,7 +224,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                   onChange={handleDayChange}
                   min="1"
                   placeholder="วัน"
-                  className='w-full border border-black-500 rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none'
+                  className="w-full border border-black-500 rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none"
                 />
               </div>
             </div>

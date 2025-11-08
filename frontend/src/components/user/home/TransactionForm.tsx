@@ -19,7 +19,6 @@ const categorySelectStyles: StylesConfig<OptionType, false> = {
   indicatorsContainer: (base) => ({ ...base, display: 'none' }),
 };
 
-
 const transactionTypes = [
   { value: 'INCOME', label: 'รายรับ' },
   { value: 'EXPENSE', label: 'รายจ่าย' },
@@ -122,13 +121,14 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
           !transactionData.categoryId ||
           !transactionData.amount
         }
-        className={`w-full py-2.5 rounded-xl font-semibold text-white transition ${transactionData.description &&
+        className={`w-full py-2.5 rounded-xl font-semibold text-white transition ${
+          transactionData.description &&
           transactionData.type &&
           transactionData.categoryId &&
           transactionData.amount
-          ? 'bg-blue-600 hover:bg-blue-700'
-          : 'bg-gray-400 cursor-not-allowed'
-          }`}
+            ? 'bg-blue-600 hover:bg-blue-700'
+            : 'bg-gray-400 cursor-not-allowed'
+        }`}
       >
         บันทึก
       </button>

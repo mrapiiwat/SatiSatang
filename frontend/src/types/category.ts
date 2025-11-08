@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface CategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
