@@ -14,6 +14,7 @@ router.post('/verify-email', authController.verifyEmail);
 router.post('/resend-otp', authController.resendOtp);
 router.post('/forgot-password', forgotLimiter, authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
+router.post('/validate-recovery', authController.validateRecovery);
 router.get('/reset-password/verify', authController.validateResetToken);
 
 //logout

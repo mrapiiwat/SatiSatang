@@ -211,10 +211,9 @@ const Login: React.FC = () => {
       showToastAlert('กรุณากรอกอีเมล', 'error');
       return;
     }
-    sessionStorage.setItem('userEmail', email);
     try {
       await axios.post(`/forgot-password`, { email });
-      navigate('/recovery');
+      navigate('/recovery?email=' + encodeURIComponent(email));
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         const axiosError = error as AxiosError<{ message?: string }>;

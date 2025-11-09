@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Logo from '../../components/Logo';
 import axios from '../../api/axios';
 import { AxiosError } from 'axios';
@@ -11,16 +11,28 @@ const Recovery: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const [email, setEmail] = useState('');
+  const [searchParams] = useSearchParams();
+  const emailParam = searchParams.get('email');
+  const email = emailParam ? decodeURIComponent(emailParam) : null;
 
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem('userEmail');
-    if (!storedEmail) {
-      navigate('/');
-    } else {
-      setEmail(storedEmail);
-    }
-  }, [navigate]);
+    const verify = async () => {
+      if (!email) {
+        navigate('/login');
+        return;
+      }
+      try {
+        const res = await axios.post('/validate-recovery', { email });
+        if (!res.data.valid) {
+          navigate('/login');
+        }
+      } catch {
+        navigate('/login');
+      }
+    };
+
+    verify();
+  }, [email, navigate]);
 
   const handleResendEmail = async () => {
     if (!email) return;
@@ -35,7 +47,7 @@ const Recovery: React.FC = () => {
         const axiosError = error as AxiosError<{ message?: string }>;
         showToastAlert(axiosError.response?.data?.message || 'เกิดข้อผิดพลาด', 'error');
       } else {
-        showToastAlert('เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+        showToastAlert('เกิดข้อผิดพลาด', 'error');
       }
     } finally {
       setLoading(false);
@@ -74,9 +86,8 @@ const Recovery: React.FC = () => {
             <button
               onClick={handleResendEmail}
               disabled={loading}
-              className={`text-blue-600 hover:underline flex items-center justify-center gap-2 text-sm mx-auto ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`text-blue-600 hover:underline flex items-center justify-center gap-2 text-sm mx-auto ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               {loading ? (
                 <>

@@ -16,7 +16,7 @@ const DeadlineDisplay: React.FC<DeadlineDisplayProps> = ({ deadline, now }) => {
     const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
     const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
     const seconds = Math.floor((diffMs / 1000) % 60);
-    return `จะครบกำหนดใน ${hours} ชม. ${minutes} นาที ${seconds} วินาที`;
+    return `${hours} ชม. ${minutes} นาที ${seconds} วินาที`;
   }
   return date.toLocaleDateString('th-TH', {
     day: 'numeric',

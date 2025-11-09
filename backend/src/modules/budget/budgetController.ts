@@ -3,7 +3,7 @@ import httpStatus from 'http-status';
 import { ZodError } from 'zod';
 import prisma from '../../common/config/prismaClient';
 import * as budgetModels from './budgetModels';
-import { getDeadlineFromFrequency } from '../../common/utils/dateRange';
+import { getDeadlineFromFrequency, getPeriodRangeByFrequency } from '../../common/utils/dateRange';
 
 export const createBudget = async (req: Request, res: Response) => {
   try {
@@ -20,6 +20,23 @@ export const createBudget = async (req: Request, res: Response) => {
       });
     }
 
+    const { start, end } = getPeriodRangeByFrequency(validatedData.frequency);
+
+    const existingBudget = await prisma.budgets.findFirst({
+      where: {
+        userId,
+        categoryId: validatedData.categoryId,
+        frequency: validatedData.frequency,
+        createdAt: { gte: start, lte: end },
+      },
+    });
+
+    if (existingBudget) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'มีงบประเภทนี้ในรอบเวลาเดียวกันแล้ว',
+      });
+    }
+
     const now = new Date();
     const deadline = getDeadlineFromFrequency(validatedData.frequency);
 
@@ -28,7 +45,7 @@ export const createBudget = async (req: Request, res: Response) => {
         userId,
         categoryId: validatedData.categoryId,
         type: 'EXPENSE',
-        createdAt: { gte: now, lte: deadline },
+        createdAt: { gte: start, lte: end },
       },
       _sum: { amount: true },
     });

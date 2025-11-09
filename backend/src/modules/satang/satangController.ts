@@ -3,8 +3,8 @@ import httpStatus from 'http-status';
 import { ZodError } from 'zod';
 import * as satangModels from './satangModels';
 import prisma from '../../common/config/prismaClient';
-import { searchMemory, addMemory, searchStock, isStockQuery } from '../../common/service/qdrant';
-import { Satang, ChatMessage } from '../../common/service/openai';
+import { searchMemory, addMemory, searchStock } from '../../common/service/qdrant';
+import { Satang, ChatMessage, isStockQueryWithAI } from '../../common/service/openai';
 import { satangSystem } from '../../common/utils/prompt';
 import { Stock } from '@prisma/client';
 
@@ -41,7 +41,7 @@ export const SatangChat = async (req: Request, res: Response) => {
     const memoryResults = await searchMemory(userId, validatedData.content);
 
     let stockResults: Record<string, Stock>[] = [];
-    if (isStockQuery(validatedData.content)) {
+    if (await isStockQueryWithAI(validatedData.content)) {
       stockResults = await searchStock(validatedData.content, 3);
     }
 
@@ -133,9 +133,9 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       take: limit,
       ...(cursor
         ? {
-            skip: 1,
-            cursor: { id: Number(cursor) },
-          }
+          skip: 1,
+          cursor: { id: Number(cursor) },
+        }
         : {}),
     });
 

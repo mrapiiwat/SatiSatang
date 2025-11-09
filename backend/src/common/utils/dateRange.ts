@@ -35,3 +35,33 @@ export const getDeadlineFromFrequency = (frequency: string): Date => {
 
   return deadline;
 };
+
+
+export const getPeriodRangeByFrequency = (frequency: string) => {
+  const now = new Date();
+  let start: Date;
+  let end: Date;
+
+  if (frequency === "DAILY") {
+    start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  } else if (frequency === "WEEKLY") {
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    start = new Date(now.setDate(diff));
+    start.setHours(0, 0, 0, 0);
+    end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+  } else if (frequency === "MONTHLY") {
+    start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+    end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  } else if (frequency === "YEARLY") {
+    start = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+    end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+  } else {
+    throw new Error("Invalid frequency");
+  }
+
+  return { start, end };
+}

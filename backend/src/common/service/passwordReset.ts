@@ -2,7 +2,7 @@
 import prisma from '../config/prismaClient';
 import { generateResetToken, hashToken } from '../utils/token';
 
-const RESET_EXPIRES_MINUTES = Number(process.env.RESET_TOKEN_EXPIRES_MINUTES || 15);
+const RESET_EXPIRES_MINUTES = Number(process.env.RESET_TOKEN_EXPIRES_MINUTES || 5);
 
 export async function createPasswordResetToken(userId: number) {
   const raw = generateResetToken(48);

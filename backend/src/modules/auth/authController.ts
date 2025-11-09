@@ -342,6 +342,44 @@ export const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
+export const validateRecovery = async (req: Request, res: Response) => {
+  try {
+    const { email } = authModels.emailSchema.parse(req.body);
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(httpStatus.OK).json({
+        valid: false
+      });
+    }
+    const tokenRecord = await prisma.passwordResetToken.findFirst({
+      where: {
+        userId: user.id,
+        used: false,
+        expiresAt: { gt: new Date() },
+      },
+    });
+    if (!tokenRecord) {
+      return res.json({ valid: false });
+    }
+    return res.json({ valid: true });
+    
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        valid: false,
+        errors: error.message,
+      });
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+        valid: false
+      });
+    }
+  }
+};
+
 export const validateResetToken = async (req: Request, res: Response) => {
   try {
     const { token, uid } = req.query;

@@ -147,3 +147,24 @@ export async function extractTransactionData(text: string, categories: Category[
     throw new Error('Failed to extract transaction data from OpenAI');
   }
 }
+
+
+export async function isStockQueryWithAI(query: string): Promise<boolean> {
+  const prompt = `
+    คุณคือระบบตรวจจับว่าประโยคนี้เกี่ยวกับหุ้นหรือไม่
+    ให้ตอบแค่ true หรือ false
+
+    ข้อความ: "${query}"
+    `;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-5-nano",
+    messages: [
+      { role: "system", content: "คุณคือ classifier" },
+      { role: "user", content: prompt }
+    ],
+  });
+
+  const answer = response.choices[0].message.content?.trim().toLowerCase();
+  return answer === "true";
+}
