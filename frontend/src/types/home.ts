@@ -153,3 +153,21 @@ export interface MyGoal {
   totalAmount: number;
   finished: boolean;
 }
+
+export interface MyBudget {
+  id: number;
+  amount: number;
+  currentAmount: number;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  userId: number;
+  category: {
+    id: number;
+    name: string;
+  };
+  deadline: string;
+}
+
+export interface DeadlineDisplayProps {
+  deadline?: string | Date | null;
+  now: Date;
+}

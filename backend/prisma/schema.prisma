@@ -157,9 +157,10 @@ model Budgets {
   currentAmount Float     @default(0)
   categoryId    Int
   frequency     Frequency
+  deadline      DateTime?
+  userId        Int
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  userId        Int
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)

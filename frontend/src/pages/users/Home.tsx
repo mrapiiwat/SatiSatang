@@ -3,7 +3,7 @@ import { PiChartPieSliceLight } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../../components/Modal';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
-import type { Transaction, PaginationData, MyGoal } from '../../types/home';
+import type { Transaction, PaginationData, MyGoal, MyBudget } from '../../types/home';
 import axios from '../../api/axios';
 import { showToastAlert } from '../../store/toastStore';
 import PageWrapper from '../../components/PageWrapper';
@@ -15,6 +15,7 @@ import Upload from '../../components/user/home/Upload';
 import Budget from '../../components/user/home/Budget';
 import Goal from '../../components/user/home/Goal';
 import Sati from '../../components/user/home/Sati';
+import DeadlineDisplay from '../../components/user/home/DeadlineDisplay';
 
 const Home = () => {
   const today = new Date();
@@ -28,9 +29,11 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [goals, setGoals] = useState<MyGoal[]>([]);
+  const [budgets, setBudgets] = useState<MyBudget[]>([]);
   const [goalIndex, setGoalIndex] = useState(0);
+  const [budgetIndex, setBudgetIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-
+  const [now, setNow] = useState(new Date());
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -46,6 +49,19 @@ const Home = () => {
     } catch (err) {
       console.error(err);
       showToastAlert('เกิดข้อผิดพลาดในการดึง goal', 'error');
+    }
+  }, [selectedMonth, selectedYear]);
+
+  const fetchBudget = useCallback(async () => {
+    try {
+      const res = await axios.get(
+        `/budget?month=${selectedMonth}&year=${selectedYear}&isOverDeadline=false`,
+      );
+      setBudgets(res.data.data || []);
+      setBudgetIndex(0);
+    } catch (error) {
+      console.error(error);
+      showToastAlert('เกิดข้อผิดพลาดในการดึง budget', 'error');
     }
   }, [selectedMonth, selectedYear]);
 
@@ -71,10 +87,21 @@ const Home = () => {
   useEffect(() => {
     fetchGoals();
   }, [selectedMonth, selectedYear, fetchGoals]);
+  useEffect(() => {
+    fetchBudget();
+  }, [selectedMonth, selectedYear, fetchBudget, transactions]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (isHovered || goals.length <= 1) return;
@@ -83,6 +110,14 @@ const Home = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [goalIndex, isHovered, goals.length]);
+
+  useEffect(() => {
+    if (isHovered || budgets.length <= 1) return;
+    const interval = setInterval(() => {
+      setBudgetIndex((prev) => (prev + 1) % budgets.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [budgetIndex, isHovered, budgets.length]);
 
   const handleClosePopupAndRefetch = () => {
     setActivePopup(null);
@@ -194,27 +229,89 @@ const Home = () => {
           </div>
         ) : (
           <>
-            {goals.length > 0 && (
-              <div className="flex justify-center mb-4">
+            <div className="flex flex-col md:max-w-[80%] md:flex-col lg:flex-row lg:justify-center lg:gap-4 mb-6 w-full lg:w-4/5 mx-auto">
+              {budgets.length > 0 && budgetIndex < budgets.length && (
                 <div
-                  className="relative w-full max-w-2xl mx-auto bg-gray-100 p-3 rounded-lg"
+                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-semibold text-base">งบที่ตั้งไว้</h4>
+                    <p className="text-xs text-black-500">
+                      <DeadlineDisplay deadline={budgets[budgetIndex]?.deadline} now={now} />
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-sm text-black">
+                      {budgets[budgetIndex]?.category?.name || 'ไม่ระบุหมวดหมู่'}
+                    </span>
+                    <div className="text-xs text-gray-700">
+                      <span className="text-purple-300 font-semibold">
+                        ฿ {budgets[budgetIndex]?.currentAmount?.toLocaleString() || 0}
+                      </span>
+                      <span className="text-gray-500">
+                        {' '}
+                        / ฿ {budgets[budgetIndex]?.amount?.toLocaleString() || 0}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1">
+                    <div
+                      className="bg-purple-300 h-1.5 rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(
+                          ((budgets[budgetIndex]?.currentAmount || 0) /
+                            (budgets[budgetIndex]?.amount || 1)) *
+                            100,
+                          100,
+                        )}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex justify-center gap-1 mt-3">
+                    {budgets.length > 1 &&
+                      budgets
+                        .slice(
+                          Math.min(Math.max(budgetIndex - 2, 0), Math.max(budgets.length - 5, 0)),
+                          Math.min(Math.max(budgetIndex - 2, 0) + 5, budgets.length),
+                        )
+                        .map((_, idx) => {
+                          const startIndex = Math.min(
+                            Math.max(budgetIndex - 2, 0),
+                            Math.max(budgets.length - 5, 0),
+                          );
+                          const realIndex = startIndex + idx;
+                          return (
+                            <span
+                              key={realIndex}
+                              onClick={() => setBudgetIndex(realIndex)}
+                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
+                                budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
+                              }`}
+                            />
+                          );
+                        })}
+                  </div>
+                </div>
+              )}
+
+              {goals.length > 0 && (
+                <div
+                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg flex flex-col"
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                 >
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-semibold text-base">เป้าหมาย</h4>
                     <p className="text-xs text-black-500">
-                      {goals[goalIndex].deadline
-                        ? new Date(goals[goalIndex].deadline) < new Date()
-                          ? 'ครบกำหนด'
-                          : new Date(goals[goalIndex].deadline).toLocaleDateString('th-TH', {
-                              day: 'numeric',
-                              month: 'long',
-                              year: 'numeric',
-                            })
-                        : 'ไม่มีระยะเวลากำหนด'}
+                      <DeadlineDisplay deadline={goals[goalIndex]?.deadline} now={now} />
                     </p>
                   </div>
+
                   <div className="flex justify-between items-start mb-1">
                     <span className="text-sm text-black">{goals[goalIndex].name}</span>
                     <div className="text-xs text-gray-700">
@@ -241,35 +338,32 @@ const Home = () => {
                   </div>
 
                   <div className="flex justify-center gap-1 mt-3">
-                    {goals.length > 1 && (
-                      <>
-                        {goals
-                          .slice(
-                            Math.min(Math.max(goalIndex - 2, 0), Math.max(goals.length - 5, 0)),
-                            Math.min(Math.max(goalIndex - 2, 0) + 5, goals.length),
-                          )
-                          .map((_, idx) => {
-                            const startIndex = Math.min(
-                              Math.max(goalIndex - 2, 0),
-                              Math.max(goals.length - 5, 0),
-                            );
-                            const realIndex = startIndex + idx;
-                            return (
-                              <span
-                                key={realIndex}
-                                onClick={() => setGoalIndex(realIndex)}
-                                className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
-                                  goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
-                                }`}
-                              />
-                            );
-                          })}
-                      </>
-                    )}
+                    {goals.length > 1 &&
+                      goals
+                        .slice(
+                          Math.min(Math.max(goalIndex - 2, 0), Math.max(goals.length - 5, 0)),
+                          Math.min(Math.max(goalIndex - 2, 0) + 5, goals.length),
+                        )
+                        .map((_, idx) => {
+                          const startIndex = Math.min(
+                            Math.max(goalIndex - 2, 0),
+                            Math.max(goals.length - 5, 0),
+                          );
+                          const realIndex = startIndex + idx;
+                          return (
+                            <span
+                              key={realIndex}
+                              onClick={() => setGoalIndex(realIndex)}
+                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
+                                goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
+                              }`}
+                            />
+                          );
+                        })}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <div className="flex flex-row md:flex md:justify-center">
               <div className="w-1/6 md:w-[7%]">
