@@ -26,12 +26,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
   const [selectedFrequency, setSelectedFrequency] = useState<FrequencyOption | null>(null);
   const [amount, setAmount] = useState('');
 
-  const [errors, setErrors] = useState({
-    category: false,
-    frequency: false,
-    amount: false,
-  });
-
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -57,7 +51,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
       frequency: !selectedFrequency,
       amount: !amount,
     };
-    setErrors(newErrors);
 
     if (Object.values(newErrors).some(Boolean)) {
       return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
@@ -70,7 +63,7 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
         amount: Number(amount),
       });
 
-      await showToastAlert('ตั้งงบประมาณสำเร็จ', 'success');
+      showToastAlert('ตั้งงบประมาณสำเร็จ', 'success');
 
       onSuccess?.();
       onClose();
@@ -107,7 +100,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
               value={selectedCategory}
               onChange={(option: SingleValue<CategoryOption>) => {
                 setSelectedCategory(option);
-                if (option) setErrors((prev) => ({ ...prev, category: false }));
               }}
               placeholder=""
               components={{
@@ -119,22 +111,15 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                 ),
               }}
               styles={{
-                control: (base, state) => ({
+                control: (base) => ({
                   ...base,
                   height: 40,
                   minHeight: 40,
                   borderRadius: 6,
-                  borderColor: errors.category
-                    ? '#FF383C'
-                    : state.isFocused
-                      ? '#3B82F6'
-                      : '#B1B0AD',
-                  '&:hover': {
-                    borderColor: errors.category ? '#FF383C' : '#B1B0AD',
-                  },
-                  boxShadow: undefined,
+                  borderColor: '#B1B0AD',
                 }),
                 singleValue: (base) => ({ ...base, color: '#111827' }),
+                indicatorsContainer: (base) => ({ ...base, display: 'none' }),
               }}
             />
           </div>
@@ -145,7 +130,6 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
               value={selectedFrequency}
               onChange={(option: SingleValue<FrequencyOption>) => {
                 setSelectedFrequency(option);
-                if (option) setErrors((prev) => ({ ...prev, frequency: false }));
               }}
               placeholder=""
               components={{
@@ -157,22 +141,15 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
                 ),
               }}
               styles={{
-                control: (base, state) => ({
+                control: (base) => ({
                   ...base,
                   height: 40,
                   minHeight: 40,
                   borderRadius: 6,
-                  borderColor: errors.frequency
-                    ? '#FF383C'
-                    : state.isFocused
-                      ? '#3B82F6'
-                      : '#B1B0AD',
-                  '&:hover': {
-                    borderColor: errors.frequency ? '#FF383C' : '#B1B0AD',
-                  },
-                  boxShadow: undefined,
+                  borderColor: '#B1B0AD',
                 }),
                 singleValue: (base) => ({ ...base, color: '#111827' }),
+                indicatorsContainer: (base) => ({ ...base, display: 'none' }),
               }}
             />
           </div>
@@ -185,13 +162,8 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
               value={amount}
               onChange={(e) => {
                 setAmount(e.target.value);
-                if (e.target.value) setErrors((prev) => ({ ...prev, amount: false }));
               }}
-              className={`text-black-900 w-full h-10 rounded-md p-1 px-3 focus:outline-none transition ${
-                errors.amount
-                  ? 'border-[1px] border-[#FF383C]'
-                  : 'border-[1px] border-black-500 focus:border-blue-600 focus:ring-0'
-              }`}
+              className="text-black-900 w-full h-10 rounded-md p-1 px-3 focus:outline-none transition border-[1px] border-black-500 focus:border-sky-700 focus:ring-0"
             />
           </div>
 
