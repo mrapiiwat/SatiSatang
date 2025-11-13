@@ -6,6 +6,7 @@ import { IoLockClosedOutline } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { showToastAlert } from '../../store/toastStore';
 import Logo from '../../components/Logo';
+import { IoCheckmarkCircle } from 'react-icons/io5';
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,7 @@ const ResetPassword: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isReset, setIsReset] = useState(false);
   const validatePassword = (password: string) => {
     if (password.length < 6) return ['รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'];
     else if (!/[A-Z]/.test(password)) return ['ต้องมีตัวอักษรพิมพ์ใหญ่อย่างน้อย 1 ตัว (A-Z)'];
@@ -75,7 +77,7 @@ const ResetPassword: React.FC = () => {
       });
 
       showToastAlert('รีเซ็ตรหัสผ่านสำเร็จ', 'success');
-      setTimeout(() => navigate('/login'), 2000);
+      setIsReset(true);
     } catch (err: unknown) {
       let message = 'เกิดข้อผิดพลาด';
       if (err && typeof err === 'object' && 'response' in err) {
@@ -89,53 +91,63 @@ const ResetPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center font-ibm text-gray-900 bg-gradient-to-b from-blue-50 to-white px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center font-ibm text-gray-900 px-4">
       <div className="absolute top-6 w-full flex justify-center">
         <Logo />
       </div>
-
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 w-full max-w-md text-center animate-fadeIn">
-        <IoLockClosedOutline className="text-blue-600 text-6xl mb-4 mx-auto" />
-        <h1 className="text-2xl font-bold mb-4">ตั้งรหัสผ่านใหม่</h1>
-        <p className="text-gray-600 mb-6">
-          โปรดกรอกรหัสผ่านใหม่ของคุณ และยืนยันอีกครั้งเพื่อความถูกต้อง
-        </p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
-          <div>
-            <label className="block text-sm font-medium mb-1">รหัสผ่านใหม่</label>
-            <input
-              type="password"
-              placeholder="********"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+      {isReset ? (
+        <div className="bg-white rounded-xl p-8 w-full max-w-md text-center">
+          <div className="mb-8">
+            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
+              <IoCheckmarkCircle className="text-green-600 text-5xl" />
+            </div>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-3">เปลี่ยนรหัสผ่านสำเร็จ</h1>
+            <p className="text-gray-500 text-base">
+              รหัสผ่านของคุณได้รับการเปลี่ยนแปลงเรียบร้อยแล้ว
+            </p>
           </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl p-8 w-full max-w-md text-center animate-fadeIn">
+          <IoLockClosedOutline className="text-blue-600 text-6xl mb-4 mx-auto" />
+          <h1 className="text-2xl font-bold mb-4">ตั้งรหัสผ่านใหม่</h1>
+          <p className="text-gray-600 mb-6">
+            โปรดกรอกรหัสผ่านใหม่ของคุณ และยืนยันอีกครั้งเพื่อความถูกต้อง
+          </p>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
+            <div>
+              <label className="block text-sm font-medium mb-1">รหัสผ่านใหม่</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">ยืนยันรหัสผ่าน</label>
-            <input
-              type="password"
-              placeholder="********"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">ยืนยันรหัสผ่าน</label>
+              <input
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`mt-3 w-full flex justify-center items-center gap-2 py-2 rounded-lg font-semibold text-white transition ${
-              loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            {loading && <AiOutlineLoading3Quarters className="animate-spin" />}
-            {loading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่'}
-          </button>
-        </form>
-      </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`mt-3 w-full flex justify-center items-center gap-2 py-2 rounded-lg font-semibold text-white transition ${
+                loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
+            >
+              {loading && <AiOutlineLoading3Quarters className="animate-spin" />}
+              {loading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่'}
+            </button>
+          </form>
+        </div>
+      )}
 
       <style>{`
         @keyframes fadeIn {

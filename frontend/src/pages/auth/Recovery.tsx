@@ -60,12 +60,12 @@ const Recovery: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center font-ibm text-gray-900 bg-gradient-to-b from-blue-50 to-white px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center font-ibm text-gray-900 px-4">
       <div className="absolute top-6 w-full flex justify-center">
         <Logo />
       </div>
 
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 w-full max-w-md text-center animate-fadeIn">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-md text-center animate-fadeIn">
         <IoMailOutline className="text-blue-600 text-6xl mb-4 mx-auto animate-fadeIn" />
         <h1 className="text-2xl font-bold mb-4">เช็กอีเมลของคุณ</h1>
         <p className="text-gray-600 mb-6">
@@ -86,8 +86,9 @@ const Recovery: React.FC = () => {
             <button
               onClick={handleResendEmail}
               disabled={loading}
-              className={`text-blue-600 hover:underline flex items-center justify-center gap-2 text-sm mx-auto ${loading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+              className={`text-blue-600 hover:underline flex items-center justify-center gap-2 text-sm mx-auto ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               {loading ? (
                 <>

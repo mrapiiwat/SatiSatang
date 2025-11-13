@@ -16,6 +16,7 @@ import Budget from '../../components/user/home/Budget';
 import Goal from '../../components/user/home/Goal';
 import Sati from '../../components/user/home/Sati';
 import DeadlineDisplay from '../../components/user/home/DeadlineDisplay';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Home = () => {
   const today = new Date();
@@ -34,6 +35,7 @@ const Home = () => {
   const [budgetIndex, setBudgetIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [now, setNow] = useState(new Date());
+  const [showFrequency, setShowFrequency] = useState(true);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -238,8 +240,41 @@ const Home = () => {
                 >
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-semibold text-base">งบที่ตั้งไว้</h4>
-                    <p className="text-xs text-black-500">
-                      <DeadlineDisplay deadline={budgets[budgetIndex]?.deadline} now={now} />
+                    <p
+                      className="text-xs text-black-500 cursor-pointer"
+                      onClick={() => setShowFrequency(!showFrequency)}
+                    >
+                      <AnimatePresence mode="wait">
+                        {showFrequency ? (
+                          <motion.span
+                            key="frequency"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {budgets[budgetIndex]?.frequency === 'DAILY'
+                              ? 'รายวัน'
+                              : budgets[budgetIndex]?.frequency === 'WEEKLY'
+                                ? 'รายสัปดาห์'
+                                : budgets[budgetIndex]?.frequency === 'MONTHLY'
+                                  ? 'รายเดือน'
+                                  : budgets[budgetIndex]?.frequency === 'YEARLY'
+                                    ? 'รายปี'
+                                    : 'ครั้งเดียว'}
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="deadline"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <DeadlineDisplay deadline={budgets[budgetIndex]?.deadline} now={now} />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
                     </p>
                   </div>
 

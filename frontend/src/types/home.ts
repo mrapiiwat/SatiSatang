@@ -158,7 +158,7 @@ export interface MyBudget {
   id: number;
   amount: number;
   currentAmount: number;
-  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
   userId: number;
   category: {
     id: number;
