@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch src/**/*.ts --exec ts-node -r dotenv/config src/index.ts",
+    "dev": "nodemon --watch src/**/*.ts --exec ts-node -r dotenv/config src/index.ts dotenv_config_path=./.env.local",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -70,6 +70,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "prisma": "^6.17.0",
+    "redis": "^5.9.0",
     "zod": "^4.1.9"
   }
 }

@@ -4,6 +4,7 @@ import prisma from '../../common/config/prismaClient';
 import * as userModels from './userModels';
 import { ZodError } from 'zod';
 import bcrypt from 'bcrypt';
+import redis from "../../common/config/redisClient"
 
 export const me = async (req: Request, res: Response) => {
   try {
@@ -13,18 +14,32 @@ export const me = async (req: Request, res: Response) => {
       });
       return;
     }
+
+    const cacheKey = `user:${req.user}`;
+    const cachedUser = await redis.get(cacheKey);
+    if (cachedUser) {
+      return res.status(httpStatus.OK).json(JSON.parse(cachedUser));
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: Number(req.user) },
       include: { oauthAccounts: true },
     });
-    if (!user) return res.status(404).json({ error: 'Not found' });
-    res.json({
+    
+    if (!user) return res.status(httpStatus.NOT_FOUND).json({ error: 'Not found' });
+
+    const responseData = {
       id: user.id,
       email: user.email,
       name: user.name,
       balance: user.balance,
       oauthAccounts: user.oauthAccounts,
-    });
+    };
+
+    await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
+
+    res.status(httpStatus.OK).json(responseData);
+
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -49,6 +64,8 @@ export const updateName = async (req: Request, res: Response) => {
       where: { id: userId },
       data: { name },
     });
+
+    await redis.del(`user:${userId}`);
 
     res.status(httpStatus.OK).json({
       message: 'แก้ไขชื่อผู้ใช้งานสำเร็จ',
@@ -115,6 +132,8 @@ export const changePassword = async (req: Request, res: Response) => {
       where: { id: userId },
       data: { password: hashedPassword },
     });
+
+    await redis.del(`user:${userId}`);
 
     return res.status(httpStatus.OK).json({
       message: 'Password updated successfully',
@@ -185,6 +204,8 @@ export const deleteUser = async (req: Request, res: Response) => {
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production',
     });
+
+    await redis.del(`user:${userId}`);
 
     return res.status(httpStatus.OK).json({ message: 'User deleted successfully' });
   } catch (error) {
