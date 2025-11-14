@@ -4,7 +4,7 @@ import prisma from '../../common/config/prismaClient';
 import * as userModels from './userModels';
 import { ZodError } from 'zod';
 import bcrypt from 'bcrypt';
-import redis from "../../common/config/redisClient"
+import redis from '../../common/config/redisClient';
 
 export const me = async (req: Request, res: Response) => {
   try {
@@ -25,7 +25,7 @@ export const me = async (req: Request, res: Response) => {
       where: { id: Number(req.user) },
       include: { oauthAccounts: true },
     });
-    
+
     if (!user) return res.status(httpStatus.NOT_FOUND).json({ error: 'Not found' });
 
     const responseData = {
@@ -39,7 +39,6 @@ export const me = async (req: Request, res: Response) => {
     await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
 
     res.status(httpStatus.OK).json(responseData);
-
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({

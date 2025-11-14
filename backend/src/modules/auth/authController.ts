@@ -349,7 +349,7 @@ export const validateRecovery = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return res.status(httpStatus.OK).json({
-        valid: false
+        valid: false,
       });
     }
     const tokenRecord = await prisma.passwordResetToken.findFirst({
@@ -363,7 +363,6 @@ export const validateRecovery = async (req: Request, res: Response) => {
       return res.json({ valid: false });
     }
     return res.json({ valid: true });
-    
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -374,7 +373,7 @@ export const validateRecovery = async (req: Request, res: Response) => {
     } else {
       return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         message: 'Internal server error',
-        valid: false
+        valid: false,
       });
     }
   }

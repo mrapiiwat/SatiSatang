@@ -37,7 +37,6 @@ export const createBudget = async (req: Request, res: Response) => {
       });
     }
 
-    const now = new Date();
     const deadline = getDeadlineFromFrequency(validatedData.frequency);
 
     const current = await prisma.transaction.aggregate({

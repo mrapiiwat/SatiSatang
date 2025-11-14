@@ -148,7 +148,6 @@ export async function extractTransactionData(text: string, categories: Category[
   }
 }
 
-
 export async function isStockQueryWithAI(query: string): Promise<boolean> {
   const prompt = `
     คุณคือระบบตรวจจับว่าประโยคนี้เกี่ยวกับหุ้นหรือไม่
@@ -158,13 +157,13 @@ export async function isStockQueryWithAI(query: string): Promise<boolean> {
     `;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5-nano",
+    model: 'gpt-5-nano',
     messages: [
-      { role: "system", content: "คุณคือ classifier" },
-      { role: "user", content: prompt }
+      { role: 'system', content: 'คุณคือ classifier' },
+      { role: 'user', content: prompt },
     ],
   });
 
   const answer = response.choices[0].message.content?.trim().toLowerCase();
-  return answer === "true";
+  return answer === 'true';
 }
