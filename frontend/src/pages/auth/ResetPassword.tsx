@@ -8,6 +8,7 @@ import { showToastAlert } from '../../store/toastStore';
 import Logo from '../../components/Logo';
 import { IoCheckmarkCircle } from 'react-icons/io5';
 
+
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -96,17 +97,28 @@ const ResetPassword: React.FC = () => {
         <Logo />
       </div>
       {isReset ? (
-        <div className="bg-white rounded-xl p-8 w-full max-w-md text-center">
-          <div className="mb-8">
-            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
-              <IoCheckmarkCircle className="text-green-600 text-5xl" />
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-8 w-full max-w-md text-center">
+            <div className="mb-8">
+              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
+                <IoCheckmarkCircle className="text-green-600 w-8 h-8" strokeWidth={2} />
+              </div>
+
+              <h1 className="text-3xl font-semibold text-gray-900 mb-4">
+                เปลี่ยนรหัสผ่านสำเร็จ
+              </h1>
+
+              <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                รหัสผ่านของคุณได้รับการเปลี่ยนแปลงเรียบร้อยแล้ว
+              </p>
+
+              <p className="text-gray-500 text-sm">
+                คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้ทันที
+              </p>
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-3">เปลี่ยนรหัสผ่านสำเร็จ</h1>
-            <p className="text-gray-500 text-base">
-              รหัสผ่านของคุณได้รับการเปลี่ยนแปลงเรียบร้อยแล้ว
-            </p>
           </div>
         </div>
+
       ) : (
         <div className="bg-white rounded-2xl p-8 w-full max-w-md text-center animate-fadeIn">
           <IoLockClosedOutline className="text-blue-600 text-6xl mb-4 mx-auto" />
@@ -138,9 +150,8 @@ const ResetPassword: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`mt-3 w-full flex justify-center items-center gap-2 py-2 rounded-lg font-semibold text-white transition ${
-                loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-              }`}
+              className={`mt-3 w-full flex justify-center items-center gap-2 py-2 rounded-lg font-semibold text-white transition ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
             >
               {loading && <AiOutlineLoading3Quarters className="animate-spin" />}
               {loading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่'}
