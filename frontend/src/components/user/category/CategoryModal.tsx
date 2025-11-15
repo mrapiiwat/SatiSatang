@@ -27,15 +27,11 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
 
     try {
       setLoading(true);
-      await axios.post(
-        '/category',
-        {
-          name: newCategory.name.trim(),
-          iconId: Number(newCategory.iconId),
-          type: selectedType,
-        },
-        { withCredentials: true },
-      );
+      await axios.post('/category', {
+        name: newCategory.name.trim(),
+        iconId: Number(newCategory.iconId),
+        type: selectedType,
+      });
 
       await showToastAlert('เพิ่มหมวดหมู่สำเร็จ', 'success');
       setNewCategory({ name: '', iconId: '' });

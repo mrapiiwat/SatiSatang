@@ -3,6 +3,8 @@ import httpStatus from 'http-status';
 import { ZodError } from 'zod';
 import prisma from '../../common/config/prismaClient';
 import * as goalModels from './goalModels';
+import redis from '../../common/config/redisClient';
+import { getGoalCacheKey, clearUserGoalCache } from '../../common/service/cache';
 
 export const getGoals = async (req: Request, res: Response) => {
   try {
@@ -19,6 +21,13 @@ export const getGoals = async (req: Request, res: Response) => {
       month && year
         ? new Date(year, month, 0, 23, 59, 59, 999)
         : new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const cacheKey = getGoalCacheKey(userId, month, year, isFinished);
+
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.status(httpStatus.OK).json(JSON.parse(cached));
+    }
 
     const goals = await prisma.goals.findMany({
       where: {
@@ -59,7 +68,7 @@ export const getGoals = async (req: Request, res: Response) => {
     const totalGoalAmount = filteredGoals.reduce((sum, g) => sum + g.amount, 0);
     const totalCurrentAmount = filteredGoals.reduce((sum, g) => sum + g.currentAmount, 0);
 
-    return res.status(httpStatus.OK).json({
+    const responseData = {
       message: 'Goals summary fetched successfully',
       data: filteredGoals,
       summary: {
@@ -67,7 +76,11 @@ export const getGoals = async (req: Request, res: Response) => {
         totalGoalAmount,
         totalCurrentAmount,
       },
-    });
+    };
+
+    await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
+
+    return res.status(httpStatus.OK).json(responseData);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -94,6 +107,9 @@ export const createGoal = async (req: Request, res: Response) => {
         userId: Number(req.user),
       },
     });
+
+    await clearUserGoalCache(Number(req.user));
+
     return res.status(httpStatus.CREATED).json({
       message: 'Goal created successfully',
       data: goal,
@@ -135,6 +151,8 @@ export const updateGoal = async (req: Request, res: Response) => {
       data: validatedData,
     });
 
+    await clearUserGoalCache(Number(req.user));
+
     return res.status(httpStatus.OK).json({
       message: 'Goal updated successfully',
       data: updatedGoal,
@@ -173,6 +191,8 @@ export const deleteGoal = async (req: Request, res: Response) => {
     await prisma.goals.delete({
       where: { id: goalId },
     });
+
+    await clearUserGoalCache(Number(req.user));
 
     return res.status(httpStatus.OK).json({ message: 'Goal deleted successfully' });
   } catch (error) {

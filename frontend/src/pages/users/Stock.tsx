@@ -61,13 +61,34 @@ export default function Stock() {
   );
 
   return (
-    <div className="min-h-screen p-6 bg-white">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen">
+      <div className="max-w-5xl mx-auto px-6 py-5">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">ภาพรวมหุ้น</h1>
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl font-light text-slate-900 mb-2 tracking-tight"
+          >
+            ภาพรวมตลาด
+          </motion.h1>
+          {stocks.length > 0 && stocks[0]?.updatedAt && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-xs text-slate-400 font-light"
+            >
+              อัปเดตล่าสุด: {new Date(stocks[0].updatedAt).toLocaleString('th-TH')}
+            </motion.p>
+          )}
 
-          <div className="relative max-w-md">
-            <div className="flex items-center h-11 rounded-lg bg-white border border-gray-200 transition-all duration-200 hover:border-gray-400 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="relative max-w-xl mt-5"
+          >
+            <div className="flex items-center h-14 rounded-2xl bg-white shadow-sm border border-slate-200/60 transition-all duration-300 hover:shadow-md focus-within:border-slate-300 focus-within:shadow-md">
               <motion.button
                 onClick={() => {
                   setIsSearching(true);
@@ -77,12 +98,12 @@ export default function Stock() {
                 whileTap={{ scale: 0.95 }}
                 animate={{ rotate: isSearching ? 360 : 0 }}
                 transition={{ duration: 0.7, ease: 'easeInOut' }}
-                className={`h-11 flex items-center justify-center px-3 transition-colors ${
-                  query || isSearchFocused ? 'text-blue-600' : 'text-gray-400'
+                className={`h-14 flex items-center justify-center px-5 transition-colors ${
+                  query || isSearchFocused ? 'text-slate-700' : 'text-slate-400'
                 }`}
                 aria-label="Search"
               >
-                <GrSearch size={18} />
+                <GrSearch size={20} />
               </motion.button>
 
               <input
@@ -92,33 +113,29 @@ export default function Stock() {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
-                placeholder="ค้นหาหุ้น เช่น CPALL BTS"
-                className="pr-10 text-gray-900 placeholder-gray-400 focus:outline-none"
+                placeholder="ค้นหาหุ้น เช่น CPALL, BTS..."
+                className="flex-1 text-slate-900 placeholder-slate-400 focus:outline-none text-base font-light pr-12"
               />
 
               {query && (
-                <button
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   onClick={() => {
                     setQuery('');
                     searchInputRef.current?.focus();
                   }}
-                  className="absolute right-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"
                   aria-label="Clear search"
                 >
-                  <MdClear size={18} />
-                </button>
+                  <MdClear size={20} />
+                </motion.button>
               )}
             </div>
-          </div>
-
-          {stocks.length > 0 && stocks[0]?.updatedAt && (
-            <p className="text-xs text-gray-400 mt-3">
-              อัปเดตล่าสุด: {new Date(stocks[0].updatedAt).toLocaleString('th-TH')}
-            </p>
-          )}
+          </motion.div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {useMemo(() => {
             const filtered = stocks.filter((s) => {
               if (!query) return true;
@@ -139,25 +156,32 @@ export default function Stock() {
                   ref={isLast ? lastStockRef : null}
                   key={`${s.id}-${i}`}
                   onClick={() => handleClickStock(s.id)}
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="bg-white rounded-lg hover:bg-gray-50 transition-all cursor-pointer p-5 border border-gray-100 hover:border-gray-200"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  whileHover={{ y: -2, scale: 1.005 }}
+                  whileTap={{ scale: 0.995 }}
+                  className="bg-white rounded-2xl hover:shadow-lg transition-all cursor-pointer p-6 border border-slate-200/60 shadow-sm group"
                 >
-                  <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 items-center">
+                  <div className="grid grid-cols-[2fr_1fr_auto] gap-6 items-center">
                     <div className="min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">{s.symbol}</h3>
-                      {s.name && <p className="text-sm text-gray-500 truncate mt-0.5">{s.name}</p>}
+                      <h3 className="text-xl font-medium text-slate-900 truncate tracking-tight group-hover:text-slate-700 transition-colors">
+                        {s.symbol}
+                      </h3>
+                      {s.name && (
+                        <p className="text-sm text-slate-500 truncate mt-1 font-light">{s.name}</p>
+                      )}
                     </div>
 
                     <div className="text-left">
-                      <p className="text-lg font-semibold text-gray-900">
+                      <p className="text-2xl font-light text-slate-900 tabular-nums">
                         {s.regularMarketPrice?.toFixed(2) ?? '-'}
                       </p>
                     </div>
 
                     <div
-                      className={`text-right font-semibold text-base ${
-                        isPositive ? 'text-green-600' : 'text-red-600'
+                      className={`text-right font-medium text-lg tabular-nums px-4 py-2 rounded-xl ${
+                        isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
                       }`}
                     >
                       {s.regularMarketChangePercent
@@ -172,16 +196,24 @@ export default function Stock() {
         </div>
 
         {loading && (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-blue-600"></div>
-            <p className="text-gray-500 mt-3 text-sm">กำลังโหลด...</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-600"></div>
+            <p className="text-slate-500 mt-4 text-sm font-light">กำลังโหลด...</p>
+          </motion.div>
         )}
 
         {!loading && stocks.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-500">ไม่พบข้อมูลหุ้น</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20"
+          >
+            <p className="text-slate-400 font-light">ไม่พบข้อมูลหุ้น</p>
+          </motion.div>
         )}
       </div>
     </div>
@@ -215,10 +247,10 @@ export const StockDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-blue-600"></div>
-          <p className="text-gray-500 mt-4">กำลังโหลด...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-2 border-slate-200 border-t-slate-600"></div>
+          <p className="text-slate-500 mt-5 font-light">กำลังโหลด...</p>
         </div>
       </div>
     );
@@ -226,8 +258,8 @@ export const StockDetail: React.FC = () => {
 
   if (!stock) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <p className="text-gray-500">ไม่พบข้อมูลหุ้น</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-slate-400 font-light">ไม่พบข้อมูลหุ้น</p>
       </div>
     );
   }
@@ -235,67 +267,102 @@ export const StockDetail: React.FC = () => {
   const isPositive = stock.regularMarketChangePercent && stock.regularMarketChangePercent >= 0;
 
   const StatRow = ({ label, value }: { label: string; value: string | number }) => (
-    <div className="flex justify-between py-3 border-b border-gray-100 last:border-0">
-      <span className="text-gray-600 text-sm">{label}</span>
-      <span className="font-medium text-gray-900">{value}</span>
+    <div className="flex justify-between py-4 border-b border-slate-100/80 last:border-0 group">
+      <span className="text-slate-600 text-sm font-light">{label}</span>
+      <span className="font-medium text-slate-900 tabular-nums group-hover:text-slate-700 transition-colors">
+        {value}
+      </span>
     </div>
   );
 
   return (
-    <div className="min-h-screen p-6 bg-white">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-blue-500 rounded-xl p-8 mb-6">
-          <h1 className="text-4xl font-bold text-white mb-2">{stock.symbol}</h1>
-          {stock.name && <p className="text-blue-100 mb-6">{stock.name}</p>}
+    <div className="min-h-screen">
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-10 mb-8 shadow-xl border border-slate-700/50"
+        >
+          <h1 className="text-5xl font-light text-white mb-3 tracking-tight">{stock.symbol}</h1>
+          {stock.name && <p className="text-slate-300 mb-8 font-light text-lg">{stock.name}</p>}
 
-          <div className="flex justify-between items-center gap-4">
-            <span className="text-5xl font-bold text-white">
+          <div className="flex flex-wrap justify-between items-end gap-6">
+            <span className="text-6xl font-light text-white tabular-nums">
               ${stock.regularMarketPrice?.toFixed(2) ?? '-'}
             </span>
             <span
-              className={`text-lg font-semibold px-3 py-1 rounded-lg ${
-                isPositive ? 'bg-green-600 text-white' : 'bg-red-500 text-white'
+              className={`text-lg font-medium px-5 py-2.5 rounded-2xl tabular-nums ${
+                isPositive
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
               }`}
             >
               {stock.regularMarketChange?.toFixed(2) ?? '-'} (
               {stock.regularMarketChangePercent?.toFixed(2) ?? '-'}%)
             </span>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
-          <h2 className="font-semibold text-gray-900 mb-4">วันนี้</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/80 backdrop-blur-sm rounded-3xl border border-slate-200/60 p-8 mb-4 shadow-sm"
+        >
+          <h2 className="font-medium text-slate-900 mb-6 text-lg tracking-tight">วันนี้</h2>
           <StatRow label="เปิด" value={`$${stock.regularMarketOpen?.toFixed(2) ?? '-'}`} />
           <StatRow label="สูงสุด" value={`$${stock.regularMarketHigh?.toFixed(2) ?? '-'}`} />
           <StatRow label="ต่ำสุด" value={`$${stock.regularMarketLow?.toFixed(2) ?? '-'}`} />
           <StatRow label="ปิดก่อนหน้า" value={`$${stock.previousClose?.toFixed(2) ?? '-'}`} />
-        </div>
+        </motion.div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
-          <h2 className="font-semibold text-gray-900 mb-4">ปริมาณ</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white/80 backdrop-blur-sm rounded-3xl border border-slate-200/60 p-8 mb-4 shadow-sm"
+        >
+          <h2 className="font-medium text-slate-900 mb-6 text-lg tracking-tight">ปริมาณ</h2>
           <StatRow label="Volume" value={stock.volume?.toLocaleString() ?? '-'} />
           <StatRow label="Avg Volume" value={stock.averageVolume?.toLocaleString() ?? '-'} />
-        </div>
+        </motion.div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
-          <h2 className="font-semibold text-gray-900 mb-4">ค่าเฉลี่ย</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white/80 backdrop-blur-sm rounded-3xl border border-slate-200/60 p-8 mb-4 shadow-sm"
+        >
+          <h2 className="font-medium text-slate-900 mb-6 text-lg tracking-tight">ค่าเฉลี่ย</h2>
           <StatRow label="50 วัน" value={`$${stock.fiftyDayAverage?.toFixed(2) ?? '-'}`} />
           <StatRow label="200 วัน" value={`$${stock.twoHundredDayAverage?.toFixed(2) ?? '-'}`} />
-        </div>
+        </motion.div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">ช่วง 52 สัปดาห์</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-white/80 backdrop-blur-sm rounded-3xl border border-slate-200/60 p-8 shadow-sm"
+        >
+          <h2 className="font-medium text-slate-900 mb-6 text-lg tracking-tight">
+            ช่วง 52 สัปดาห์
+          </h2>
           <StatRow label="ต่ำสุด" value={`$${stock.fiftyTwoWeekLow?.toFixed(2) ?? '-'}`} />
           <StatRow label="สูงสุด" value={`$${stock.fiftyTwoWeekHigh?.toFixed(2) ?? '-'}`} />
           {stock.fiftyTwoWeekChangePercent !== undefined && (
             <StatRow label="เปลี่ยนแปลง" value={`${stock.fiftyTwoWeekChangePercent.toFixed(2)}%`} />
           )}
-        </div>
+        </motion.div>
 
         {stock.lastUpdated && (
-          <p className="text-center text-xs text-gray-400 mt-6">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-center text-xs text-slate-400 mt-8 font-light"
+          >
             อัปเดตล่าสุด: {new Date(stock.lastUpdated).toLocaleString('th-TH')}
-          </p>
+          </motion.p>
         )}
       </div>
     </div>

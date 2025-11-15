@@ -5,6 +5,8 @@ import * as iconModels from './iconModels';
 import minioClient from '../../common/config/minioClient';
 import crypto from 'crypto';
 import prisma from '../../common/config/prismaClient';
+import redis from '../../common/config/redisClient';
+import { getIconCacheKey, clearUserIconCache } from '../../common/service/cache';
 
 const BUCKET = process.env.MINIO_BUCKET!;
 
@@ -34,6 +36,8 @@ export const createIcon = async (req: Request, res: Response) => {
       },
     });
 
+    await clearUserIconCache(Number(req.user));
+
     return res.status(httpStatus.CREATED).json({
       message: 'Icon uploaded successfully',
       data: icon,
@@ -60,6 +64,13 @@ export const createIcon = async (req: Request, res: Response) => {
 export const getIcons = async (req: Request, res: Response) => {
   try {
     const search = req.query.search as string | undefined;
+
+    const cacheKey = getIconCacheKey(Number(req.user), search);
+
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.status(httpStatus.OK).json(JSON.parse(cached));
+    }
 
     const where = search
       ? {
@@ -93,10 +104,14 @@ export const getIcons = async (req: Request, res: Response) => {
       description: icon.description,
     }));
 
-    return res.status(httpStatus.OK).json({
+    const responseData = {
       message: 'Icons fetched successfully',
       data: iconsWithUrl,
-    });
+    };
+
+    await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
+
+    return res.status(httpStatus.OK).json(responseData);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -180,6 +195,8 @@ export const updateIcon = async (req: Request, res: Response) => {
         description,
       },
     });
+
+    await clearUserIconCache(Number(req.user));
 
     return res.status(httpStatus.OK).json({
       message: 'Icon updated successfully',

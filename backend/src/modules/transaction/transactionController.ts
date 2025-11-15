@@ -7,6 +7,8 @@ import * as transactionModels from './transactionModels';
 import prisma from '../../common/config/prismaClient';
 import { extractTextFromImage } from '../../common/config/ocr';
 import { checkSlipType, extractTransactionData } from '../../common/service/openai';
+import redis from '../../common/config/redisClient';
+import { clearUserTransactionCache, getTransactionCacheKey } from '../../common/service/cache';
 
 const BUCKET = process.env.MINIO_BUCKET!;
 
@@ -19,6 +21,13 @@ export const getTransactions = async (req: Request, res: Response) => {
     const page = req.query.page ? parseInt(req.query.page as string) : 1;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
     const skip = (page - 1) * limit;
+
+    const cacheKey = getTransactionCacheKey(Number(req.user), month, year, search, page, limit);
+
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.status(httpStatus.OK).json(JSON.parse(cached));
+    }
 
     let where: transactionModels.WhereClause = { userId: Number(req.user) };
 
@@ -52,7 +61,7 @@ export const getTransactions = async (req: Request, res: Response) => {
       receipt: t.receipt ? `${process.env.APP_BASE_URL}/api/transaction/receipt/${t.id}` : null,
     }));
 
-    return res.status(httpStatus.OK).json({
+    const responseData = {
       message: 'Transactions fetched successfully',
       data: formattedTransactions,
       pagination: {
@@ -61,7 +70,11 @@ export const getTransactions = async (req: Request, res: Response) => {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    });
+    };
+
+    await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
+
+    return res.status(httpStatus.OK).json(responseData);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -136,6 +149,9 @@ export const createTransaction = async (req: Request, res: Response) => {
           amount: validatedData.amount,
         },
       });
+
+      await clearUserTransactionCache(userId);
+
       return res.status(httpStatus.CREATED).json({
         message: 'Goal transaction created successfully',
         data: goalTransaction,
@@ -154,6 +170,8 @@ export const createTransaction = async (req: Request, res: Response) => {
         fromAccount: validatedData.fromAccount,
       },
     });
+
+    await clearUserTransactionCache(userId);
 
     return res.status(httpStatus.CREATED).json({
       message: 'Transaction created successfully',
@@ -265,6 +283,8 @@ export const updateTransaction = async (req: Request, res: Response) => {
         userId: Number(req.user),
       },
     });
+
+    await clearUserTransactionCache(Number(req.user));
 
     return res.status(httpStatus.OK).json({
       message: 'Transaction updated successfully',

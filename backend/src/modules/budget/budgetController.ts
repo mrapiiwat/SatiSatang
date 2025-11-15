@@ -4,6 +4,8 @@ import { ZodError } from 'zod';
 import prisma from '../../common/config/prismaClient';
 import * as budgetModels from './budgetModels';
 import { getDeadlineFromFrequency, getPeriodRangeByFrequency } from '../../common/utils/dateRange';
+import { getBudgetCacheKey, clearUserBudgetCache } from '../../common/service/cache';
+import redis from '../../common/config/redisClient';
 
 export const createBudget = async (req: Request, res: Response) => {
   try {
@@ -62,6 +64,8 @@ export const createBudget = async (req: Request, res: Response) => {
       },
     });
 
+    await clearUserBudgetCache(userId);
+
     return res.status(httpStatus.CREATED).json({
       message: 'Budget created successfully',
       data: newBudget,
@@ -97,6 +101,12 @@ export const getBudgets = async (req: Request, res: Response) => {
         : req.query.isOverDeadline === 'false'
           ? false
           : undefined;
+
+    const cacheKey = getBudgetCacheKey(userId, month, year, isOverDeadline);
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.status(httpStatus.OK).json(JSON.parse(cached));
+    }
 
     const now = new Date();
     const startDate =
@@ -154,10 +164,14 @@ export const getBudgets = async (req: Request, res: Response) => {
       isOverDeadline === undefined ? true : b.isOverDeadline === isOverDeadline,
     );
 
-    return res.status(httpStatus.OK).json({
+    const responseData = {
       message: 'Budgets fetched successfully',
       data: filteredBudgets,
-    });
+    };
+
+    await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
+
+    return res.status(httpStatus.OK).json(responseData);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({

@@ -39,14 +39,10 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
 
     try {
       setLoading(true);
-      const res = await axios.put(
-        `/category/${editingCategory.id}`,
-        {
-          name: editData.name.trim(),
-          iconId: Number(editData.iconId),
-        },
-        { withCredentials: true },
-      );
+      const res = await axios.put(`/category/${editingCategory.id}`, {
+        name: editData.name.trim(),
+        iconId: Number(editData.iconId),
+      });
 
       await showToastAlert('แก้ไขหมวดหมู่สำเร็จ', 'success');
 

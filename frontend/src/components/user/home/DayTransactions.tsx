@@ -10,7 +10,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get('/categories', { withCredentials: true });
+        const res = await axios.get('/categories');
         const categories: CategoriesType[] = res.data.data || [];
         const map: Record<number, string> = {};
         categories.forEach((c) => {

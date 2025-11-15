@@ -60,11 +60,11 @@ const Account: React.FC = () => {
     }
     try {
       setPasswordError('');
-      const response = await axios.put(
-        '/change-password',
-        { oldPassword, password: newPassword, confirmPassword },
-        { withCredentials: true },
-      );
+      const response = await axios.put('/change-password', {
+        oldPassword,
+        password: newPassword,
+        confirmPassword,
+      });
       showToastAlert(response.data?.message || 'เปลี่ยนรหัสผ่านสำเร็จ', 'success');
       setIsChangingPassword(false);
       setOldPassword('');
@@ -88,7 +88,6 @@ const Account: React.FC = () => {
     try {
       await axios.delete(`/user/${user.id}`, {
         data: { confirm: deleteEmail },
-        withCredentials: true,
       });
       showToastAlert('ลบบัญชีเรียบร้อย', 'success');
       window.location.href = '/'; // redirect หลังลบ

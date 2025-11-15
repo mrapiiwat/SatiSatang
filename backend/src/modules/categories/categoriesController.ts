@@ -4,6 +4,12 @@ import { ZodError } from 'zod';
 import * as categoriesModels from './categoriesModels';
 import prisma from '../../common/config/prismaClient';
 import { Category, Goals, TransactionType } from '@prisma/client';
+import redis from '../../common/config/redisClient';
+import {
+  clearUserTransactionCache,
+  clearUserCategoryCache,
+  getCategoryCacheKey,
+} from '../../common/service/cache';
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
@@ -17,6 +23,8 @@ export const createCategory = async (req: Request, res: Response) => {
     };
 
     const category = await prisma.category.create({ data });
+
+    clearUserCategoryCache(Number(req.user));
 
     return res.status(httpStatus.CREATED).json({
       message: 'Category created successfully',
@@ -47,6 +55,14 @@ export const getCategories = async (req: Request, res: Response) => {
     const typeParam = req.query.type as string | undefined;
     const includeGoalsParam = req.query.includeGoals as string | undefined;
     const includeGoals = includeGoalsParam === 'true' || includeGoalsParam === '1' ? true : false;
+    const userId = Number(req.user);
+
+    const cacheKey = getCategoryCacheKey(userId, typeParam, search, includeGoals);
+
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.status(httpStatus.OK).json(JSON.parse(cached));
+    }
 
     const type =
       typeParam === 'INCOME'
@@ -108,10 +124,14 @@ export const getCategories = async (req: Request, res: Response) => {
         : []),
     ];
 
-    return res.status(httpStatus.OK).json({
+    const responseData = {
       message: `Categories${includeGoals ? ' (and goals)' : ''} fetched successfully`,
       data: combined,
-    });
+    };
+
+    await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
+
+    return res.status(httpStatus.OK).json(responseData);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -157,6 +177,9 @@ export const updateCategory = async (req: Request, res: Response) => {
       icon: `${process.env.APP_BASE_URL}/api/icon/${updatedCategory.iconId}`,
     };
 
+    await clearUserTransactionCache(Number(req.user));
+    await clearUserCategoryCache(Number(req.user));
+
     return res.status(httpStatus.OK).json({
       message: 'Category updated successfully',
       data: formattedCategory,
@@ -199,6 +222,8 @@ export const deleteCategory = async (req: Request, res: Response) => {
     await prisma.category.delete({
       where: { id: categoryId },
     });
+
+    await clearUserCategoryCache(Number(req.user));
 
     return res.status(httpStatus.OK).json({ message: 'Category deleted successfully' });
   } catch (error: unknown) {
