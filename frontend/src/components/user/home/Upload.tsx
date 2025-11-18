@@ -139,7 +139,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       if (selectedFile) formData.append('receipt', selectedFile);
 
       await axios.post('/transaction', formData, {
-        headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       showToastAlert('สร้างธุรกรรมสำเร็จ', 'success');
       setIsOpen(false);
