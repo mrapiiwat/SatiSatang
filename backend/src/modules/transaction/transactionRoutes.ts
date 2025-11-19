@@ -6,6 +6,7 @@ import { upload } from '../../common/middleware/upload';
 const router = Router();
 
 router.get('/transaction', authenticateJWT, transactionController.getTransactions);
+router.get('/transaction/total-expense', authenticateJWT, transactionController.totalExpense);
 router.get('/transaction/receipt/:id', authenticateJWT, transactionController.getReceipt);
 router.post(
   '/transaction/upload',

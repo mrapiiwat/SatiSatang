@@ -36,6 +36,7 @@ const Home = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [now, setNow] = useState(new Date());
   const [showFrequency, setShowFrequency] = useState(true);
+  const [totalExpense, setTotalExpense] = useState(0);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -83,16 +84,29 @@ const Home = () => {
     }
   }, [selectedMonth, selectedYear, currentPage, pagination.limit]);
 
+  const fetchTotalExpense = useCallback(async () => {
+    try {
+      const res = await axios.get(
+        `/transaction/total-expense?month=${selectedMonth}&year=${selectedYear}`,
+      );
+      setTotalExpense(res.data.totalExpense || 0);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [selectedMonth, selectedYear]);
+
   useEffect(() => {
     fetchTransactions();
   }, [selectedMonth, selectedYear, currentPage, fetchTransactions]);
+  useEffect(() => {
+    fetchTotalExpense();
+  }, [transactions, fetchTotalExpense]);
   useEffect(() => {
     fetchGoals();
   }, [selectedMonth, selectedYear, fetchGoals]);
   useEffect(() => {
     fetchBudget();
   }, [selectedMonth, selectedYear, fetchBudget, transactions]);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedMonth, selectedYear]);
@@ -125,6 +139,7 @@ const Home = () => {
     setActivePopup(null);
     fetchTransactions();
     fetchGoals();
+    fetchTotalExpense();
   };
 
   const handleGoToSummary = () => {
@@ -165,10 +180,6 @@ const Home = () => {
   const sortedDates = Object.keys(groupedByDate)
     .map(Number)
     .sort((a, b) => b - a);
-
-  const totalExpense = transactions
-    .filter((t) => t.type === 'EXPENSE')
-    .reduce((sum, t) => sum + t.amount, 0);
 
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];

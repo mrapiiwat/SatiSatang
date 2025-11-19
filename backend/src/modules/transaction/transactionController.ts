@@ -8,7 +8,15 @@ import prisma from '../../common/config/prismaClient';
 import { extractTextFromImage } from '../../common/config/ocr';
 import { checkSlipType, extractTransactionData } from '../../common/service/openai';
 import redis from '../../common/config/redisClient';
-import { clearUserTransactionCache, getTransactionCacheKey } from '../../common/service/cache';
+import {
+  clearUserTransactionCache,
+  getTransactionCacheKey,
+  clearUserBudgetCache,
+  clearUserGoalCache,
+  getTotalExpenseCacheKey,
+  clearUserTotalExpenseCache,
+} from '../../common/service/cache';
+import { Prisma } from '@prisma/client';
 
 const BUCKET = process.env.MINIO_BUCKET!;
 
@@ -70,6 +78,65 @@ export const getTransactions = async (req: Request, res: Response) => {
         limit,
         totalPages: Math.ceil(total / limit),
       },
+    };
+
+    await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
+
+    return res.status(httpStatus.OK).json(responseData);
+  } catch (error) {
+    if (error instanceof Error) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: 'Something went wrong!',
+        errors: error.message,
+      });
+    } else {
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
+  }
+};
+
+export const totalExpense = async (req: Request, res: Response) => {
+  try {
+    const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+    const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+    const userId = Number(req.user);
+
+    const cacheKey = getTotalExpenseCacheKey(userId, month, year);
+
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.status(httpStatus.OK).json(JSON.parse(cached));
+    }
+
+    let where: Prisma.TransactionWhereInput = {
+      userId,
+      type: 'EXPENSE',
+    };
+
+    if (month && year) {
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+      where.createdAt = {
+        gte: startDate,
+        lte: endDate,
+      };
+    }
+
+    const result = await prisma.transaction.aggregate({
+      _sum: {
+        amount: true,
+      },
+      where,
+    });
+
+    const totalExpense = result._sum.amount || 0;
+
+    const responseData = {
+      message: 'Total expense calculated successfully',
+      totalExpense,
     };
 
     await redis.set(cacheKey, JSON.stringify(responseData), { EX: 300 });
@@ -151,6 +218,7 @@ export const createTransaction = async (req: Request, res: Response) => {
       });
 
       await clearUserTransactionCache(userId);
+      await clearUserGoalCache(userId);
 
       return res.status(httpStatus.CREATED).json({
         message: 'Goal transaction created successfully',
@@ -172,6 +240,8 @@ export const createTransaction = async (req: Request, res: Response) => {
     });
 
     await clearUserTransactionCache(userId);
+    await clearUserBudgetCache(userId);
+    await clearUserTotalExpenseCache(userId);
 
     return res.status(httpStatus.CREATED).json({
       message: 'Transaction created successfully',
@@ -285,6 +355,7 @@ export const updateTransaction = async (req: Request, res: Response) => {
     });
 
     await clearUserTransactionCache(Number(req.user));
+    await clearUserTotalExpenseCache(Number(req.user));
 
     return res.status(httpStatus.OK).json({
       message: 'Transaction updated successfully',

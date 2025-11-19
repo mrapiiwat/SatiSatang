@@ -91,3 +91,13 @@ export const clearUserGoalCache = async (userId: number) => {
   await scanAndDelete(pattern);
   console.log(`Cleared Goal cache for user ${userId}`);
 };
+
+export const getTotalExpenseCacheKey = (userId: number, month?: number, year?: number): string => {
+  return `totalExpense:user:${userId}:month=${month || 'all'}:year=${year || 'all'}`;
+};
+
+export const clearUserTotalExpenseCache = async (userId: number) => {
+  const pattern = `totalExpense:user:${userId}:*`;
+  await scanAndDelete(pattern);
+  console.log(`Cleared totalExpense cache for user ${userId}`);
+};
