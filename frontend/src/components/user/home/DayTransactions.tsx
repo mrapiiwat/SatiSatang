@@ -76,7 +76,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
                         {transaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
                       </p>
                       {transaction.description && (
-                        <p className="text-sm text-gray-700 line-clamp-1">
+                        <p className="text-sm text-gray-700 line-clamp-1 break-all">
                           {transaction.description}
                         </p>
                       )}

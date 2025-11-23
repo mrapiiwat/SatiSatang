@@ -153,7 +153,7 @@ const Summary: React.FC = () => {
                 ) : (
                   incomes.map((i) => (
                     <div key={i.id} className="flex justify-between text-sm mb-1">
-                      <span>{i.description}</span>
+                      <span className="line-clamp-1 break-all">{i.description}</span>
                       <span className="text-blue-600">฿{i.amount.toLocaleString()}</span>
                     </div>
                   ))
@@ -192,7 +192,7 @@ const Summary: React.FC = () => {
                 ) : (
                   expenses.map((e) => (
                     <div key={e.id} className="flex justify-between text-sm mb-1">
-                      <span>{e.description}</span>
+                      <span className="line-clamp-1 break-all">{e.description}</span>
                       <span className="text-purple-300">฿{e.amount.toLocaleString()}</span>
                     </div>
                   ))
@@ -234,7 +234,7 @@ const Summary: React.FC = () => {
                 ) : (
                   filteredGoals.map((goal) => (
                     <div key={goal.id} className="flex justify-between items-center text-sm mb-1">
-                      <span>{goal.name}</span>
+                      <span className="line-clamp-1 break-all">{goal.name}</span>
                       <span className="text-green-600 font-medium">
                         ฿{goal.currentAmount.toLocaleString()}
                       </span>
