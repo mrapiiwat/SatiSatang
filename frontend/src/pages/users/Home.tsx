@@ -96,6 +96,23 @@ const Home = () => {
   }, [selectedMonth, selectedYear]);
 
   useEffect(() => {
+    if (!isChatOpen) return;
+
+    const handleNavClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest('nav')) {
+        setIsChatOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleNavClick);
+
+    return () => {
+      document.removeEventListener('mousedown', handleNavClick);
+    };
+  }, [isChatOpen]);
+
+  useEffect(() => {
     fetchTransactions();
   }, [selectedMonth, selectedYear, currentPage, fetchTransactions]);
   useEffect(() => {

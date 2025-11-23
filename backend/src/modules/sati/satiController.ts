@@ -83,6 +83,16 @@ export const getOrCreateLatestSatiSession = async (req: Request, res: Response) 
         },
       });
 
+      await prisma.chatMessage.create({
+        data: {
+          sessionId: newSession.id,
+          userId,
+          content:
+            'สวัสดีครับผม! น้องสติยินดีให้บริการครับ พี่อยากให้ผมช่วยอะไรบอกได้เลยนะครับผม น้องสติยินดีช่วยเสมองครับ! พี่อยากจดรายรับรายจ่าย หรือจะอยากให้น้องสติจำกัดงบก็บอกได้เลยะครับผม',
+          role: 'assistant',
+        },
+      });
+
       return res.status(httpStatus.CREATED).json({
         message: latestSession
           ? 'New Sati session created (new day)'

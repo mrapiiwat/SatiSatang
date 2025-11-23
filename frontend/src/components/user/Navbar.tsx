@@ -9,8 +9,28 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          if (document.body.style.overflow === 'hidden') {
+            setShowNavbar(true);
+          }
+        }
+      });
+    });
+
+    observer.observe(document.body, { attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     const handleScroll = () => {
       if (isOpen) return;
+      if (document.body.style.overflow === 'hidden') {
+        setShowNavbar(true);
+        return;
+      }
       if (window.scrollY > lastScrollY && window.scrollY > 50) {
         setShowNavbar(false);
       } else {
@@ -32,7 +52,12 @@ const Navbar: React.FC = () => {
         `}
       >
         <img
-          onClick={() => navigate('/user')}
+          onClick={() => {
+            navigate('/user');
+            if (isOpen) {
+              setIsOpen(false);
+            }
+          }}
           className="w-8 h-8 relative z-[60] transition-all duration-300"
           src={isOpen ? '/SATISATANG1.svg' : '/SATISATANG.svg'}
           alt="logo app"

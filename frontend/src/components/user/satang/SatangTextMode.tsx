@@ -75,7 +75,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
       <div className="min-h-[calc(100vh-80px)] flex flex-col justify-between px-6 py-6">
         <div
           ref={containerRef}
-          className="border-[1px] border-black-600 rounded-xl flex-1 w-full mb-5 overflow-y-auto p-2 max-h-[75vh] scrollbar-none"
+          className="border-[1px] border-black-600 rounded-xl flex-1 w-full mb-5 overflow-y-auto p-2 max-h-[75vh] scrollbar-none flex flex-col gap-2"
         >
           {hasMore && (
             <div className="text-center text-gray-500 text-sm mb-2">
@@ -86,8 +86,10 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`p-2 my-1 rounded-xl w-fit max-w-[70%] break-words whitespace-normal ${
-                msg.role === 'user' ? 'bg-blue-200 ml-auto' : 'bg-gray-200'
+              className={`p-3 rounded-2xl w-fit max-w-[75%] break-words whitespace-pre-wrap ${
+                msg.role === 'user'
+                  ? 'bg-blue-600 text-white self-end rounded-tr-none'
+                  : 'bg-gray-100 text-black self-start rounded-tl-none'
               }`}
             >
               {msg.content}

@@ -17,8 +17,9 @@ export const SatangChat = async (req: Request, res: Response) => {
     const validatedData = satangModels.satangChatSchema.parse(req.body);
 
     const latestSession = await prisma.chatSession.findFirst({
-      where: { userId: Number(userId) },
+      where: { userId: Number(userId), title: { startsWith: 'Satang' } },
       orderBy: { createdAt: 'desc' },
+      take: 1,
     });
 
     const lastTwoMessages = await prisma.chatMessage.findMany({
