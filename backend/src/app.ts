@@ -17,6 +17,7 @@ import goalRouter from './modules/goal/goalRoutes';
 import summaryRouter from './modules/summary/summaryRoutes';
 import stockRouter from './modules/stock/stockRoutes';
 import budgetRouter from './modules/budget/budgetRoutes';
+import satiRouter from './modules/sati/satiRoutes';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api', iconRoutes);
 app.use('/api', transactionRoutes);
 app.use('/api', categoriesRoutes);
 app.use('/api', satangRouter);
+app.use('/api', satiRouter);
 app.use('/api', goalRouter);
 app.use('/api', summaryRouter);
 app.use('/api', budgetRouter);

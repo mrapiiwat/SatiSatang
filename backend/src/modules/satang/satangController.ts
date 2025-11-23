@@ -108,7 +108,7 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
     const limit = Number(req.query.limit) || 20;
 
     const latestSession = await prisma.chatSession.findFirst({
-      where: { userId },
+      where: { userId, title: { startsWith: 'Satang' } },
       orderBy: { createdAt: 'desc' },
     });
 

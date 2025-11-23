@@ -12,6 +12,11 @@ interface Category {
   type: 'INCOME' | 'EXPENSE';
 }
 
+interface Icon {
+  id: number;
+  description: string;
+}
+
 interface User {
   name: string;
 }
@@ -166,4 +171,146 @@ export async function isStockQueryWithAI(query: string): Promise<boolean> {
 
   const answer = response.choices[0].message.content?.trim().toLowerCase();
   return answer === 'true';
+}
+
+export async function handleMessage(content: string, categories: Category[], icons: Icon[]) {
+  const categoryListText = categories.map((c) => `${c.id}: ${c.name} (${c.type})`).join('\n');
+
+  const iconListText = icons.map((i) => `${i.id}: ${i.description ?? 'ไม่มีคำอธิบาย'}`).join('\n');
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-5-nano',
+    messages: [
+      {
+        role: 'system',
+        content: `
+คุณคือผู้ช่วยแปลงข้อความสั้น ๆ ภาษาไทยเป็น JSON สำหรับ:
+- transaction
+- category
+- budget
+- goal
+
+**Reference Mapping (QWERTY -> Thai Kedmanee):**
+(ใช้แปลงเมื่อข้อความเป็นภาษาอังกฤษที่อ่านไม่รู้เรื่อง หรือลืมปิด CapsLock)
+
+[แถวตัวเลข & Shift]
+- 1=ๅ, !=+, 2=/, @=๑, 3=-, #=๒, 4=ภ, $=๓, 5=ถ, %=๔, 6=ุ, ^=ู, 7=ึ, &=฿, 8=ค, *=๕, 9=ต, (=๖, 0=จ, )=๗, -=ข, _=๘, ==ช, +=๙
+
+[แถวบน & Shift]
+- q=ๆ, Q=๐, w=ไ, W=", e=ำ, E=ฎ, r=พ, R=ฑ, t=ะ, T=ธ, y=ั, Y=ํ, u=ี, U=๊, i=ร, I=ณ, o=น, O=ฯ, p=ย, P=ญ, [=บ, {=ฐ, ]=ล, }=,, \\=ฃ, |=ฅ
+
+[แถวกลาง & Shift]
+- a=ฟ, A=ฤ, s=ห, S=ฆ, d=ก, D=ฏ, f=ด, F=โ, g=เ, G=ฌ, h=้, H=็, j=่, J=๋, k=า, K=ษ, l=ส, L=ศ, ;=ว, :=ซ, '=ง, "= .
+
+[แถวล่าง & Shift]
+- z=ผ, Z=(, x=ป, X=), c=แ, C=ฉ, v=อ, V=ฮ, b=ิ, B=ฺ, n=ื, N=์, m=ท, M=?, ,=ม, <=ฒ, .=ใ, >=ฬ, /=ฝ, ?=ฦ
+
+**Priority Rules (กฎลำดับการวิเคราะห์ - สำคัญมาก):**
+ให้ตรวจสอบตามลำดับ 1 -> 2 -> 3 ห้ามข้ามขั้นตอน:
+
+1. **เช็คชื่อเฉพาะ/แบรนด์ (Entity Check) [Priority สูงสุด]:**
+   - หากข้อความภาษาอังกฤษดูเหมือนชื่อแบรนด์, รุ่นสินค้า, หรือคำศัพท์ที่มีความหมาย **ห้ามแปลงแป้นพิมพ์เป็นไทยเด็ดขาด** ให้แก้คำผิดเป็นชื่อเต็มแทน
+   - **Case:** "iphone17pm" -> อ่านว่า "iPhone" (รู้เรื่อง) -> แก้เป็น "iPhone 17 Pro Max" (จบ ไม่ต้องทำข้อ 2)
+   - **Case:** "netflix", "spotify", "grab" -> เก็บเป็นภาษาอังกฤษได้เลย
+   - แปลงชื่อแบรนด์ที่เขียนทับศัพท์ หรือเขียนย่อ ให้เป็นชื่อทางการ (Proper Name)
+   - **Case:** "ซัมซุงเอส22" -> "Samsung Galaxy S22"
+   - **Case:** "ไอโฟน15" -> "iPhone 15"
+
+2. **เช็คการลืมเปลี่ยนภาษา (Layout Correction):**
+   - หากข้อความภาษาอังกฤษ **อ่านไม่รู้เรื่องเลย** (Gibberish) ให้ลองแปลงด้วย Reference Mapping
+   - **Case:** "8jkpk" -> อ่านไม่รู้เรื่อง -> แปลงเป็น "ค่ายา"
+   - **Case:** "gvw,j" -> อ่านไม่รู้เรื่อง -> แปลงเป็น "ก๋วยเตี๋ยว"
+
+3. **แก้คำผิด (Typo Correction):**
+   - ปรับคำให้สมเหตุสมผลกับบริบทการเงิน (เช่น "จักท่าน" -> "จ่ายค่า...", "ค่านำ" -> "ค่าน้ำ")
+
+กฎการวิเคราะห์:
+- ใช้ categoryId จาก list ด้านล่าง หาก AI รู้ว่าตรง
+- สำหรับ category ให้เลือก iconId จาก list ด้านล่าง หากเหมาะสม
+- หากไม่รู้ field ใด ให้ใส่ null
+- หากแยกหมวดหมู่ไม่ได้ ให้ส่ง type = "unclassified" และ message อธิบาย
+
+Category list ของผู้ใช้:
+${categoryListText}
+
+Icon list:
+${iconListText}
+
+ข้อความอาจสั้น เช่น "ค่าขนม 20", "เงินเดือน 50000", "ตั้งงบ 1000 เดือน", "ตั้งเป้าหมาย แต่งงาน"
+ตอบ function call ตาม schema
+`,
+      },
+      { role: 'user', content },
+    ],
+    functions: [
+      {
+        name: 'create_transaction',
+        description: 'สร้าง transaction',
+        parameters: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: ['INCOME', 'EXPENSE'] },
+            description: { type: ['string', 'null'] },
+            amount: { type: ['number', 'null'] },
+            categoryId: { type: ['string', 'null'] },
+          },
+          required: ['type'],
+        },
+      },
+      {
+        name: 'create_category',
+        description: 'สร้าง category',
+        parameters: {
+          type: 'object',
+          properties: {
+            name: { type: ['string', 'null'] },
+            type: { type: ['string', 'null'], enum: ['INCOME', 'EXPENSE'] },
+            iconId: { type: ['number', 'null'] },
+          },
+          required: [],
+        },
+      },
+      {
+        name: 'create_budget',
+        description: 'สร้าง budget',
+        parameters: {
+          type: 'object',
+          properties: {
+            amount: { type: ['number', 'null'] },
+            categoryId: { type: ['string', 'null'] },
+            frequency: { type: ['string', 'null'], enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'] },
+          },
+          required: [],
+        },
+      },
+      {
+        name: 'create_goal',
+        description: 'สร้าง goal',
+        parameters: {
+          type: 'object',
+          properties: {
+            name: { type: ['string', 'null'] },
+            amount: { type: ['number', 'null'] },
+            deadline: { type: ['string', 'null'] },
+          },
+          required: [],
+        },
+      },
+    ],
+  });
+
+  const choice = response.choices[0].message;
+
+  if (!choice?.function_call) {
+    return { type: 'unclassified', message: content };
+  }
+
+  const { name, arguments: args } = choice.function_call;
+  const parsedArgs = JSON.parse(args);
+
+  for (const key in parsedArgs) {
+    if (parsedArgs[key] === undefined) parsedArgs[key] = null;
+  }
+
+  return { type: name, data: parsedArgs };
 }
