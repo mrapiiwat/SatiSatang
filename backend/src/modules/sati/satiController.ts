@@ -71,11 +71,18 @@ export const getOrCreateLatestSatiSession = async (req: Request, res: Response) 
     const latestSession = await prisma.chatSession.findFirst({
       where: { userId, title: { startsWith: 'Sati' } },
       orderBy: { createdAt: 'desc' },
+      include: {
+        messages: {
+          where: { role: 'user' },
+          take: 1,
+        },
+      },
     });
 
     const now = new Date();
+    const isSessionEmpty = latestSession && latestSession.messages.length === 0;
 
-    if (!latestSession || !isSameDate(latestSession.createdAt, now)) {
+    if (!latestSession || (!isSameDate(latestSession.createdAt, now) && !isSessionEmpty)) {
       const newSession = await prisma.chatSession.create({
         data: {
           title: `Sati ${now.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`,
@@ -107,9 +114,9 @@ export const getOrCreateLatestSatiSession = async (req: Request, res: Response) 
       take: limit,
       ...(cursor
         ? {
-            skip: 1,
-            cursor: { id: Number(cursor) },
-          }
+          skip: 1,
+          cursor: { id: Number(cursor) },
+        }
         : {}),
     });
 
