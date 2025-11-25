@@ -2,14 +2,26 @@ import React, { useState, useEffect } from 'react';
 import MonthHeader from '../../components/user/MonthHeader';
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { useSearchParams } from 'react-router-dom';
 import axios from '../../api/axios';
 import type { Transaction, Goal } from '../../types/summary';
 import PageWrapper from '../../components/PageWrapper';
 
 const Summary: React.FC = () => {
   const today = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialMonthParam = parseInt(searchParams.get('month') || '', 10);
+  const initialYearParam = parseInt(searchParams.get('year') || '', 10);
+  const defaultMonth =
+    initialMonthParam && initialMonthParam >= 1 && initialMonthParam <= 12
+      ? initialMonthParam
+      : today.getMonth() + 1;
+  const defaultYear =
+    initialYearParam && initialYearParam >= 1900 ? initialYearParam : today.getFullYear();
+
+  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
+  const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [showIncomeDetail, setShowIncomeDetail] = useState(false);
   const [showExpenseDetail, setShowExpenseDetail] = useState(false);
   const [showGoalDetail, setShowGoalDetail] = useState(false);
@@ -17,6 +29,16 @@ const Summary: React.FC = () => {
   const [goals, setGoals] = useState<Goal[]>([]);
 
   const COLORS = ['#5300E8', '#E278FA', '#C8E84D'];
+
+  useEffect(() => {
+    setSearchParams(
+      {
+        month: selectedMonth.toString(),
+        year: selectedYear.toString(),
+      },
+      { replace: true },
+    );
+  }, [selectedMonth, selectedYear, setSearchParams]);
 
   const fetchSummary = async (month: number, year: number) => {
     try {

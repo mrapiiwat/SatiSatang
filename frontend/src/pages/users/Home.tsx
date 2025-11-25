@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PiChartPieSliceLight } from 'react-icons/pi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Modal from '../../components/Modal';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import type { Transaction, PaginationData, MyGoal, MyBudget } from '../../types/home';
@@ -21,10 +21,20 @@ import { AnimatePresence, motion } from 'framer-motion';
 const Home = () => {
   const today = new Date();
   const navigate = useNavigate();
-  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialMonthParam = parseInt(searchParams.get('month') || '', 10);
+  const initialYearParam = parseInt(searchParams.get('year') || '', 10);
+  const defaultMonth =
+    initialMonthParam && initialMonthParam >= 1 && initialMonthParam <= 12
+      ? initialMonthParam
+      : today.getMonth() + 1;
+  const defaultYear =
+    initialYearParam && initialYearParam >= 1900 ? initialYearParam : today.getFullYear();
+
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
+  const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [activePopup, setActivePopup] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +53,11 @@ const Home = () => {
     limit: 20,
     totalPages: 0,
   });
+
+  const handleMonthChange = (month: number, year: number) => {
+    setSelectedMonth(month);
+    setSelectedYear(year);
+  };
 
   const fetchGoals = useCallback(async () => {
     try {
@@ -113,17 +128,31 @@ const Home = () => {
   }, [isChatOpen]);
 
   useEffect(() => {
+    setSearchParams(
+      {
+        month: selectedMonth.toString(),
+        year: selectedYear.toString(),
+      },
+      { replace: true },
+    );
+  }, [selectedMonth, selectedYear, setSearchParams]);
+
+  useEffect(() => {
     fetchTransactions();
   }, [selectedMonth, selectedYear, currentPage, fetchTransactions]);
+
   useEffect(() => {
     fetchTotalExpense();
   }, [transactions, fetchTotalExpense]);
+
   useEffect(() => {
     fetchGoals();
   }, [selectedMonth, selectedYear, fetchGoals]);
+
   useEffect(() => {
     fetchBudget();
   }, [selectedMonth, selectedYear, fetchBudget, transactions]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedMonth, selectedYear]);
@@ -160,7 +189,7 @@ const Home = () => {
   };
 
   const handleGoToSummary = () => {
-    navigate('/user/summary');
+    navigate(`/user/summary?month=${selectedMonth}&year=${selectedYear}`);
   };
 
   const handleBubbleClick = () => setIsChatOpen(true);
@@ -233,12 +262,8 @@ const Home = () => {
         <MonthHeader
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
-          onMonthChange={(month, year) => {
-            setSelectedMonth(month);
-            setSelectedYear(year);
-          }}
+          onMonthChange={handleMonthChange}
         />
-
         <div className="text-center mb-6">
           <p className="text-sm mb-4">ยอดใช้จ่าย</p>
           <h1 className="text-[96px] mb-2 font-semibold leading-none">
