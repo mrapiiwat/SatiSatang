@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import React from 'react';
-import type { PageWrapperProps } from '../types/components';
+import type { PageWrapperProps } from '../interface/components';
 
 const PageWrapper: React.FC<PageWrapperProps> = ({
   children,

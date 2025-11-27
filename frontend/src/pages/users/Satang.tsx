@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SatangTextMode from '../../components/user/satang/SatangTextMode';
 import SatangVoiceMode from '../../components/user/satang/SatangVoiceMode';
-import type { ChatMessage } from '../../types/satang';
+import type { ChatMessage } from '../../interface/satang';
 import axios from '../../api/axios';
 import { fetchWithAuth } from '../../api/fetch';
 

@@ -8,7 +8,7 @@ import { showToastAlert } from '../../../store/toastStore';
 import FileUploadArea from './FileUploadArea';
 import TransactionForm from './TransactionForm';
 import ImageModal from './ImageModal';
-import type { OptionType, CategoryOptions, Category } from '../../../types/home';
+import type { OptionType, CategoryOptions, Category } from '../../../interface/home';
 import type { SingleValue } from 'react-select';
 
 const transactionTypes: OptionType[] = [

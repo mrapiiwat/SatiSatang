@@ -10,7 +10,7 @@ import type {
   FrequencyOption,
   CategoryOption,
   BudgetProps,
-} from '../../../types/home';
+} from '../../../interface/home';
 import { showToastAlert } from '../../../store/toastStore';
 
 const frequencies: FrequencyOption[] = [

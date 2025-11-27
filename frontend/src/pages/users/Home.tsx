@@ -3,7 +3,7 @@ import { PiChartPieSliceLight } from 'react-icons/pi';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Modal from '../../components/Modal';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
-import type { Transaction, PaginationData, MyGoal, MyBudget } from '../../types/home';
+import type { Transaction, PaginationData, MyGoal, MyBudget } from '../../interface/home';
 import axios from '../../api/axios';
 import { showToastAlert } from '../../store/toastStore';
 import PageWrapper from '../../components/PageWrapper';

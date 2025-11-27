@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import axios from '../api/axios';
-import type { AuthStore, formLogin } from '../types/store';
+import type { AuthStore, formLogin } from '../interface/store';
 
 const authStore: StateCreator<AuthStore> = (set) => ({
   user: null,

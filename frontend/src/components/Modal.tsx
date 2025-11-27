@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import type { ModalProps } from '../types/components';
+import type { ModalProps } from '../interface/components';
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   return (

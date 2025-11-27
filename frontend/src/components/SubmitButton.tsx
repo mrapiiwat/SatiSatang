@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { SubmitButtonProps } from '../types/components';
+import type { SubmitButtonProps } from '../interface/components';
 
 const SubmitButton: React.FC<SubmitButtonProps> = ({ isLoading, text }) => {
   const buttonClass = useMemo(

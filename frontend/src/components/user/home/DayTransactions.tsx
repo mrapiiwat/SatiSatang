@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import type { DayTransactionsProps } from '../../../types/home';
-import type { CategoriesType } from '../../../types/category';
+import type { DayTransactionsProps } from '../../../interface/home';
+import type { CategoriesType } from '../../../interface/category';
 import Image from '../../Image';
 import axios from '../../../api/axios';
 

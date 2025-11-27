@@ -4,7 +4,7 @@ import { MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { useSearchParams } from 'react-router-dom';
 import axios from '../../api/axios';
-import type { Transaction, Goal } from '../../types/summary';
+import type { Transaction, Goal } from '../../interface/summary';
 import PageWrapper from '../../components/PageWrapper';
 
 const Summary: React.FC = () => {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { RxCross2 } from 'react-icons/rx';
 import Select from 'react-select';
 import type { SingleValue } from 'react-select';
-import type { GoalProps, OptionType } from '../../../types/home';
+import type { GoalProps, OptionType } from '../../../interface/home';
 import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
 import { showToastAlert } from '../../../store/toastStore';

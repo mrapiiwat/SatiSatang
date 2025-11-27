@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { InputFieldProps } from '../types/auth';
+import type { InputFieldProps } from '../interface/auth';
 
 const InputField: React.FC<InputFieldProps> = ({
   id,

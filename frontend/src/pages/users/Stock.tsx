@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import axios from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import type { StockProps } from '../../types/stock';
+import type { StockProps } from '../../interface/stock';
 import { useLocation } from 'react-router-dom';
-import type { StockDetailType } from '../../types/stock';
+import type { StockDetailType } from '../../interface/stock';
 import { GrSearch } from 'react-icons/gr';
 import { MdClear } from 'react-icons/md';
 import { motion } from 'framer-motion';

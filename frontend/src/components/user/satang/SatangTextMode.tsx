@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useLayoutEffect } from 'react';
 import { GoArrowUp } from 'react-icons/go';
 import Face from '../../../assets/Page-1.svg';
-import type { SatangTextModeProps } from '../../../types/satang';
+import type { SatangTextModeProps } from '../../../interface/satang';
 import TypingIndicator from './TypingIndicator';
 import PageWrapper from '../../PageWrapper';
 

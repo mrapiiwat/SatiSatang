@@ -12,7 +12,7 @@ import Logo from '../../components/Logo';
 import PageWrapper from '../../components/PageWrapper';
 import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
-import type { LoginForm } from '../../types/auth';
+import type { LoginForm } from '../../interface/auth';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;

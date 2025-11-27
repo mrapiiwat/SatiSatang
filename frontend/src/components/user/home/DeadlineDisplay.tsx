@@ -1,5 +1,5 @@
 import React from 'react';
-import type { DeadlineDisplayProps } from '../../../types/home';
+import type { DeadlineDisplayProps } from '../../../interface/home';
 
 const DeadlineDisplay: React.FC<DeadlineDisplayProps> = ({ deadline, now }) => {
   if (!deadline) return 'ไม่มีระยะเวลากำหนด';

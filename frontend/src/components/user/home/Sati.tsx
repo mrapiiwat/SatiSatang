@@ -4,9 +4,9 @@ import { FaPlus } from 'react-icons/fa6';
 import { GoArrowUp } from 'react-icons/go';
 import AddMenu from './AddMenu';
 import PageWrapper from '../../PageWrapper';
-import type { SatiProps } from '../../../types/home';
+import type { SatiProps } from '../../../interface/home';
 import axios from '../../../api/axios';
-import type { ChatMessage } from '../../../types/home';
+import type { ChatMessage } from '../../../interface/home';
 
 const Sati: React.FC<SatiProps> = ({
   handleCloseChatModal,

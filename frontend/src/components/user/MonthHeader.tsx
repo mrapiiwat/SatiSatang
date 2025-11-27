@@ -1,6 +1,6 @@
 import React from 'react';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
-import type { MonthHeaderProps } from '../../types/components';
+import type { MonthHeaderProps } from '../../interface/components';
 
 const MonthHeader: React.FC<MonthHeaderProps> = ({
   selectedMonth,

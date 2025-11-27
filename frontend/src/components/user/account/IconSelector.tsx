@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from '../../../api/axios';
 import Image from '../../Image';
-import type { IconSelectorProps, Icon } from '../../../types/account';
+import type { IconSelectorProps, Icon } from '../../../interface/account';
 
 const IconSelector: React.FC<IconSelectorProps> = ({
   selectedIconId,

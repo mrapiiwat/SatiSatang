@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from '../../api/axios';
-import type { CategoriesType } from '../../types/category';
+import type { CategoriesType } from '../../interface/category';
 import CategoryHeader from '../../components/user/category/CategoryHeader';
 import CategoryList from '../../components/user/category/CategoryList';
 import CategoryModal from '../../components/user/category/CategoryModal';

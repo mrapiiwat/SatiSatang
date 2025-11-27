@@ -5,7 +5,7 @@ import Modal from '../../Modal';
 import IconSelector from '../account/IconSelector';
 import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
-import type { CategoriesType, CategoryListProps } from '../../../types/category';
+import type { CategoriesType, CategoryListProps } from '../../../interface/category';
 import { showToastAlert } from '../../../store/toastStore';
 
 const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, setCategories }) => {

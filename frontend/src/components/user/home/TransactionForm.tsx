@@ -2,7 +2,7 @@ import React from 'react';
 import Select, { type StylesConfig } from 'react-select';
 import { GoCalendar } from 'react-icons/go';
 import { RxCross2 } from 'react-icons/rx';
-import type { TransactionFormProps, OptionType } from '../../../types/home';
+import type { TransactionFormProps, OptionType } from '../../../interface/home';
 import SlipPreview from './SlipPreview';
 
 const categorySelectStyles: StylesConfig<OptionType, false> = {

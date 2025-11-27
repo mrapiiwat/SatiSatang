@@ -4,7 +4,7 @@ import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
 import Modal from '../../../components/Modal';
 import IconSelector from '../account/IconSelector';
-import type { CategoryModalProps } from '../../../types/category';
+import type { CategoryModalProps } from '../../../interface/category';
 import { showToastAlert } from '../../../store/toastStore';
 
 const CategoryModal: React.FC<CategoryModalProps> = ({

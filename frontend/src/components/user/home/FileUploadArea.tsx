@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaCloudUploadAlt } from 'react-icons/fa';
-import type { FileUploadProps } from '../../../types/home';
+import type { FileUploadProps } from '../../../interface/home';
 
 const FileUploadArea: React.FC<FileUploadProps> = ({ selectedFile, previewUrl, onFileChange }) => (
   <div className="flex flex-col items-center justify-center gap-5 mb-6">

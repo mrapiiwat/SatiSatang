@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SlipPreviewProps } from '../../../types/home';
+import type { SlipPreviewProps } from '../../../interface/home';
 
 const SlipPreview: React.FC<SlipPreviewProps> = ({
   transactionData,

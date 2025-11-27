@@ -8,7 +8,7 @@ import type {
   OptionType,
   CategoryOption,
   CategoryResponse,
-} from '../../../types/home';
+} from '../../../interface/home';
 import axios from '../../../api/axios';
 import { showToastAlert } from '../../../store/toastStore';
 
