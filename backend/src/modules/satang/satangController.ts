@@ -113,6 +113,14 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
       orderBy: { createdAt: 'desc' },
     });
 
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    const name = user?.name.split(' ')[0];
+
     if (!latestSession) {
       const now = new Date();
       const session = await prisma.chatSession.create({
@@ -122,8 +130,19 @@ export const getOrCreateLatestSatangSession = async (req: Request, res: Response
         },
       });
 
+      await prisma.chatMessage.create({
+        data: {
+          sessionId: session.id,
+          userId,
+          content: `สวัสดีครับ ${name} สตางค์ พร้อมแนะนำเคล็ดลับการลงทุนง่าย ๆ ให้พี่เริ่มต้นได้อย่างมั่นใจ แม้ยังไม่มีประสบการณ์ สตางค์ ก็ช่วยให้พี่เข้าใจแนวทางการลงทุนและวางแผนการเงินได้อย่างปลอดภัยครับ!`,
+          role: 'assistant',
+        },
+      });
+
       return res.status(httpStatus.CREATED).json({
-        message: 'New Satang session created (no previous session found)',
+        message: latestSession
+          ? 'New Satang session created (new day)'
+          : 'New Satang session created (no existing session)',
         data: { ...session, messages: [], nextCursor: null, hasMore: false },
       });
     }

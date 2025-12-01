@@ -140,9 +140,10 @@ CREATE TABLE "Budgets" (
     "currentAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "categoryId" INTEGER NOT NULL,
     "frequency" "Frequency" NOT NULL,
+    "deadline" TIMESTAMP(3),
+    "userId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "Budgets_pkey" PRIMARY KEY ("id")
 );

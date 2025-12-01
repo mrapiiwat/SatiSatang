@@ -114,9 +114,9 @@ export const getOrCreateLatestSatiSession = async (req: Request, res: Response) 
       take: limit,
       ...(cursor
         ? {
-          skip: 1,
-          cursor: { id: Number(cursor) },
-        }
+            skip: 1,
+            cursor: { id: Number(cursor) },
+          }
         : {}),
     });
 
