@@ -288,7 +288,7 @@ export const StockDetail: React.FC = () => {
 
           <div className="flex flex-wrap justify-between items-end gap-6">
             <span className="text-6xl font-light text-white tabular-nums">
-              ${stock.regularMarketPrice?.toFixed(2) ?? '-'}
+              ฿{stock.regularMarketPrice?.toFixed(2) ?? '-'}
             </span>
             <span
               className={`text-lg font-medium px-5 py-2.5 rounded-2xl tabular-nums ${
@@ -310,10 +310,10 @@ export const StockDetail: React.FC = () => {
           className="bg-white/80 backdrop-blur-sm rounded-3xl border border-slate-200/60 p-8 mb-4 shadow-sm"
         >
           <h2 className="font-medium text-slate-900 mb-6 text-lg tracking-tight">วันนี้</h2>
-          <StatRow label="เปิด" value={`$${stock.regularMarketOpen?.toFixed(2) ?? '-'}`} />
-          <StatRow label="สูงสุด" value={`$${stock.regularMarketHigh?.toFixed(2) ?? '-'}`} />
-          <StatRow label="ต่ำสุด" value={`$${stock.regularMarketLow?.toFixed(2) ?? '-'}`} />
-          <StatRow label="ปิดก่อนหน้า" value={`$${stock.previousClose?.toFixed(2) ?? '-'}`} />
+          <StatRow label="เปิด" value={`฿${stock.regularMarketOpen?.toFixed(2) ?? '-'}`} />
+          <StatRow label="สูงสุด" value={`฿${stock.regularMarketHigh?.toFixed(2) ?? '-'}`} />
+          <StatRow label="ต่ำสุด" value={`฿${stock.regularMarketLow?.toFixed(2) ?? '-'}`} />
+          <StatRow label="ปิดก่อนหน้า" value={`฿${stock.previousClose?.toFixed(2) ?? '-'}`} />
         </motion.div>
 
         <motion.div
@@ -334,8 +334,8 @@ export const StockDetail: React.FC = () => {
           className="bg-white/80 backdrop-blur-sm rounded-3xl border border-slate-200/60 p-8 mb-4 shadow-sm"
         >
           <h2 className="font-medium text-slate-900 mb-6 text-lg tracking-tight">ค่าเฉลี่ย</h2>
-          <StatRow label="50 วัน" value={`$${stock.fiftyDayAverage?.toFixed(2) ?? '-'}`} />
-          <StatRow label="200 วัน" value={`$${stock.twoHundredDayAverage?.toFixed(2) ?? '-'}`} />
+          <StatRow label="50 วัน" value={`฿${stock.fiftyDayAverage?.toFixed(2) ?? '-'}`} />
+          <StatRow label="200 วัน" value={`฿${stock.twoHundredDayAverage?.toFixed(2) ?? '-'}`} />
         </motion.div>
 
         <motion.div
@@ -347,8 +347,8 @@ export const StockDetail: React.FC = () => {
           <h2 className="font-medium text-slate-900 mb-6 text-lg tracking-tight">
             ช่วง 52 สัปดาห์
           </h2>
-          <StatRow label="ต่ำสุด" value={`$${stock.fiftyTwoWeekLow?.toFixed(2) ?? '-'}`} />
-          <StatRow label="สูงสุด" value={`$${stock.fiftyTwoWeekHigh?.toFixed(2) ?? '-'}`} />
+          <StatRow label="ต่ำสุด" value={`฿${stock.fiftyTwoWeekLow?.toFixed(2) ?? '-'}`} />
+          <StatRow label="สูงสุด" value={`฿${stock.fiftyTwoWeekHigh?.toFixed(2) ?? '-'}`} />
           {stock.fiftyTwoWeekChangePercent !== undefined && (
             <StatRow label="เปลี่ยนแปลง" value={`${stock.fiftyTwoWeekChangePercent.toFixed(2)}%`} />
           )}
