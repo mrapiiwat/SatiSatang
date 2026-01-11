@@ -41,3 +41,6 @@ yarn-error.log*
 **/*.log
 package-lock.json
 **/*.bun
+
+# Google Cloud Credentials
+/src/common/config/google-credentials.json
