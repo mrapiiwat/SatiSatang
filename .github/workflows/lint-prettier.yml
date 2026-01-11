@@ -13,22 +13,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 20
+          bun-version: 'latest'
 
       - name: Install Backend dependencies
         working-directory: backend
-        run: npm ci
+        run: bun install --frozen-lockfile
 
-      - name: Run Backend ESLint
+      - name: Run Backend Biome Check
         working-directory: backend
-        run: npm run lint -- --max-warnings=0
-
-      - name: Check Backend Prettier formatting
-        working-directory: backend
-        run: npm run format:check
+        run: bun x @biomejs/biome check .
 
       - name: Install Frontend dependencies
         working-directory: frontend
