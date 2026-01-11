@@ -61,7 +61,8 @@ with get_conn() as conn:
             ticker = yf.Ticker(symbol)
             info = ticker.info
             now = datetime.utcnow()
-
+            description = info.get("longBusinessSummary") or ""
+            
             data = {
                 "symbol": symbol,
                 "name": info.get("shortName") or info.get("longName") or "",
@@ -90,6 +91,7 @@ with get_conn() as conn:
                 "lastUpdated": now,
                 "createdAt": now,
                 "updatedAt": now,
+                "description": description
             }
 
             query = text(
@@ -140,7 +142,7 @@ with get_conn() as conn:
             conn.commit()
             print(f"Inserted/Updated in PostgreSQL: {symbol}")
 
-            text_for_embedding = f"{data['symbol']} {data['name']} {data['quoteType']} {data['market']} {data['regularMarketPrice']}"
+            text_for_embedding = f"Symbol: {data['symbol']} | Name: {data['name']} | Business Description: {description}"
             vector = get_embedding(text_for_embedding)
 
             point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, symbol))
