@@ -109,7 +109,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
   )
   .delete(
     "/:id",
-    async ({ params: { id }, body, user, set }) => {
+    async ({ params: { id }, user, set }) => {
       const userId = Number(user.id);
       const result = await transactionService.deleteTransaction(id, userId);
 

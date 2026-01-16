@@ -310,7 +310,7 @@ export class TransactionService {
 
     return updatedTxn;
   }
-  
+
   async deleteTransaction(id: number, userId: number) {
     const existingTxn = await db.query.transaction.findFirst({
       where: and(eq(transaction.id, id), eq(transaction.userId, userId)),
