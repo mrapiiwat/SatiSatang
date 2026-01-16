@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { RxCross2 } from 'react-icons/rx';
-import Select from 'react-select';
-import type { SingleValue } from 'react-select';
+import Select, { type StylesConfig, type SingleValue } from 'react-select'; // เพิ่ม StylesConfig
 import type { GoalProps, OptionType } from '../../../interface/home';
 import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
@@ -10,9 +9,17 @@ import { showToastAlert } from '../../../store/toastStore';
 const Goal: React.FC<GoalProps> = ({ onClose }) => {
   const [goalName, setGoalName] = useState('');
   const [amount, setAmount] = useState('');
-  const [year, setYear] = useState('');
+
+  const [year, setYear] = useState<SingleValue<OptionType>>(null);
   const [month, setMonth] = useState<SingleValue<OptionType>>(null);
-  const [day, setDay] = useState('');
+  const [day, setDay] = useState<SingleValue<OptionType>>(null);
+
+  const currentYear = new Date().getFullYear();
+
+  const yearOptions: OptionType[] = Array.from({ length: 11 }, (_, i) => {
+    const val = currentYear + i;
+    return { value: String(val), label: String(val) };
+  });
 
   const monthOptions: OptionType[] = [
     { value: '1', label: 'มกราคม' },
@@ -29,6 +36,29 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
     { value: '12', label: 'ธันวาคม' },
   ];
 
+  const maxDays = useMemo(() => {
+    if (!month) return 31;
+    const m = Number(month.value);
+
+    if ([4, 6, 9, 11].includes(m)) return 30;
+    if (m === 2) {
+      if (year) {
+        const y = Number(year.value);
+        const isLeap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+        return isLeap ? 29 : 28;
+      }
+      return 29;
+    }
+    return 31;
+  }, [month, year]);
+
+  const dayOptions: OptionType[] = useMemo(() => {
+    return Array.from({ length: maxDays }, (_, i) => ({
+      value: String(i + 1),
+      label: String(i + 1),
+    }));
+  }, [maxDays]);
+
   const validateInputs = () => {
     const newErrors: Record<string, string> = {};
 
@@ -42,7 +72,11 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
     }
 
     if (year && month && day) {
-      const selectedDate = new Date(Number(year), Number(month.value) - 1, Number(day));
+      const selectedDate = new Date(
+        Number(year.value),
+        Number(month.value) - 1,
+        Number(day.value)
+      );
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -55,72 +89,68 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
+  const handleYearChange = (option: SingleValue<OptionType>) => {
+    setYear(option);
 
-    if (value.length > 4) return;
-    if (Number(value) >= 2500) value = String(Number(value) - 543);
-
-    setYear(value);
-
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-
-    if (month && Number(value) === currentYear && Number(month.value) < currentMonth) {
+    if (!option) {
       setMonth(null);
-      setDay('');
+      setDay(null);
       return;
     }
 
-    if (month && day) {
-      const selectedYear = Number(value);
-      const selectedMonth = Number(month.value);
+    const selectedY = Number(option.value);
+    const currentM = new Date().getMonth() + 1;
 
-      let maxDays = 31;
-      if ([4, 6, 9, 11].includes(selectedMonth)) maxDays = 30;
-      else if (selectedMonth === 2) {
-        const isLeapYear =
-          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) || selectedYear % 400 === 0;
-        maxDays = isLeapYear ? 29 : 28;
-      }
+    if (selectedY === currentYear && month && Number(month.value) < currentM) {
+      setMonth(null);
+      setDay(null);
+      return;
+    }
 
-      if (Number(day) > maxDays) setDay('');
+    if (month && day && Number(month.value) === 2 && Number(day.value) === 29) {
+      const isLeap = (selectedY % 4 === 0 && selectedY % 100 !== 0) || selectedY % 400 === 0;
+      if (!isLeap) setDay(null);
     }
   };
 
-  const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (Number(value) < 0 || Number(value) > 31) return;
+  const handleMonthChange = (option: SingleValue<OptionType>) => {
+    setMonth(option);
 
-    if (month && value) {
-      const selectedMonth = Number(month.value);
-      const selectedYear = year ? Number(year) : new Date().getFullYear();
-      let maxDays = 31;
-
-      if ([4, 6, 9, 11].includes(selectedMonth)) maxDays = 30;
-      else if (selectedMonth === 2) {
-        const isLeapYear =
-          (selectedYear % 4 === 0 && selectedYear % 100 !== 0) || selectedYear % 400 === 0;
-        maxDays = isLeapYear ? 29 : 28;
-      }
-
-      if (Number(value) > maxDays) return;
+    if (!option) {
+      setDay(null);
+      return;
     }
 
-    setDay(value);
+    if (day) {
+      const newMonthVal = Number(option.value);
+      const currentDayVal = Number(day.value);
+
+      let newMax = 31;
+      if ([4, 6, 9, 11].includes(newMonthVal)) newMax = 30;
+      else if (newMonthVal === 2) {
+        if (year) {
+          const y = Number(year.value);
+          const isLeap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+          newMax = isLeap ? 29 : 28;
+        } else {
+          newMax = 29;
+        }
+      }
+
+      if (currentDayVal > newMax) {
+        setDay(null);
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateInputs()) {
-      showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
-      return;
-    }
+    if (!validateInputs()) return;
 
     try {
       const deadline =
         year && month && day
-          ? `${year}-${month.value.padStart(2, '0')}-${day.padStart(2, '0')}`
+          ? `${year.value}-${month.value.padStart(2, '0')}-${day.value.padStart(2, '0')}`
           : null;
 
       await axios.post('/goal', {
@@ -139,8 +169,31 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
       } else {
         showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
-      console.error(err);
     }
+  };
+
+  const selectStyles: StylesConfig<OptionType, false> = {
+    control: (base) => ({
+      ...base,
+      height: 36,
+      minHeight: 36,
+      borderRadius: 6,
+      borderColor: '#B1B0AD',
+    }),
+    singleValue: (base) => ({ ...base, color: '#111827' }),
+    indicatorsContainer: (base) => ({ ...base, display: 'none' }),
+    valueContainer: (base) => ({ ...base, padding: '0 8px' }),
+    menu: (base) => ({ ...base, zIndex: 9999 }),
+    menuList: (base) => ({
+      ...base,
+      "::-webkit-scrollbar": {
+        width: "0px",
+        height: "0px",
+        display: "none",
+      },
+      scrollbarWidth: "none",
+      msOverflowStyle: "none",
+    }),
   };
 
   return (
@@ -181,12 +234,14 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
             <label className="text-sm font-medium">ระยะเวลา</label>
             <div className="flex gap-2">
               <div className="flex flex-col flex-1 min-w-0">
-                <input
-                  type="number"
+                <Select<OptionType, false>
+                  options={yearOptions}
                   value={year}
                   onChange={handleYearChange}
                   placeholder="ปี"
-                  className="w-full border border-black-500 rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none"
+                  isClearable
+                  isSearchable={false}
+                  styles={selectStyles}
                 />
               </div>
 
@@ -194,37 +249,40 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
                 <Select<OptionType, false>
                   options={monthOptions}
                   value={month}
-                  onChange={(option: SingleValue<OptionType>) => setMonth(option)}
+                  onChange={handleMonthChange}
                   placeholder="เดือน"
                   isClearable
+                  isSearchable={false}
                   isOptionDisabled={(option) => {
                     if (!year) return false;
-                    const currentYear = new Date().getFullYear();
-                    const currentMonth = new Date().getMonth() + 1;
-                    return Number(year) === currentYear && Number(option.value) < currentMonth;
+                    const currentY = new Date().getFullYear();
+                    const currentM = new Date().getMonth() + 1;
+                    return Number(year.value) === currentY && Number(option.value) < currentM;
                   }}
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      height: 36,
-                      minHeight: 36,
-                      borderRadius: 6,
-                      borderColor: '#B1B0AD',
-                    }),
-                    singleValue: (base) => ({ ...base, color: '#111827' }),
-                    indicatorsContainer: (base) => ({ ...base, display: 'none' }),
-                  }}
+                  styles={selectStyles}
                 />
               </div>
 
               <div className="flex flex-col flex-1 min-w-0">
-                <input
-                  type="number"
+                <Select<OptionType, false>
+                  options={dayOptions}
                   value={day}
-                  onChange={handleDayChange}
-                  min="1"
+                  onChange={(option) => setDay(option)}
                   placeholder="วัน"
-                  className="w-full border border-black-500 rounded-md px-2 h-9 text-black-900 focus:border-blue-600 focus:outline-none"
+                  isClearable
+                  isSearchable={false}
+                  isOptionDisabled={(option) => {
+                    if (!year || !month) return false;
+                    const currentY = new Date().getFullYear();
+                    const currentM = new Date().getMonth() + 1;
+                    const currentD = new Date().getDate();
+
+                    if (Number(year.value) === currentY && Number(month.value) === currentM) {
+                      return Number(option.value) < currentD;
+                    }
+                    return false;
+                  }}
+                  styles={selectStyles}
                 />
               </div>
             </div>
