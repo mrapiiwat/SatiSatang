@@ -102,14 +102,14 @@ with get_conn() as conn:
                 "previousClose", "dayHigh", "dayLow", "volume", "averageVolume",
                 "fiftyDayAverage", "twoHundredDayAverage", "fiftyTwoWeekLow", "fiftyTwoWeekHigh",
                 "fiftyTwoWeekChangePercent", "regularMarketChange", "regularMarketChangePercent",
-                "marketState", "tradeable", "lastUpdated", "createdAt", "updatedAt"
+                "marketState", "tradeable", "lastUpdated", "createdAt", "updatedAt", "description"
             ) VALUES (
                 :symbol, :name, :quoteType, :currency, :market,
                 :regularMarketPrice, :regularMarketOpen, :regularMarketHigh, :regularMarketLow,
                 :previousClose, :dayHigh, :dayLow, :volume, :averageVolume,
                 :fiftyDayAverage, :twoHundredDayAverage, :fiftyTwoWeekLow, :fiftyTwoWeekHigh,
                 :fiftyTwoWeekChangePercent, :regularMarketChange, :regularMarketChangePercent,
-                :marketState, :tradeable, :lastUpdated, :createdAt, :updatedAt
+                :marketState, :tradeable, :lastUpdated, :createdAt, :updatedAt, :description
             )
             ON CONFLICT ("symbol") DO UPDATE SET
                 "name" = EXCLUDED."name",
@@ -135,7 +135,8 @@ with get_conn() as conn:
                 "marketState" = EXCLUDED."marketState",
                 "tradeable" = EXCLUDED."tradeable",
                 "lastUpdated" = EXCLUDED."lastUpdated",
-                "updatedAt" = EXCLUDED."updatedAt"
+                "updatedAt" = EXCLUDED."updatedAt",
+                "description" = EXCLUDED."description"
             """
             )
             conn.execute(query, data)

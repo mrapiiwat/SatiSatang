@@ -47,6 +47,7 @@ export const stock = pgTable(
     quoteType: text(),
     currency: text(),
     market: text(),
+    description: text(),
     regularMarketPrice: doublePrecision(),
     regularMarketOpen: doublePrecision(),
     regularMarketHigh: doublePrecision(),

@@ -12,6 +12,11 @@ import type {
 import axios from '../../../api/axios';
 import { showToastAlert } from '../../../store/toastStore';
 
+const options: OptionType[] = [
+  { value: 'INCOME', label: 'รายรับ' },
+  { value: 'EXPENSE', label: 'รายจ่าย' },
+];
+
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData }) => {
   const today = new Date();
   const displayDate = editData ? new Date(editData.createdAt) : today;
@@ -25,11 +30,6 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData }) => {
     .replace('วัน', '')
     .replace('ที่', '')
     .replace('พ.ศ. ', '');
-
-  const options: OptionType[] = [
-    { value: 'INCOME', label: 'รายรับ' },
-    { value: 'EXPENSE', label: 'รายจ่าย' },
-  ];
 
   const [selectedType, setSelectedType] = useState<OptionType | null>(null);
   const [categories, setCategories] = useState<CategoryOption[]>([]);

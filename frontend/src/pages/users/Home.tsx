@@ -367,7 +367,7 @@ const Home = () => {
                         width: `${Math.min(
                           ((budgets[budgetIndex]?.currentAmount || 0) /
                             (budgets[budgetIndex]?.amount || 1)) *
-                          100,
+                            100,
                           100,
                         )}%`,
                       }}
@@ -391,8 +391,9 @@ const Home = () => {
                             <span
                               key={realIndex}
                               onClick={() => setBudgetIndex(realIndex)}
-                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
-                                }`}
+                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
+                                budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
+                              }`}
                             />
                           );
                         })}
@@ -455,8 +456,9 @@ const Home = () => {
                             <span
                               key={realIndex}
                               onClick={() => setGoalIndex(realIndex)}
-                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
-                                }`}
+                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
+                                goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
+                              }`}
                             />
                           );
                         })}
@@ -489,18 +491,21 @@ const Home = () => {
                       style={{ height: `${totalHeight}px` }}
                     >
                       <div
-                        className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'
-                          } absolute top-0 left-0 h-14`}
+                        className={`border-l-4 ${
+                          isToday ? 'border-blue-600' : 'border-black-700'
+                        } absolute top-0 left-0 h-14`}
                       />
                       <p
-                        className={`text-base font-medium ${isToday ? 'text-blue-600' : 'text-black-700'
-                          }`}
+                        className={`text-base font-medium ${
+                          isToday ? 'text-blue-600' : 'text-black-700'
+                        }`}
                       >
                         {dayLabel}
                       </p>
                       <p
-                        className={`text-base font-bold ${isToday ? 'text-blue-600' : 'text-black-700'
-                          } leading-tight`}
+                        className={`text-base font-bold ${
+                          isToday ? 'text-blue-600' : 'text-black-700'
+                        } leading-tight`}
                       >
                         {dayNumber}
                       </p>
@@ -508,7 +513,12 @@ const Home = () => {
                   );
                 })}
               </div>
-              <DayTransactions groupedByDate={groupedByDate} sortedDates={sortedDates} onRefresh={handleRefreshAll} onEdit={handleOpenEdit} />
+              <DayTransactions
+                groupedByDate={groupedByDate}
+                sortedDates={sortedDates}
+                onRefresh={handleRefreshAll}
+                onEdit={handleOpenEdit}
+              />
             </div>
 
             {pagination.totalPages > 1 && (
@@ -526,12 +536,13 @@ const Home = () => {
                     key={index}
                     onClick={() => typeof page === 'number' && handlePageClick(page)}
                     disabled={page === '...'}
-                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${page === currentPage
-                      ? 'bg-blue-600 text-white font-semibold'
-                      : page === '...'
-                        ? 'cursor-default'
-                        : 'border border-black-300 hover:bg-black-200'
-                      }`}
+                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${
+                      page === currentPage
+                        ? 'bg-blue-600 text-white font-semibold'
+                        : page === '...'
+                          ? 'cursor-default'
+                          : 'border border-black-300 hover:bg-black-200'
+                    }`}
                   >
                     {page}
                   </button>
@@ -564,7 +575,11 @@ const Home = () => {
         <div>
           {activePopup === 'upload' && <Upload onClose={handleClosePopupAndRefetch} />}
           {activePopup === 'manual' && (
-            <Manual onClose={handleClosePopupAndRefetch} onSuccess={fetchTransactions} editData={editData} />
+            <Manual
+              onClose={handleClosePopupAndRefetch}
+              onSuccess={fetchTransactions}
+              editData={editData}
+            />
           )}
           {activePopup === 'budget' && <Budget onClose={handleClosePopupAndRefetch} />}
           {activePopup === 'goal' && <Goal onClose={handleClosePopupAndRefetch} />}

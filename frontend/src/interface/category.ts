@@ -24,3 +24,12 @@ export interface CategoryListProps {
   setCategories: React.Dispatch<React.SetStateAction<CategoriesType[]>>;
   onAddClick: () => void;
 }
+
+export interface Transaction {
+  id: number;
+  type: 'INCOME' | 'EXPENSE';
+  description: string;
+  amount: number;
+  createdAt: string;
+  categoryId: number;
+}

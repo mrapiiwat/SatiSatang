@@ -72,11 +72,7 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
     }
 
     if (year && month && day) {
-      const selectedDate = new Date(
-        Number(year.value),
-        Number(month.value) - 1,
-        Number(day.value)
-      );
+      const selectedDate = new Date(Number(year.value), Number(month.value) - 1, Number(day.value));
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -186,13 +182,13 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
     menu: (base) => ({ ...base, zIndex: 9999 }),
     menuList: (base) => ({
       ...base,
-      "::-webkit-scrollbar": {
-        width: "0px",
-        height: "0px",
-        display: "none",
+      '::-webkit-scrollbar': {
+        width: '0px',
+        height: '0px',
+        display: 'none',
       },
-      scrollbarWidth: "none",
-      msOverflowStyle: "none",
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none',
     }),
   };
 

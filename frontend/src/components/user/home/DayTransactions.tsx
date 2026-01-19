@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import type { DayTransactionsProps } from '../../../interface/home';
-import type { CategoriesType } from '../../../interface/category';
+import type { CategoriesType, Transaction } from '../../../interface/category';
 import Image from '../../Image';
 import axios from '../../../api/axios';
 import Modal from '../../Modal';
 import { MdDelete, MdEdit, MdClose } from 'react-icons/md';
 import { showToastAlert } from '../../../store/toastStore';
 
-const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sortedDates, onRefresh, onEdit }) => {
+const DayTransactions: React.FC<DayTransactionsProps> = ({
+  groupedByDate,
+  sortedDates,
+  onRefresh,
+  onEdit,
+}) => {
   const [categoryMap, setCategoryMap] = useState<Record<number, string>>({});
-  const [selectedTransaction, setSelectedTransaction] = useState<any | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -40,7 +45,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
       setSelectedTransaction(null);
       if (onRefresh) onRefresh();
     } catch (err) {
-      showToastAlert('ไม่สามารถลบรายการได้', 'error');
+      showToastAlert('ไม่สามารถลบรายการได้', err instanceof Error ? 'error' : 'error');
     } finally {
       setIsDeleting(false);
     }
@@ -85,7 +90,11 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
 
             <div className="bg-blue-100">
               {dayTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between px-4 h-16 cursor-pointer" onClick={() => setSelectedTransaction(transaction)}>
+                <div
+                  key={transaction.id}
+                  className="flex items-center justify-between px-4 h-16 cursor-pointer"
+                  onClick={() => setSelectedTransaction(transaction)}
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
                       {categoryMap[transaction.categoryId] ? (
@@ -141,10 +150,13 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
               <div className="flex flex-col gap-5">
                 <div className="flex justify-between items-center">
                   <span className="text-black-600 font-medium">ประเภท</span>
-                  <span className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${selectedTransaction.type === 'INCOME'
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'bg-red-100 text-red-500'
-                    }`}>
+                  <span
+                    className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                      selectedTransaction.type === 'INCOME'
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'bg-red-100 text-red-500'
+                    }`}
+                  >
                     {selectedTransaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
                   </span>
                 </div>
@@ -153,9 +165,14 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ groupedByDate, sorted
 
                 <div className="flex justify-between items-center">
                   <span className="text-black-600 font-medium">จำนวนเงิน</span>
-                  <span className={`text-2xl font-bold ${selectedTransaction.type === 'INCOME' ? 'text-blue-600' : 'text-red-500'
-                    }`}>
-                    {selectedTransaction.type === 'INCOME' ? '+' : '-'} {selectedTransaction.amount.toLocaleString()} <span className="text-sm ml-1 font-semibold text-black-500">บาท</span>
+                  <span
+                    className={`text-2xl font-bold ${
+                      selectedTransaction.type === 'INCOME' ? 'text-blue-600' : 'text-red-500'
+                    }`}
+                  >
+                    {selectedTransaction.type === 'INCOME' ? '+' : '-'}{' '}
+                    {selectedTransaction.amount.toLocaleString()}{' '}
+                    <span className="text-sm ml-1 font-semibold text-black-500">บาท</span>
                   </span>
                 </div>
 
