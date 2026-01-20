@@ -12,9 +12,15 @@ import type {
 import axios from '../../../api/axios';
 import { showToastAlert } from '../../../store/toastStore';
 
-const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
+const options: OptionType[] = [
+  { value: 'INCOME', label: 'รายรับ' },
+  { value: 'EXPENSE', label: 'รายจ่าย' },
+];
+
+const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData }) => {
   const today = new Date();
-  const formattedDate = today
+  const displayDate = editData ? new Date(editData.createdAt) : today;
+  const formattedDate = displayDate
     .toLocaleDateString('th-TH', {
       weekday: 'long',
       day: 'numeric',
@@ -25,16 +31,20 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
     .replace('ที่', '')
     .replace('พ.ศ. ', '');
 
-  const options: OptionType[] = [
-    { value: 'INCOME', label: 'รายรับ' },
-    { value: 'EXPENSE', label: 'รายจ่าย' },
-  ];
-
   const [selectedType, setSelectedType] = useState<OptionType | null>(null);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryOption | null>(null);
   const [detail, setDetail] = useState('');
   const [amount, setAmount] = useState('');
+
+  useEffect(() => {
+    if (editData) {
+      setDetail(editData.description || '');
+      setAmount(editData.amount.toString());
+      const typeOption = options.find((opt) => opt.value === editData.type);
+      if (typeOption) setSelectedType(typeOption);
+    }
+  }, [editData]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -45,7 +55,10 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
       }
 
       try {
-        const res = await axios.get(`/categories?type=${selectedType.value}&includeGoals=true`);
+        const isCreateMode = !editData;
+        const goalQuery = isCreateMode ? '&includeGoals=true' : '';
+
+        const res = await axios.get(`/categories?type=${selectedType.value}${goalQuery}`);
         const data: CategoryResponse[] = res.data.data;
 
         const formatted: CategoryOption[] = data.map((cat) => ({
@@ -55,14 +68,20 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
         }));
 
         setCategories(formatted);
-        setSelectedCategory(null);
+
+        if (editData && editData.type === selectedType.value) {
+          const currentCat = formatted.find((cat) => cat.value === editData.categoryId);
+          if (currentCat) setSelectedCategory(currentCat);
+        } else {
+          setSelectedCategory(null);
+        }
       } catch (err) {
         console.error('Error fetching categories:', err);
       }
     };
 
     fetchCategories();
-  }, [selectedType]);
+  }, [selectedType, editData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,15 +95,22 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
     }
 
     try {
-      await axios.post('/transaction', {
+      const payload = {
         type: selectedType.value,
         description: detail,
         categoryId: selectedCategory.value,
         amount: Number(amount),
         isGoal: selectedCategory.isGoal || false,
-      });
+      };
 
-      await showToastAlert('บันทึกสำเร็จ', 'success');
+      if (editData) {
+        await axios.put(`/transaction/${editData.id}`, payload);
+        showToastAlert('แก้ไขข้อมูลสำเร็จ', 'success');
+      } else {
+        await axios.post('/transaction', payload);
+        showToastAlert('บันทึกสำเร็จ', 'success');
+      }
+
       onSuccess();
       onClose();
     } catch (err: unknown) {
@@ -96,7 +122,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess }) => {
     <div className="flex justify-center items-center">
       <div className="bg-white w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-5">
-          <h4 className="font-medium">บันทึกรายรับรายจ่าย</h4>
+          <h4 className="font-medium">{editData ? 'แก้ไขรายการ' : 'บันทึกรายรับรายจ่าย'}</h4>
           <div
             onClick={onClose}
             className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"

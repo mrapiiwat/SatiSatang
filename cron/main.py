@@ -61,7 +61,8 @@ with get_conn() as conn:
             ticker = yf.Ticker(symbol)
             info = ticker.info
             now = datetime.utcnow()
-
+            description = info.get("longBusinessSummary") or ""
+            
             data = {
                 "symbol": symbol,
                 "name": info.get("shortName") or info.get("longName") or "",
@@ -90,6 +91,7 @@ with get_conn() as conn:
                 "lastUpdated": now,
                 "createdAt": now,
                 "updatedAt": now,
+                "description": description
             }
 
             query = text(
@@ -100,14 +102,14 @@ with get_conn() as conn:
                 "previousClose", "dayHigh", "dayLow", "volume", "averageVolume",
                 "fiftyDayAverage", "twoHundredDayAverage", "fiftyTwoWeekLow", "fiftyTwoWeekHigh",
                 "fiftyTwoWeekChangePercent", "regularMarketChange", "regularMarketChangePercent",
-                "marketState", "tradeable", "lastUpdated", "createdAt", "updatedAt"
+                "marketState", "tradeable", "lastUpdated", "createdAt", "updatedAt", "description"
             ) VALUES (
                 :symbol, :name, :quoteType, :currency, :market,
                 :regularMarketPrice, :regularMarketOpen, :regularMarketHigh, :regularMarketLow,
                 :previousClose, :dayHigh, :dayLow, :volume, :averageVolume,
                 :fiftyDayAverage, :twoHundredDayAverage, :fiftyTwoWeekLow, :fiftyTwoWeekHigh,
                 :fiftyTwoWeekChangePercent, :regularMarketChange, :regularMarketChangePercent,
-                :marketState, :tradeable, :lastUpdated, :createdAt, :updatedAt
+                :marketState, :tradeable, :lastUpdated, :createdAt, :updatedAt, :description
             )
             ON CONFLICT ("symbol") DO UPDATE SET
                 "name" = EXCLUDED."name",
@@ -133,14 +135,15 @@ with get_conn() as conn:
                 "marketState" = EXCLUDED."marketState",
                 "tradeable" = EXCLUDED."tradeable",
                 "lastUpdated" = EXCLUDED."lastUpdated",
-                "updatedAt" = EXCLUDED."updatedAt"
+                "updatedAt" = EXCLUDED."updatedAt",
+                "description" = EXCLUDED."description"
             """
             )
             conn.execute(query, data)
             conn.commit()
             print(f"Inserted/Updated in PostgreSQL: {symbol}")
 
-            text_for_embedding = f"{data['symbol']} {data['name']} {data['quoteType']} {data['market']} {data['regularMarketPrice']}"
+            text_for_embedding = f"Symbol: {data['symbol']} | Name: {data['name']} | Business Description: {description}"
             vector = get_embedding(text_for_embedding)
 
             point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, symbol))

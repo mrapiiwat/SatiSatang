@@ -19,7 +19,7 @@ const Image: React.FC<ImageProps> = ({ src, alt, className }) => {
       });
   }, [src]);
 
-  if (!imageSrc) return <p>Loading...</p>;
+  if (!imageSrc) return <p>{alt ? alt : 'Loading...'}</p>;
 
   return <img className={className} src={imageSrc} alt={alt} />;
 };

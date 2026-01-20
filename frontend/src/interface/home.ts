@@ -4,6 +4,7 @@ import type { SingleValue } from 'react-select';
 export interface ManualProps {
   onClose: () => void;
   onSuccess: () => void;
+  editData?: Transaction | null;
 }
 
 export interface UploadProps {
@@ -46,6 +47,8 @@ export interface Transaction {
 export interface DayTransactionsProps {
   groupedByDate: Record<number, Transaction[]>;
   sortedDates: number[];
+  onRefresh: () => void;
+  onEdit?: (transaction: Transaction) => void;
 }
 
 export interface CategoryOption {
