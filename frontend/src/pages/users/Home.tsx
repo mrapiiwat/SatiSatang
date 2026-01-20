@@ -256,6 +256,14 @@ const Home = () => {
     return pages;
   };
 
+  const getFontSize = (amount: number) => {
+    const str = amount.toLocaleString();
+    if (str.length > 15) return "text-3xl";
+    if (str.length > 12) return "text-5xl";
+    if (str.length > 8) return "text-7xl";
+    return "text-[96px]";
+  };
+
   return (
     <PageWrapper animation="scale-fade">
       <div className="px-6 py-4 font-ibm text-black-900">
@@ -266,7 +274,7 @@ const Home = () => {
         />
         <div className="text-center mb-6">
           <p className="text-sm mb-4">ยอดใช้จ่าย</p>
-          <h1 className="text-[96px] mb-2 font-semibold leading-none">
+          <h1 className={`${getFontSize(totalExpense)} mb-2 font-semibold leading-none transition-all`}>
             {totalExpense.toLocaleString()}
           </h1>
           <button
@@ -353,7 +361,7 @@ const Home = () => {
                         width: `${Math.min(
                           ((budgets[budgetIndex]?.currentAmount || 0) /
                             (budgets[budgetIndex]?.amount || 1)) *
-                            100,
+                          100,
                           100,
                         )}%`,
                       }}
@@ -377,9 +385,8 @@ const Home = () => {
                             <span
                               key={realIndex}
                               onClick={() => setBudgetIndex(realIndex)}
-                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
-                                budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
-                              }`}
+                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
+                                }`}
                             />
                           );
                         })}
@@ -442,9 +449,8 @@ const Home = () => {
                             <span
                               key={realIndex}
                               onClick={() => setGoalIndex(realIndex)}
-                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
-                                goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
-                              }`}
+                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
+                                }`}
                             />
                           );
                         })}
@@ -477,21 +483,18 @@ const Home = () => {
                       style={{ height: `${totalHeight}px` }}
                     >
                       <div
-                        className={`border-l-4 ${
-                          isToday ? 'border-blue-600' : 'border-black-700'
-                        } absolute top-0 left-0 h-14`}
+                        className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'
+                          } absolute top-0 left-0 h-14`}
                       />
                       <p
-                        className={`text-base font-medium ${
-                          isToday ? 'text-blue-600' : 'text-black-700'
-                        }`}
+                        className={`text-base font-medium ${isToday ? 'text-blue-600' : 'text-black-700'
+                          }`}
                       >
                         {dayLabel}
                       </p>
                       <p
-                        className={`text-base font-bold ${
-                          isToday ? 'text-blue-600' : 'text-black-700'
-                        } leading-tight`}
+                        className={`text-base font-bold ${isToday ? 'text-blue-600' : 'text-black-700'
+                          } leading-tight`}
                       >
                         {dayNumber}
                       </p>
@@ -517,13 +520,12 @@ const Home = () => {
                     key={index}
                     onClick={() => typeof page === 'number' && handlePageClick(page)}
                     disabled={page === '...'}
-                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${
-                      page === currentPage
-                        ? 'bg-blue-600 text-white font-semibold'
-                        : page === '...'
-                          ? 'cursor-default'
-                          : 'border border-black-300 hover:bg-black-200'
-                    }`}
+                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${page === currentPage
+                      ? 'bg-blue-600 text-white font-semibold'
+                      : page === '...'
+                        ? 'cursor-default'
+                        : 'border border-black-300 hover:bg-black-200'
+                      }`}
                   >
                     {page}
                   </button>
