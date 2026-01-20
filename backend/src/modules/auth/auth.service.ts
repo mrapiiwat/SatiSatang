@@ -245,7 +245,7 @@ export class AuthService {
 
         const rawToken = await createPasswordResetToken(userRecord.id);
 
-        const resetUrl = `${process.env.FRONTEND_BASE_URL}/reset-password?token=${encodeURIComponent(rawToken)}&uid=${userRecord.id}`;
+        const resetUrl = `${Bun.env.FRONTEND_BASE_URL}/reset-password?token=${encodeURIComponent(rawToken)}&uid=${userRecord.id}`;
 
         await sendResetEmail(userRecord.email!, resetUrl);
       } catch (error) {

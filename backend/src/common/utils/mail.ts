@@ -2,12 +2,12 @@ import path from "node:path";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
+  host: Bun.env.SMTP_HOST,
+  port: Number(Bun.env.SMTP_PORT),
   secure: true,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: Bun.env.SMTP_USER,
+    pass: Bun.env.SMTP_PASS,
   },
 });
 
@@ -39,7 +39,7 @@ export async function sendVerificationEmail(to: string, otp: string) {
       .replace(/{{CURRENT_YEAR}}/g, new Date().getFullYear().toString());
 
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+      from: Bun.env.EMAIL_FROM,
       to,
       subject: "รหัสยืนยันตัวตนทางอีเมล (OTP) - สติสตางค์",
       html,
@@ -68,12 +68,12 @@ export async function sendResetEmail(to: string, resetUrl: string) {
       .replace(/{{RESET_URL}}/g, resetUrl)
       .replace(
         /{{EXPIRES_MINUTES}}/g,
-        (process.env.RESET_TOKEN_EXPIRES_MINUTES ?? "15").toString()
+        (Bun.env.RESET_TOKEN_EXPIRES_MINUTES ?? "15").toString()
       )
       .replace(/{{CURRENT_YEAR}}/g, new Date().getFullYear().toString());
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+      from: Bun.env.EMAIL_FROM,
       to,
       subject: "รีเซ็ตรหัสผ่านของคุณ",
       html,

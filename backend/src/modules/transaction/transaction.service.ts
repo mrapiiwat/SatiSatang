@@ -80,7 +80,7 @@ export class TransactionService {
       ...t,
       amount: Number(t.amount),
       receipt: t.receipt
-        ? `${process.env.APP_BASE_URL}/api/transactions/receipt/${t.id}`
+        ? `${Bun.env.APP_BASE_URL}/api/transactions/receipt/${t.id}`
         : null,
     }));
 

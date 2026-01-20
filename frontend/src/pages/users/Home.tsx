@@ -272,10 +272,9 @@ const Home = () => {
 
   const getFontSize = (amount: number) => {
     const str = amount.toLocaleString();
-    if (str.length > 15) return "text-3xl";
-    if (str.length > 12) return "text-5xl";
-    if (str.length > 8) return "text-7xl";
-    return "text-[96px]";
+    if (str.length > 12) return "text-5xl md:text-6xl lg:text-6xl";
+    if (str.length > 8) return "text-7xl md:text-8xl lg:text-8xl";
+    return "text-[96px] md:text-8xl lg:text-9xl";
   };
 
   return (

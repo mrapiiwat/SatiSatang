@@ -76,7 +76,7 @@ export class CategoriesService {
         name: c.name,
         type: c.type as "INCOME" | "EXPENSE",
         userId: c.userId,
-        icon: `${process.env.APP_BASE_URL}/api/icon/${c.iconId}`,
+        icon: `${Bun.env.APP_BASE_URL}/api/icon/${c.iconId}`,
         isGoal: false,
       })),
       ...goalsData.map((g) => ({
@@ -117,7 +117,7 @@ export class CategoriesService {
       name: updated.name,
       type: updated.type,
       userId: updated.userId,
-      icon: `${process.env.APP_BASE_URL}/api/icon/${updated.iconId}`,
+      icon: `${Bun.env.APP_BASE_URL}/api/icon/${updated.iconId}`,
     };
   }
 

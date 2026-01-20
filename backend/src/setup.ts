@@ -4,7 +4,7 @@ import { Elysia } from "elysia";
 export const setup = new Elysia({ name: "setup" }).use(
   jwt({
     name: "jwt",
-    secret: process.env.JWT_SECRET!,
-    exp: process.env.ACCESS_TOKEN_EXPIRES,
+    secret: Bun.env.JWT_SECRET!,
+    exp: Bun.env.ACCESS_TOKEN_EXPIRES,
   })
 );

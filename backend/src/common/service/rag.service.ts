@@ -3,8 +3,8 @@ import { qdrantClient } from "@/common/config/qdrant";
 import type { ChatMessage } from "@/common/service/openai";
 import { generateUUIDFromString } from "@/common/utils/uuid";
 
-const CHAT_COLLECTION = process.env.CHAT_COLLECTION ?? "memory";
-const STOCK_COLLECTION = process.env.STOCK_COLLECTION ?? "stocks";
+const CHAT_COLLECTION = Bun.env.CHAT_COLLECTION ?? "memory";
+const STOCK_COLLECTION = Bun.env.STOCK_COLLECTION ?? "stocks";
 
 export interface StockData {
   symbol: string;

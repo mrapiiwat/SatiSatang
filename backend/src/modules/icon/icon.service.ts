@@ -67,7 +67,7 @@ export class IconService {
 
     const iconsWithUrl = icons.map((i) => ({
       id: i.id,
-      url: `${process.env.APP_BASE_URL}/api/icon/${i.id}`,
+      url: `${Bun.env.APP_BASE_URL}/api/icon/${i.id}`,
       description: i.description,
     }));
 

@@ -52,9 +52,9 @@ export const authController = new Elysia()
       refreshToken.set({
         value: refreshRaw,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: Bun.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
+        maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
       set.status = StatusCodes.OK;
@@ -78,9 +78,9 @@ export const authController = new Elysia()
       refreshToken.set({
         value: refreshRaw,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: Bun.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
+        maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
 
@@ -111,9 +111,9 @@ export const authController = new Elysia()
     refreshToken.set({
       value: newRefreshToken,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: Bun.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
+      maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
       path: "/",
     });
 
@@ -199,14 +199,14 @@ export const authController = new Elysia()
     cookie.oauth_state.set({
       value: state,
       path: "/",
-      secure: process.env.NODE_ENV === "production",
+      secure: Bun.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 600,
     });
     cookie.oauth_code_verifier.set({
       value: codeVerifier,
       path: "/",
-      secure: process.env.NODE_ENV === "production",
+      secure: Bun.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 600,
     });
@@ -267,14 +267,14 @@ export const authController = new Elysia()
       cookie.refreshToken.set({
         value: refreshRaw,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: Bun.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
+        maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
 
       return redirect(
-        `${process.env.FRONTEND_BASE_URL}/auth/callback?token=${newAccessToken}`
+        `${Bun.env.FRONTEND_BASE_URL}/auth/callback?token=${newAccessToken}`
       );
     } catch (e) {
       if (e instanceof OAuth2RequestError) {
@@ -297,7 +297,7 @@ export const authController = new Elysia()
     cookie.oauth_state.set({
       value: state,
       path: "/",
-      secure: process.env.NODE_ENV === "production",
+      secure: Bun.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 600,
     });
@@ -334,7 +334,7 @@ export const authController = new Elysia()
 
       try {
         const longLivedResponse = await fetch(
-          `https://graph.facebook.com/v17.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${process.env.FACEBOOK_CLIENT_ID}&client_secret=${process.env.FACEBOOK_CLIENT_SECRET}&fb_exchange_token=${accessToken}`
+          `https://graph.facebook.com/v17.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${Bun.env.FACEBOOK_CLIENT_ID}&client_secret=${Bun.env.FACEBOOK_CLIENT_SECRET}&fb_exchange_token=${accessToken}`
         );
         const longLivedData =
           (await longLivedResponse.json()) as authSchema.FacebookTokenResponse;
@@ -360,14 +360,14 @@ export const authController = new Elysia()
       cookie.refreshToken.set({
         value: refreshRaw,
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: Bun.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: Number(process.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
+        maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
 
       return redirect(
-        `${process.env.FRONTEND_BASE_URL}/auth/callback?token=${newAccessToken}`
+        `${Bun.env.FRONTEND_BASE_URL}/auth/callback?token=${newAccessToken}`
       );
     } catch (e) {
       console.error(e);
