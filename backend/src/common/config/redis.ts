@@ -1,19 +1,19 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
 export const redis = new Redis({
   host: Bun.env.REDIS_HOST,
-  port: Bun.env.REDIS_PORT ? parseInt(Bun.env.REDIS_PORT) : 6379,
+  port: Bun.env.REDIS_PORT ? parseInt(Bun.env.REDIS_PORT, 10) : 6379,
   password: Bun.env.REDIS_PASSWORD,
   retryStrategy: (times) => {
     const delay = Math.min(times * 50, 2000);
     return delay;
-  }
+  },
 });
 
-redis.on('error', (err) => {
-  console.error('Redis Connection Error:', err);
+redis.on("error", (err) => {
+  console.error("Redis Connection Error:", err);
 });
 
-redis.on('connect', () => {
-  console.log('Redis Connected');
+redis.on("connect", () => {
+  console.log("Redis Connected");
 });
