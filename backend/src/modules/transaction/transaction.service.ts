@@ -310,4 +310,31 @@ export class TransactionService {
 
     return updatedTxn;
   }
+
+  async deleteTransaction(id: number, userId: number) {
+    const existingTxn = await db.query.transaction.findFirst({
+      where: and(eq(transaction.id, id), eq(transaction.userId, userId)),
+    });
+
+    if (!existingTxn) {
+      throw new NotFoundError("Transaction not found");
+    }
+
+    if (existingTxn.receipt) {
+      try {
+        await s3Client.send(
+          new DeleteObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: existingTxn.receipt,
+          })
+        );
+      } catch (e) {
+        console.warn("Failed to delete receipt from S3:", e);
+      }
+    }
+
+    await db.delete(transaction).where(eq(transaction.id, id));
+
+    return { message: "Transaction deleted successfully" };
+  }
 }

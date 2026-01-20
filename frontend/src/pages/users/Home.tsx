@@ -47,6 +47,7 @@ const Home = () => {
   const [now, setNow] = useState(new Date());
   const [showFrequency, setShowFrequency] = useState(true);
   const [totalExpense, setTotalExpense] = useState(0);
+  const [editData, setEditData] = useState<Transaction | null>(null);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -109,6 +110,18 @@ const Home = () => {
       console.error(err);
     }
   }, [selectedMonth, selectedYear]);
+
+  const handleOpenEdit = (transaction: Transaction) => {
+    setEditData(transaction);
+    setActivePopup('manual');
+  };
+
+  const handleRefreshAll = useCallback(() => {
+    fetchTransactions();
+    fetchGoals();
+    fetchTotalExpense();
+    fetchBudget();
+  }, [fetchTransactions, fetchGoals, fetchTotalExpense, fetchBudget]);
 
   useEffect(() => {
     if (!isChatOpen) return;
@@ -183,6 +196,7 @@ const Home = () => {
 
   const handleClosePopupAndRefetch = () => {
     setActivePopup(null);
+    setEditData(null);
     fetchTransactions();
     fetchGoals();
     fetchTotalExpense();
@@ -502,7 +516,12 @@ const Home = () => {
                   );
                 })}
               </div>
-              <DayTransactions groupedByDate={groupedByDate} sortedDates={sortedDates} />
+              <DayTransactions
+                groupedByDate={groupedByDate}
+                sortedDates={sortedDates}
+                onRefresh={handleRefreshAll}
+                onEdit={handleOpenEdit}
+              />
             </div>
 
             {pagination.totalPages > 1 && (
@@ -558,7 +577,11 @@ const Home = () => {
         <div>
           {activePopup === 'upload' && <Upload onClose={handleClosePopupAndRefetch} />}
           {activePopup === 'manual' && (
-            <Manual onClose={handleClosePopupAndRefetch} onSuccess={fetchTransactions} />
+            <Manual
+              onClose={handleClosePopupAndRefetch}
+              onSuccess={fetchTransactions}
+              editData={editData}
+            />
           )}
           {activePopup === 'budget' && <Budget onClose={handleClosePopupAndRefetch} />}
           {activePopup === 'goal' && <Goal onClose={handleClosePopupAndRefetch} />}

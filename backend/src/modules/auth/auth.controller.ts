@@ -166,7 +166,7 @@ export const authController = new Elysia()
     "/validate-recovery",
     async ({ body, set }) => {
       const result = await authService.validateRecovery(body);
-      
+
       set.status = StatusCodes.OK;
       return result;
     },
