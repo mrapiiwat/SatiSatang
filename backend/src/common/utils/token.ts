@@ -4,9 +4,7 @@ import { db } from "@/db";
 import { passwordResetToken, refreshToken } from "@/db/schema";
 
 const REFRESH_EXPIRES_DAYS = Number(Bun.env.REFRESH_EXPIRES_DAYS) || 30;
-const RESET_EXPIRES_MINUTES = Number(
-  Bun.env.RESET_TOKEN_EXPIRES_MINUTES || 5
-);
+const RESET_EXPIRES_MINUTES = Number(Bun.env.RESET_TOKEN_EXPIRES_MINUTES || 5);
 const APP_SECRET = Bun.env.APP_SECRET || "fallback-secret";
 
 export function hashToken(token: string): string {
