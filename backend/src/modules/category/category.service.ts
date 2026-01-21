@@ -51,7 +51,7 @@ export class CategoriesService {
     }
 
     const categoriesData = await db.query.category.findMany({
-      where: and(...categoryFilters),
+      where: and(...categoryFilters, isNull(category.deletedAt)),
       orderBy: (table, { desc }) => [desc(table.createdAt)],
     });
 
@@ -65,7 +65,8 @@ export class CategoriesService {
         where: and(
           eq(goals.userId, userId),
           eq(goals.finished, false),
-          or(gte(goals.deadline, today), isNull(goals.deadline))
+          or(gte(goals.deadline, today), isNull(goals.deadline)),
+          isNull(goals.deletedAt)
         ),
       });
     }
@@ -97,7 +98,11 @@ export class CategoriesService {
     data: categorySchema.UpdateCategoryInput
   ) {
     const existing = await db.query.category.findFirst({
-      where: and(eq(category.id, categoryId), eq(category.userId, userId)),
+      where: and(
+        eq(category.id, categoryId),
+        eq(category.userId, userId),
+        isNull(category.deletedAt)
+      ),
     });
 
     if (!existing) {
@@ -131,8 +136,15 @@ export class CategoriesService {
     }
 
     await db
-      .delete(category)
-      .where(and(eq(category.id, categoryId), eq(category.userId, userId)));
+      .update(category)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(
+          eq(category.id, categoryId),
+          eq(category.userId, userId),
+          isNull(category.deletedAt)
+        )
+      );
 
     return { message: "Category deleted successfully" };
   }

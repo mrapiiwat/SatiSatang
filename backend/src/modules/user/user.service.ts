@@ -1,11 +1,20 @@
-import { and, desc, eq, gte, isNull, lte, type SQL } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  lte,
+  type SQL,
+} from "drizzle-orm";
 import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
 } from "@/common/errors";
 import { db } from "@/db";
-import { goals, oauthAccount, transaction, user } from "@/db/schema";
+import { category, goals, oauthAccount, transaction, user } from "@/db/schema";
 import type * as userSchema from "./user.schema";
 
 export class UserService {
@@ -94,6 +103,23 @@ export class UserService {
     }
 
     return await db.transaction(async (tx) => {
+      const systemPresets = await tx
+        .select({ name: category.name })
+        .from(category)
+        .where(isNull(category.userId));
+
+      const presetNames = systemPresets.map((p) => p.name);
+      if (presetNames.length > 0) {
+        await tx
+          .delete(category)
+          .where(
+            and(
+              eq(category.userId, userId),
+              inArray(category.name, presetNames)
+            )
+          );
+      }
+      
       await tx
         .update(user)
         .set({
