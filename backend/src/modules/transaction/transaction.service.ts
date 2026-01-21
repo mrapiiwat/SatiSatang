@@ -10,6 +10,7 @@ import {
   eq,
   gte,
   ilike,
+  isNull,
   lte,
   or,
   type SQL,
@@ -62,12 +63,12 @@ export class TransactionService {
     const [totalResult] = await db
       .select({ value: count() })
       .from(transaction)
-      .where(and(...conditions));
+      .where(and(...conditions, isNull(transaction.deletedAt)));
 
     const total = totalResult?.value ?? 0;
 
     const transactions = await db.query.transaction.findMany({
-      where: and(...conditions),
+      where: and(...conditions, isNull(transaction.deletedAt)),
       orderBy: [desc(transaction.createdAt)],
       limit: limit,
       offset: skip,
@@ -116,15 +117,19 @@ export class TransactionService {
     const [result] = await db
       .select({ totalAmount: sum(transaction.amount) })
       .from(transaction)
-      .where(and(...conditions));
+      .where(and(...conditions, isNull(transaction.deletedAt)));
 
     return {
       totalExpense: Number(result?.totalAmount ?? 0),
     };
   }
+
   async getReceiptStream(transactionId: number) {
     const txn = await db.query.transaction.findFirst({
-      where: eq(transaction.id, transactionId),
+      where: and(
+        eq(transaction.id, transactionId),
+        isNull(transaction.deletedAt)
+      ),
     });
 
     if (!txn || !txn.receipt) {
@@ -216,7 +221,7 @@ export class TransactionService {
     }
 
     const categories = await db.query.category.findMany({
-      where: eq(category.userId, userId),
+      where: and(eq(category.userId, userId), isNull(category.deletedAt)),
       columns: {
         id: true,
         name: true,
@@ -225,7 +230,7 @@ export class TransactionService {
     });
 
     const userData = await db.query.user.findFirst({
-      where: eq(user.id, userId),
+      where: and(eq(user.id, userId), isNull(user.deletedAt)),
       columns: { name: true },
     });
 
@@ -253,7 +258,11 @@ export class TransactionService {
     userId: number
   ) {
     const existingTxn = await db.query.transaction.findFirst({
-      where: and(eq(transaction.id, id), eq(transaction.userId, userId)),
+      where: and(
+        eq(transaction.id, id),
+        eq(transaction.userId, userId),
+        isNull(transaction.deletedAt)
+      ),
     });
 
     if (!existingTxn) {
@@ -313,7 +322,11 @@ export class TransactionService {
 
   async deleteTransaction(id: number, userId: number) {
     const existingTxn = await db.query.transaction.findFirst({
-      where: and(eq(transaction.id, id), eq(transaction.userId, userId)),
+      where: and(
+        eq(transaction.id, id),
+        eq(transaction.userId, userId),
+        isNull(transaction.deletedAt)
+      ),
     });
 
     if (!existingTxn) {
@@ -333,7 +346,16 @@ export class TransactionService {
       }
     }
 
-    await db.delete(transaction).where(eq(transaction.id, id));
+    await db
+      .update(transaction)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(
+          eq(transaction.id, id),
+          eq(transaction.userId, userId),
+          isNull(transaction.deletedAt)
+        )
+      );
 
     return { message: "Transaction deleted successfully" };
   }

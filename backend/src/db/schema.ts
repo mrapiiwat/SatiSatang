@@ -110,6 +110,7 @@ export const user = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
+    deletedAt: timestamp("deletedAt", { precision: 3, mode: "date" }),
   },
   (table) => [
     uniqueIndex("User_email_key").using(
@@ -252,6 +253,7 @@ export const category = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
+    deletedAt: timestamp("deletedAt", { precision: 3, mode: "date" }),
     userId: integer(),
     iconId: integer().notNull(),
   },
@@ -290,6 +292,7 @@ export const transaction = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
+    deletedAt: timestamp("deletedAt", { precision: 3, mode: "date" }),
     userId: integer().notNull(),
     categoryId: integer().notNull(),
   },
@@ -357,6 +360,7 @@ export const goals = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
+    deletedAt: timestamp("deletedAt", { precision: 3, mode: "date" }),
     userId: integer().notNull(),
   },
   (table) => [
@@ -409,6 +413,7 @@ export const budgets = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
+    deletedAt: timestamp("deletedAt", { precision: 3, mode: "date" }),
   },
   (table) => [
     foreignKey({
