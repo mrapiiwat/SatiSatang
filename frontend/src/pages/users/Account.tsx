@@ -6,10 +6,13 @@ import PasswordChangeForm from '../../components/user/account/PasswordChangeForm
 import PageWrapper from '../../components/PageWrapper';
 import { showToastAlert } from '../../store/toastStore';
 import Modal from '../../components/Modal';
+import { useNavigate } from 'react-router-dom';
 
 const Account: React.FC = () => {
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const actionSetUser = useAuthStore((state) => state.actionSetUser);
+  const actionClearAuth = useAuthStore((state) => state.actionClearAuth);
   const [name, setName] = useState<string>('');
   const [isEdited, setIsEdited] = useState<boolean>(false);
   const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
@@ -86,11 +89,14 @@ const Account: React.FC = () => {
       return;
     }
     try {
-      await axios.delete(`/user/${user.id}`, {
+      await axios.delete(`/delete-account/${user.id}`, {
         data: { confirm: deleteEmail },
       });
+
+      actionClearAuth();
+
       showToastAlert('ลบบัญชีเรียบร้อย', 'success');
-      window.location.href = '/'; // redirect หลังลบ
+      navigate('/');
     } catch (error: unknown) {
       let msg = 'เกิดข้อผิดพลาด';
       if (isAxiosError(error)) msg = error.response?.data?.message || msg;

@@ -1,7 +1,11 @@
-import { and, desc, eq, gte, lte, type SQL } from "drizzle-orm";
-import { BadRequestError, NotFoundError } from "@/common/errors";
+import { and, desc, eq, gte, isNull, lte, type SQL } from "drizzle-orm";
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "@/common/errors";
 import { db } from "@/db";
-import { goals, transaction, user } from "@/db/schema";
+import { goals, oauthAccount, transaction, user } from "@/db/schema";
 import type * as userSchema from "./user.schema";
 
 export class UserService {
@@ -73,6 +77,39 @@ export class UserService {
       .returning();
 
     return updatedUser.name;
+  }
+
+  async deleteAccount(userId: number, data: userSchema.deleteAccount) {
+    const userRecord = await db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: { email: true },
+    });
+
+    if (!userRecord) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (data.confirm !== userRecord.email) {
+      throw new ForbiddenError("Confirmation email does not match");
+    }
+
+    return await db.transaction(async (tx) => {
+      await tx
+        .update(user)
+        .set({
+          email: `deleted+${userId}@system.local`,
+          password: null,
+          name: `deleted+${userId}`,
+          balance: 0,
+          isEmailVerified: false,
+          deletedAt: new Date(),
+        })
+        .where(and(eq(user.id, userId), isNull(user.deletedAt)));
+
+      await tx.delete(oauthAccount).where(eq(oauthAccount.userId, userId));
+
+      return { message: "Account deleted successfully" };
+    });
   }
 
   async getSummary(userId: number, query: userSchema.getSummaryQuery) {

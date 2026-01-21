@@ -13,7 +13,10 @@ const authStore: StateCreator<AuthStore> = (set) => ({
   actionSetToken: (token) => {
     set({ token });
   },
-  actionClearAuth: () => set({ user: null, token: null }),
+  actionClearAuth: () => {
+    set({ user: null, token: null });
+    useAuthStore.persist.clearStorage();
+  },
   actionLogin: async (form: formLogin) => {
     const res = await axios.post('/login', form);
     set({

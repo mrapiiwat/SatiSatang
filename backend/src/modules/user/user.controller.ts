@@ -42,12 +42,27 @@ export const userController = new Elysia()
       set.status = StatusCodes.OK;
 
       return {
-        message: "แก้ไขชื่อผู้ใช้งานสำเร็จ",
+        message: "Name updated successfully",
         name: result,
       };
     },
     {
       body: userSchema.name,
+    }
+  )
+  .delete(
+    "/delete-account/:id",
+    async ({ user, set, cookie: { refreshToken }, body }) => {
+      const userId = Number(user.id);
+      set.status = StatusCodes.OK;
+      const result = await userService.deleteAccount(userId, body);
+
+      refreshToken.remove();
+
+      return result;
+    },
+    {
+      body: userSchema.deleteAccount,
     }
   )
   .get(

@@ -44,6 +44,15 @@ export const name = t.Object({
 
 export type name = Static<typeof name>;
 
+export const deleteAccount = t.Object({
+  confirm: t.String({
+    minLength: 1,
+    error: "Confirmation email is required",
+  }),
+});
+
+export type deleteAccount = Static<typeof deleteAccount>;
+
 export const getSummaryQuery = t.Object({
   month: t.Optional(t.Numeric()),
   year: t.Optional(t.Numeric()),
