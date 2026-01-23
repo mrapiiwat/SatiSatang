@@ -20,7 +20,7 @@ import type * as userSchema from "./user.schema";
 export class UserService {
   async me(userId: number) {
     const userRecord = await db.query.user.findFirst({
-      where: eq(user.id, userId),
+      where: and(eq(user.id, userId), isNull(user.deletedAt)),
       with: {
         oauthAccounts: true,
       },
@@ -41,7 +41,7 @@ export class UserService {
 
   async changePassword(userId: number, data: userSchema.password) {
     const userRecord = await db.query.user.findFirst({
-      where: eq(user.id, userId),
+      where: and(eq(user.id, userId), isNull(user.deletedAt)),
       columns: {
         id: true,
         password: true,
@@ -73,7 +73,7 @@ export class UserService {
     await db
       .update(user)
       .set({ password: hashedPassword })
-      .where(eq(user.id, userId));
+      .where(and(eq(user.id, userId), isNull(user.deletedAt)));
 
     return { message: "Password updated successfully" };
   }
@@ -82,7 +82,7 @@ export class UserService {
     const [updatedUser] = await db
       .update(user)
       .set({ name: data.name })
-      .where(eq(user.id, userId))
+      .where(and(eq(user.id, userId), isNull(user.deletedAt)))
       .returning();
 
     return updatedUser.name;
@@ -90,7 +90,7 @@ export class UserService {
 
   async deleteAccount(userId: number, data: userSchema.deleteAccount) {
     const userRecord = await db.query.user.findFirst({
-      where: eq(user.id, userId),
+      where: and(eq(user.id, userId), isNull(user.deletedAt)),
       columns: { email: true },
     });
 
@@ -119,7 +119,7 @@ export class UserService {
             )
           );
       }
-      
+
       await tx
         .update(user)
         .set({
@@ -154,13 +154,13 @@ export class UserService {
     }
 
     const transactionsData = await db.query.transaction.findMany({
-      where: and(...transactionConditions),
+      where: and(...transactionConditions, isNull(transaction.deletedAt)),
       with: { category: true },
       orderBy: [desc(transaction.createdAt)],
     });
 
     const goalsData = await db.query.goals.findMany({
-      where: eq(goals.userId, userId),
+      where: and(eq(goals.userId, userId), isNull(goals.deletedAt)),
       with: { goalTransactions: true },
       orderBy: [desc(goals.createdAt)],
     });
