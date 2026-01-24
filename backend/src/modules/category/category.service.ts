@@ -1,4 +1,7 @@
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { and, eq, gte, ilike, isNull, or, type SQL } from "drizzle-orm";
+import { BUCKET_NAME, s3Client } from "@/common/config/s3";
 import { BadRequestError, NotFoundError } from "@/common/errors";
 import { db } from "@/db";
 import { category, goals } from "@/db/schema";
@@ -53,6 +56,9 @@ export class CategoriesService {
     const categoriesData = await db.query.category.findMany({
       where: and(...categoryFilters, isNull(category.deletedAt)),
       orderBy: (table, { desc }) => [desc(table.createdAt)],
+      with: {
+        icon: true,
+      },
     });
 
     let goalsData: (typeof goals.$inferSelect)[] = [];
@@ -71,24 +77,48 @@ export class CategoriesService {
       });
     }
 
-    const combined: categorySchema.CombinedCategory[] = [
-      ...categoriesData.map((c) => ({
-        id: c.id,
-        name: c.name,
-        type: c.type as "INCOME" | "EXPENSE",
-        userId: c.userId,
-        icon: `${Bun.env.APP_BASE_URL}/api/icon/${c.iconId}`,
-        isGoal: false,
-      })),
-      ...goalsData.map((g) => ({
-        id: g.id,
-        name: g.name,
-        type: "EXPENSE" as const,
-        userId: g.userId,
-        isGoal: true,
-      })),
-    ];
+    const categoryResult = await Promise.all(
+      categoriesData.map(async (c) => {
+        let signedIconUrl: string | undefined;
 
+        if (c.icon?.url) {
+          try {
+            const command = new GetObjectCommand({
+              Bucket: BUCKET_NAME,
+              Key: c.icon.url,
+            });
+
+            signedIconUrl = await getSignedUrl(s3Client, command, {
+              expiresIn: 3600,
+            });
+          } catch (error) {
+            console.error(`Failed to sign url for category ${c.id}`, error);
+          }
+        }
+
+        return {
+          id: c.id,
+          name: c.name,
+          type: c.type as "INCOME" | "EXPENSE",
+          userId: c.userId,
+          icon: signedIconUrl,
+          isGoal: false,
+        };
+      })
+    );
+
+    const goalResult = goalsData.map((g) => ({
+      id: g.id,
+      name: g.name,
+      type: "EXPENSE" as const,
+      userId: g.userId,
+      isGoal: true,
+    }));
+
+    const combined: categorySchema.CombinedCategory[] = [
+      ...categoryResult,
+      ...goalResult,
+    ];
     return { result: combined, includeGoals };
   }
 

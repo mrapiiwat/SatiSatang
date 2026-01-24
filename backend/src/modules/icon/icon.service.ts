@@ -3,6 +3,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { and, desc, eq, ilike, isNull, or } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { BUCKET_NAME, s3Client } from "@/common/config/s3";
@@ -65,16 +66,29 @@ export class IconService {
 
     if (icons.length === 0) throw new NotFoundError("No icons found");
 
-    const iconsWithUrl = icons.map((i) => ({
-      id: i.id,
-      url: `${Bun.env.APP_BASE_URL}/api/icon/${i.id}`,
-      description: i.description,
-    }));
+    const iconsWithUrl = await Promise.all(
+      icons.map(async (i) => {
+        const command = new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: i.url,
+        });
+
+        const signedUrl = await getSignedUrl(s3Client, command, {
+          expiresIn: 3600,
+        });
+
+        return {
+          id: i.id,
+          url: signedUrl,
+          description: i.description,
+        };
+      })
+    );
 
     return iconsWithUrl;
   }
 
-  async downloadIcon(iconId: number) {
+  async getIconUrl(iconId: number) {
     const iconRecord = await db.query.icon.findFirst({
       where: eq(icon.id, iconId),
     });
@@ -89,16 +103,17 @@ export class IconService {
         Key: iconRecord.url,
       });
 
-      const s3Item = await s3Client.send(command);
+      const signedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 3600,
+      });
 
       return {
-        stream: s3Item.Body,
-        contentType: s3Item.ContentType,
+        url: signedUrl,
         filename: iconRecord.url,
       };
     } catch (error) {
-      console.error("S3 Error:", error);
-      throw new NotFoundError("File not found in storage");
+      console.error("S3 Signing Error:", error);
+      throw new Error("Cannot generate image URL");
     }
   }
 

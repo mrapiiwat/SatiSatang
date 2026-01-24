@@ -47,17 +47,11 @@ export const iconController = new Elysia({ prefix: "/icon" })
   .get(
     "/:id",
     async ({ params: { id }, set }) => {
-      const { stream, contentType, filename } = await iconService.downloadIcon(
-        Number(id)
-      );
+      const result = await iconService.getIconUrl(Number(id));
 
-      set.headers["Content-Disposition"] = `inline; filename="${filename}"`;
+      set.status = StatusCodes.OK;
 
-      if (contentType) {
-        set.headers["Content-Type"] = contentType;
-      }
-
-      return stream;
+      return result;
     },
     {
       params: iconSchema.paramsId,

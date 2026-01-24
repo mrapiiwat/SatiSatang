@@ -84,6 +84,20 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
     }
   )
 
+  .get(
+    "/receipt/:id",
+    async ({ params: { id }, set }) => {
+      const result = await transactionService.getReceiptUrl(Number(id));
+
+      set.status = StatusCodes.OK;
+
+      return result;
+    },
+    {
+      params: transactionSchema.paramsId,
+    }
+  )
+
   .post(
     "/upload",
     async ({ body, user, set }) => {

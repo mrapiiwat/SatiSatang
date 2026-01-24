@@ -3,6 +3,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   and,
   count,
@@ -127,7 +128,7 @@ export class TransactionService {
     };
   }
 
-  async getReceiptStream(transactionId: number) {
+  async getReceiptUrl(transactionId: number) {
     const txn = await db.query.transaction.findFirst({
       where: and(
         eq(transaction.id, transactionId),
@@ -139,22 +140,23 @@ export class TransactionService {
       throw new NotFoundError("Receipt not found");
     }
 
-    const command = new GetObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: txn.receipt,
-    });
-
     try {
-      const response = await s3Client.send(command);
+      const command = new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: txn.receipt,
+      });
+
+      const signedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 3600,
+      });
 
       return {
-        stream: response.Body,
-        contentType: response.ContentType,
+        url: signedUrl,
         filename: txn.receipt,
       };
     } catch (error) {
-      console.error("S3 Error:", error);
-      throw new NotFoundError("File not found in storage");
+      console.error("S3 Signing Error:", error);
+      throw new Error("Cannot generate receipt URL");
     }
   }
   async createTransaction(
