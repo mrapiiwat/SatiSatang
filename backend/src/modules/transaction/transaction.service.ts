@@ -19,8 +19,9 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { BUCKET_NAME, s3Client } from "@/common/config/s3";
 import { BadRequestError, NotFoundError } from "@/common/errors";
-import { OCRService } from "@/common/service/ocr.service";
-import { OpenAIService } from "@/common/service/openai";
+import { SmartCategorizer } from "@/common/services/categorizer";
+import { OCRService } from "@/common/services/ocr.service";
+import { OpenAIService } from "@/common/services/openai.service";
 import { db } from "@/db";
 import { category, goalTransaction, transaction, user } from "@/db/schema";
 import type * as transactionSchema from "./transaction.schema";
@@ -29,6 +30,8 @@ const ocrService = new OCRService();
 const openAIService = new OpenAIService();
 
 export class TransactionService {
+  private categorizer = new SmartCategorizer();
+
   async getTransactions(
     userId: number,
     query: transactionSchema.getTransactionsQuery
@@ -204,8 +207,33 @@ export class TransactionService {
       })
       .returning();
 
+    this.categorizer.trainModel(userId).catch((err) => {
+      console.error(`Background training failed for user ${userId}:`, err);
+    });
+
     return { type: "transaction", data: newTransaction };
   }
+
+  async predictCategory(description: string, userId: number) {
+    const predictedId = await this.categorizer.predict(description, userId);
+
+    if (!predictedId) {
+      return { categoryId: null, type: null };
+    }
+
+    const [catInfo] = await db
+      .select({
+        type: category.type,
+      })
+      .from(category)
+      .where(eq(category.id, predictedId));
+
+    return {
+      type: catInfo.type,
+      categoryId: predictedId,
+    };
+  }
+
   async transactionByUpload(file: File, userId: number) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);

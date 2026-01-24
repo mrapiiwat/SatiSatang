@@ -25,6 +25,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
       query: transactionSchema.getTransactionsQuery,
     }
   )
+
   .get(
     "/total-expense",
     async ({ query, user, set }) => {
@@ -42,6 +43,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
       query: transactionSchema.getTotalExpenseQuery,
     }
   )
+
   .post(
     "/",
     async ({ body, user, set }) => {
@@ -63,6 +65,25 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
       body: transactionSchema.createTransaction,
     }
   )
+
+  .post(
+    "/predict-category",
+    async ({ body, user, set }) => {
+      const userId = Number(user.id);
+      const result = await transactionService.predictCategory(
+        body.description,
+        userId
+      );
+
+      set.status = StatusCodes.OK;
+
+      return result;
+    },
+    {
+      body: transactionSchema.predictCategory,
+    }
+  )
+
   .post(
     "/upload",
     async ({ body, user, set }) => {
@@ -84,6 +105,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
       body: transactionSchema.uploadReceipt,
     }
   )
+
   .put(
     "/:id",
     async ({ params: { id }, body, user, set }) => {
@@ -107,6 +129,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
       body: transactionSchema.updateTransaction,
     }
   )
+
   .delete(
     "/:id",
     async ({ params: { id }, user, set }) => {

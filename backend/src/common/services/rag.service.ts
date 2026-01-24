@@ -1,6 +1,6 @@
 import { openai } from "@/common/config/openai";
 import { qdrantClient } from "@/common/config/qdrant";
-import type { ChatMessage } from "@/common/service/openai";
+import type { ChatMessage } from "@/common/services/openai.service";
 import { generateUUIDFromString } from "@/common/utils/uuid";
 
 const CHAT_COLLECTION = Bun.env.CHAT_COLLECTION ?? "memory";

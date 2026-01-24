@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
-import type { SingleValue } from 'react-select';
-import { RxCross2 } from 'react-icons/rx';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GoCalendar } from 'react-icons/go';
+import { RxCross2 } from 'react-icons/rx';
+import type { SingleValue } from 'react-select';
+import Select from 'react-select';
+import axios from '../../../api/axios';
 import type {
-  ManualProps,
-  OptionType,
   CategoryOption,
   CategoryResponse,
+  ManualProps,
+  OptionType,
 } from '../../../interface/home';
-import axios from '../../../api/axios';
 import { showToastAlert } from '../../../store/toastStore';
 
 const options: OptionType[] = [
@@ -36,6 +37,18 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData }) => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryOption | null>(null);
   const [detail, setDetail] = useState('');
   const [amount, setAmount] = useState('');
+
+  const [pendingAutoSelectId, setPendingAutoSelectId] = useState<number | null>(null);
+
+  const pendingAutoSelectIdRef = useRef(pendingAutoSelectId);
+  const selectedTypeRef = useRef(selectedType);
+
+  useEffect(() => {
+    pendingAutoSelectIdRef.current = pendingAutoSelectId;
+  }, [pendingAutoSelectId]);
+  useEffect(() => {
+    selectedTypeRef.current = selectedType;
+  }, [selectedType]);
 
   useEffect(() => {
     if (editData) {
@@ -69,10 +82,12 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData }) => {
 
         setCategories(formatted);
 
-        if (editData && editData.type === selectedType.value) {
+        const isPending = pendingAutoSelectIdRef.current;
+
+        if (editData && editData.type === selectedType.value && !isPending) {
           const currentCat = formatted.find((cat) => cat.value === editData.categoryId);
           if (currentCat) setSelectedCategory(currentCat);
-        } else {
+        } else if (!isPending) {
           setSelectedCategory(null);
         }
       } catch (err) {
@@ -82,6 +97,41 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData }) => {
 
     fetchCategories();
   }, [selectedType, editData]);
+
+  useEffect(() => {
+    if (pendingAutoSelectId && categories.length > 0) {
+      const targetCat = categories.find((c) => c.value === pendingAutoSelectId);
+      if (targetCat) {
+        setSelectedCategory(targetCat);
+        setPendingAutoSelectId(null);
+      }
+    }
+  }, [categories, pendingAutoSelectId]);
+
+  useEffect(() => {
+    if (editData || !detail) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const res = await axios.post('/transaction/predict-category', { description: detail });
+
+        const { categoryId, type } = res.data;
+
+        if (categoryId && type) {
+          if (selectedTypeRef.current?.value !== type) {
+            const newTypeOption = options.find((o) => o.value === type);
+            if (newTypeOption) setSelectedType(newTypeOption);
+          }
+
+          setPendingAutoSelectId(categoryId);
+        }
+      } catch (err) {
+        console.error('Error predicting category:', err);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [detail, editData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -70,6 +70,12 @@ export const updateTransaction = t.Object({
 
 export type updateTransaction = Static<typeof updateTransaction>;
 
+export const predictCategory = t.Object({
+  description: t.String({ minLength: 1, error: "Description is required" }),
+});
+
+export type predictCategory = Static<typeof predictCategory>;
+
 export const paramsId = t.Object({
   id: t.Numeric(),
 });

@@ -1,7 +1,7 @@
 import { and, desc, eq, ilike, lt, sql } from "drizzle-orm";
 import { NotFoundError } from "@/common/errors";
-import { OpenAIService } from "@/common/service/openai";
-import { RAGService } from "@/common/service/rag.service";
+import { OpenAIService } from "@/common/services/openai.service";
+import { RAGService } from "@/common/services/rag.service";
 import { db } from "@/db";
 import { category, chatMessage, chatSession, icon, user } from "@/db/schema";
 import { BotType } from "./chat.schema";

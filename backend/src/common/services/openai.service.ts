@@ -1,5 +1,5 @@
 import { openai } from "@/common/config/openai";
-import * as prompts from "./openai.prompts";
+import * as prompts from "@/common/utils/prompts";
 
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
