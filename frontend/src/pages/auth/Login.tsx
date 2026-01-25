@@ -13,6 +13,7 @@ import PageWrapper from '../../components/PageWrapper';
 import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
 import type { LoginForm } from '../../interface/auth';
+import type { ElysiaResponse } from '../../interface/error';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -78,7 +79,7 @@ const Login: React.FC = () => {
 
       if (isUser === 'Login') {
         try {
-          await actionLogin(LoginForm!);
+          actionLogin(LoginForm!);
           showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
           navigate('/user');
         } catch (error) {
@@ -107,20 +108,21 @@ const Login: React.FC = () => {
 
           navigate(`/verify?userId=${userId}`);
         } catch (error: unknown) {
-          const axiosError = error as AxiosError;
-          const responseData = axiosError.response?.data as
-            | { errors?: { message?: string } }
-            | undefined;
+          const axiosError = error as AxiosError<ElysiaResponse>;
+          const responseData = axiosError.response?.data;
 
-          if (responseData?.errors?.message) {
-            try {
-              const zodErrors = JSON.parse(responseData.errors.message);
-              const errorMessage = zodErrors[0]?.message || 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล';
-              setError(errorMessage);
-            } catch (parseError) {
-              console.error('Error parsing Zod error:', parseError);
-              setError('เกิดข้อผิดพลาดในการตรวจสอบข้อมูล');
-            }
+          if (responseData) {
+            const customError = responseData?.errors?.find((e) => e.schema?.error);
+
+            const targetError = customError || responseData?.errors?.[0];
+
+            const errorMessage =
+              targetError?.schema?.error ||
+              targetError?.summary ||
+              responseData?.message ||
+              'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล';
+
+            setError(errorMessage);
           } else {
             setError('เกิดข้อผิดพลาดในการลงทะเบียน');
           }

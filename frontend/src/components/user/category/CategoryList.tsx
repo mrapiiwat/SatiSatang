@@ -4,9 +4,10 @@ import Image from '../../../components/Image';
 import Modal from '../../Modal';
 import IconSelector from '../account/IconSelector';
 import axios from '../../../api/axios';
-import { isAxiosError } from 'axios';
+import { AxiosError, isAxiosError } from 'axios';
 import type { CategoriesType, CategoryListProps } from '../../../interface/category';
 import { showToastAlert } from '../../../store/toastStore';
+import type { ElysiaResponse } from '../../../interface/error';
 
 const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, setCategories }) => {
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);
@@ -57,7 +58,13 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
       handleCloseModal();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        showToastAlert(`${err.response?.data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้'}`, 'error');
+        const axiosError = err as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+        const errorMessage =
+          customError || data?.errors?.[0]?.summary || data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้';
+
+        showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {

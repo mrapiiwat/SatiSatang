@@ -1,11 +1,12 @@
 import React from 'react';
 import { useState } from 'react';
 import axios from '../../../api/axios';
-import { isAxiosError } from 'axios';
+import { isAxiosError, AxiosError } from 'axios';
 import Modal from '../../../components/Modal';
 import IconSelector from '../account/IconSelector';
 import type { CategoryModalProps } from '../../../interface/category';
 import { showToastAlert } from '../../../store/toastStore';
+import type { ElysiaResponse } from '../../../interface/error';
 
 const CategoryModal: React.FC<CategoryModalProps> = ({
   isOpen,
@@ -38,9 +39,16 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
       await refresh();
       onClose();
     } catch (err: unknown) {
-      console.error('Error creating category:', err);
       if (isAxiosError(err)) {
-        showToastAlert(`${err.response?.data?.message || 'ไม่สามารถเพิ่มหมวดหมู่ได้'}`, 'error');
+        const axiosError = err as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+
+        const errorMessage =
+          customError || data?.errors?.[0]?.summary || data?.message || 'ไม่สามารถเพิ่มหมวดหมู่ได้';
+
+        showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {

@@ -3,7 +3,7 @@ import Select from 'react-select';
 import type { SingleValue } from 'react-select';
 import { RxCross2 } from 'react-icons/rx';
 import axios from '../../../api/axios';
-import { isAxiosError } from 'axios';
+import { AxiosError, isAxiosError } from 'axios';
 import { IoChevronDownSharp } from 'react-icons/io5';
 import type {
   CategoryResponse,
@@ -12,6 +12,7 @@ import type {
   BudgetProps,
 } from '../../../interface/home';
 import { showToastAlert } from '../../../store/toastStore';
+import type { ElysiaResponse } from '../../../interface/error';
 
 const frequencies: FrequencyOption[] = [
   { value: 'DAILY', label: 'รายวัน' },
@@ -69,7 +70,15 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        showToastAlert(`${err.response?.data?.message || 'เกิดข้อผิดพลาด'}`, 'error');
+        const axiosError = err as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+
+        const errorMessage =
+          customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
+
+        showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {

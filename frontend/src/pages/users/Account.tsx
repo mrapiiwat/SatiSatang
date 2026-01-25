@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../api/axios';
 import useAuthStore from '../../store/authStore';
-import { isAxiosError } from 'axios';
+import { isAxiosError, AxiosError } from 'axios';
 import PasswordChangeForm from '../../components/user/account/PasswordChangeForm';
 import PageWrapper from '../../components/PageWrapper';
 import { showToastAlert } from '../../store/toastStore';
 import Modal from '../../components/Modal';
 import { useNavigate } from 'react-router-dom';
+import type { ElysiaResponse } from '../../interface/error';
 
 const Account: React.FC = () => {
   const navigate = useNavigate();
@@ -50,9 +51,28 @@ const Account: React.FC = () => {
       actionSetUser({ ...user, name: response.data.name });
       setIsEdited(false);
       showToastAlert('แก้ไขชื่อผู้ใช้งานสำเร็จ', 'success');
-    } catch (error) {
-      console.log(error);
-      showToastAlert('เกิดข้อผิดพลาดในการแก้ไขชื่อ', 'error');
+    } catch (error: unknown) {
+      if (isAxiosError(error)) {
+        const axiosError = error as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = Array.isArray(data?.errors)
+          ? data?.errors.find((e: { schema?: { error?: string } }) => e.schema?.error)?.schema
+              ?.error
+          : null;
+
+        const msg =
+          customError ||
+          (Array.isArray(data?.errors) ? data?.errors?.[0]?.summary : null) ||
+          data?.message ||
+          'เกิดข้อผิดพลาดในการแก้ไขชื่อ';
+
+        showToastAlert(msg, 'error');
+      } else if (error instanceof Error) {
+        showToastAlert(error.message, 'error');
+      } else {
+        showToastAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
+      }
     }
   };
 
@@ -75,9 +95,16 @@ const Account: React.FC = () => {
       setConfirmPassword('');
     } catch (error: unknown) {
       let msg = 'เกิดข้อผิดพลาด โปรดลองใหม่';
+
       if (isAxiosError(error)) {
-        msg = error.response?.data?.message || msg;
+        const axiosError = error as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+
+        msg = customError || data?.errors?.[0]?.summary || data?.message || msg;
       }
+
       setPasswordError(msg);
       showToastAlert(msg, 'error');
     }
@@ -99,7 +126,16 @@ const Account: React.FC = () => {
       navigate('/');
     } catch (error: unknown) {
       let msg = 'เกิดข้อผิดพลาด';
-      if (isAxiosError(error)) msg = error.response?.data?.message || msg;
+
+      if (isAxiosError(error)) {
+        const axiosError = error as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+
+        msg = customError || data?.errors?.[0]?.summary || data?.message || msg;
+      }
+
       showToastAlert(msg, 'error');
     } finally {
       setIsDeleteModalOpen(false);

@@ -5,6 +5,7 @@ import axios from '../../api/axios';
 import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { showToastAlert } from '../../store/toastStore';
+import type { ElysiaResponse } from '../../interface/error';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -85,7 +86,18 @@ const Verify: React.FC = () => {
       navigate('/user');
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
-        setError(error.response?.data?.message || 'รหัสยืนยันไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
+        const axiosError = error as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+
+        const errorMessage =
+          customError ||
+          data?.errors?.[0]?.summary ||
+          data?.message ||
+          'รหัสยืนยันไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง';
+
+        setError(errorMessage);
       } else if (error instanceof Error) {
         setError(error.message);
       } else {
@@ -130,11 +142,16 @@ const Verify: React.FC = () => {
       setCooldown(60);
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
-        const message = error.response?.data?.message;
-        if (error.response?.status === 429 && message) {
-          setError(message);
+        const axiosError = error as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+        const backendMessage = customError || data?.errors?.[0]?.summary || data?.message;
+
+        if (error.response?.status === 429 && backendMessage) {
+          setError(backendMessage);
         } else {
-          setError(message || 'ไม่สามารถส่งรหัสยืนยันใหม่ได้ กรุณาลองใหม่อีกครั้ง');
+          setError(backendMessage || 'ไม่สามารถส่งรหัสยืนยันใหม่ได้ กรุณาลองใหม่อีกครั้ง');
         }
       } else if (error instanceof Error) {
         setError(error.message);

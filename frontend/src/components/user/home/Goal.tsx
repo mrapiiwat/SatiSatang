@@ -3,8 +3,9 @@ import { RxCross2 } from 'react-icons/rx';
 import Select, { type StylesConfig, type SingleValue } from 'react-select'; // เพิ่ม StylesConfig
 import type { GoalProps, OptionType } from '../../../interface/home';
 import axios from '../../../api/axios';
-import { isAxiosError } from 'axios';
+import { AxiosError, isAxiosError } from 'axios';
 import { showToastAlert } from '../../../store/toastStore';
+import type { ElysiaResponse } from '../../../interface/error';
 
 const Goal: React.FC<GoalProps> = ({ onClose }) => {
   const [goalName, setGoalName] = useState('');
@@ -159,7 +160,15 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        showToastAlert(err.response?.data?.message || 'เกิดข้อผิดพลาด', 'error');
+        const axiosError = err as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+
+        const errorMessage =
+          customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
+
+        showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(err.message, 'error');
       } else {

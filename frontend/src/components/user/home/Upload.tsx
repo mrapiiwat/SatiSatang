@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { RxCross2 } from 'react-icons/rx';
 import axios from '../../../api/axios';
-import { isAxiosError } from 'axios';
+import { isAxiosError, AxiosError } from 'axios';
 import useAuthStore from '../../../store/authStore';
 import { showToastAlert } from '../../../store/toastStore';
 import FileUploadArea from './FileUploadArea';
@@ -10,6 +10,7 @@ import TransactionForm from './TransactionForm';
 import ImageModal from './ImageModal';
 import type { OptionType, CategoryOptions, Category } from '../../../interface/home';
 import type { SingleValue } from 'react-select';
+import type { ElysiaResponse } from '../../../interface/error';
 
 const transactionTypes: OptionType[] = [
   { value: 'INCOME', label: 'รายรับ' },
@@ -100,10 +101,27 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       setSelectedTypeOption(transactionTypes.find((t) => t.value === data.type) || null);
       setIsOpen(true);
     } catch (error: unknown) {
-      if (isAxiosError(error))
-        showToastAlert(error.response?.data?.error || 'ไม่สามารถอ่านข้อมูลจากสลิปได้', 'error');
-      else if (error instanceof Error) showToastAlert(error.message, 'error');
-      else showToastAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
+      if (isAxiosError(error)) {
+        const axiosError = error as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = Array.isArray(data?.errors)
+          ? data?.errors.find((e: { schema?: { error?: string } }) => e.schema?.error)?.schema
+              ?.error
+          : null;
+
+        const msg =
+          customError ||
+          (Array.isArray(data?.errors) ? data?.errors?.[0]?.summary : null) ||
+          data?.message ||
+          'ไม่สามารถอ่านข้อมูลจากสลิปได้';
+
+        showToastAlert(msg, 'error');
+      } else if (error instanceof Error) {
+        showToastAlert(error.message, 'error');
+      } else {
+        showToastAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -147,10 +165,26 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       setPreviewUrl(null);
       onClose();
     } catch (error: unknown) {
-      if (isAxiosError(error))
-        showToastAlert(error.response?.data?.message || 'เกิดข้อผิดพลาด', 'error');
-      else if (error instanceof Error) showToastAlert(error.message, 'error');
-      else showToastAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
+      if (isAxiosError(error)) {
+        const axiosError = error as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = Array.isArray(data?.errors)
+          ? data?.errors.find((e) => e.schema?.error)?.schema?.error
+          : null;
+
+        const msg =
+          customError ||
+          (Array.isArray(data?.errors) ? data?.errors?.[0]?.summary : null) ||
+          data?.message ||
+          'เกิดข้อผิดพลาด';
+
+        showToastAlert(msg, 'error');
+      } else if (error instanceof Error) {
+        showToastAlert(error.message, 'error');
+      } else {
+        showToastAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
+      }
     }
   };
 

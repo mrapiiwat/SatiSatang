@@ -12,6 +12,8 @@ import type {
   OptionType,
 } from '../../../interface/home';
 import { showToastAlert } from '../../../store/toastStore';
+import type { ElysiaResponse } from '../../../interface/error';
+import { isAxiosError, type AxiosError } from 'axios';
 
 const options: OptionType[] = [
   { value: 'INCOME', label: 'รายรับ' },
@@ -164,7 +166,17 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData }) => {
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      showToastAlert(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+      if (isAxiosError(err)) {
+        const axiosError = err as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+        const msg = customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
+
+        showToastAlert(msg, 'error');
+      } else {
+        showToastAlert(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+      }
     }
   };
 
