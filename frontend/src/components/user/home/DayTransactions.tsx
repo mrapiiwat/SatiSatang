@@ -4,7 +4,8 @@ import type { CategoriesType, Transaction } from '../../../interface/category';
 import Image from '../../Image';
 import axios from '../../../api/axios';
 import Modal from '../../Modal';
-import { MdDelete, MdEdit, MdClose } from 'react-icons/md';
+import { MdArrowUpward, MdArrowDownward, MdEdit, MdDelete } from 'react-icons/md';
+import { RxCross2 } from 'react-icons/rx';
 import { showToastAlert } from '../../../store/toastStore';
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({
@@ -132,78 +133,96 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
       })}
       <Modal isOpen={!!selectedTransaction} onClose={() => setSelectedTransaction(null)}>
         {selectedTransaction && (
-          <div className="p-8 font-ibm text-black-900">
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h3 className="text-2xl font-bold text-black-900">รายละเอียดรายการ</h3>
-                <p className="text-sm text-black-500 mt-1">จัดการข้อมูลธุรกรรมของคุณ</p>
-              </div>
+          <div className="bg-white rounded-2xl py-2 w-full max-w-96 mx-auto p-0 overflow-hidden shadow-2xl relative flex flex-col">
+            <div className="absolute top-4 right-4 z-10">
               <button
                 onClick={() => setSelectedTransaction(null)}
-                className="p-2 hover:bg-black-200 rounded-full transition-colors text-black-500"
+                className="flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-100 cursor-pointer"
               >
-                <MdClose size={24} />
+                <RxCross2 size={25} />
               </button>
             </div>
 
-            <div className="bg-white border border-black-300 rounded-2xl p-6 mb-8 shadow-sm">
-              <div className="flex flex-col gap-5">
-                <div className="flex justify-between items-center">
-                  <span className="text-black-600 font-medium">ประเภท</span>
-                  <span
-                    className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                      selectedTransaction.type === 'INCOME'
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'bg-red-100 text-red-500'
-                    }`}
-                  >
-                    {selectedTransaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
-                  </span>
-                </div>
-
-                <hr className="border-black-200" />
-
-                <div className="flex justify-between items-center">
-                  <span className="text-black-600 font-medium">จำนวนเงิน</span>
-                  <span
-                    className={`text-2xl font-bold ${
-                      selectedTransaction.type === 'INCOME' ? 'text-blue-600' : 'text-red-500'
-                    }`}
-                  >
-                    {selectedTransaction.type === 'INCOME' ? '+' : '-'}{' '}
-                    {selectedTransaction.amount.toLocaleString()}{' '}
-                    <span className="text-sm ml-1 font-semibold text-black-500">บาท</span>
-                  </span>
-                </div>
-
-                <hr className="border-black-200" />
-
-                <div className="flex flex-col gap-2">
-                  <span className="text-black-600 font-medium">บันทึกเพิ่มเติม</span>
-                  <p className="text-black-800 bg-gray-50 p-3 rounded-lg border border-dashed border-black-300 text-sm italic">
-                    {selectedTransaction.description || 'ไม่มีบันทึกเพิ่มเติม'}
-                  </p>
+            <div className="pt-10 pb-6 px-6 flex flex-col items-center">
+              <div
+                className={`
+          mb-4 p-1.5 rounded-full h-24 w-24 flex items-center justify-center 
+          ${selectedTransaction.type === 'INCOME' ? 'bg-green-50' : 'bg-red-50'}
+        `}
+              >
+                <div className="w-full h-full rounded-full overflow-hidden shadow-sm border-4 border-white">
+                  {categoryMap[selectedTransaction.categoryId] ? (
+                    <Image
+                      src={categoryMap[selectedTransaction.categoryId]}
+                      alt="icon"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className={`w-full h-full flex items-center justify-center ${selectedTransaction.type === 'INCOME' ? 'text-green-500' : 'text-red-500'}`}
+                    >
+                      {selectedTransaction.type === 'INCOME' ? (
+                        <MdArrowUpward size={32} />
+                      ) : (
+                        <MdArrowDownward size={32} />
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
+
+              <span
+                className={`
+          px-4 py-1 rounded-full text-xs font-bold mb-2
+          ${selectedTransaction.type === 'INCOME' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}
+        `}
+              >
+                {selectedTransaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
+              </span>
+
+              <h2 className="text-4xl font-black text-gray-800 mb-4 tracking-tight">
+                <span
+                  className={
+                    selectedTransaction.type === 'INCOME'
+                      ? 'text-green-500 mr-1'
+                      : 'text-red-500 mr-1'
+                  }
+                >
+                  {selectedTransaction.type === 'INCOME' ? '+' : '-'}
+                </span>
+                {selectedTransaction.amount.toLocaleString()}
+              </h2>
+
+              {selectedTransaction.description ? (
+                <div className="w-full rounded-xl p-3">
+                  <p className="text-gray-500 text-lg text-center leading-relaxed break-all line-clamp-3 overflow-hidden">
+                    {selectedTransaction.description}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-gray-300 text-xs italic">ไม่มีบันทึก</p>
+              )}
             </div>
 
-            <div className="flex gap-4">
+            <div className="px-6 pb-6 flex gap-3">
               <button
                 onClick={() => handleEdit()}
-                className="flex-1 flex items-center justify-center gap-2 border-2 border-blue-600 text-blue-600 py-3.5 rounded-2xl font-bold hover:bg-blue-50 active:scale-95 transition-all"
+                className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold text-base flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
               >
-                <MdEdit size={20} /> แก้ไขข้อมูล
+                <MdEdit size={16} />
+                แก้ไข
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-3.5 rounded-2xl font-bold hover:bg-red-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-red-200"
+                className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold text-base flex items-center justify-center gap-2 shadow-md hover:bg-red-600 active:scale-95 transition-all"
               >
                 {isDeleting ? (
-                  <span className="animate-pulse">กำลังลบ...</span>
+                  'กำลังลบ...'
                 ) : (
                   <>
-                    <MdDelete size={20} /> ลบรายการ
+                    <MdDelete size={16} />
+                    ลบ
                   </>
                 )}
               </button>
