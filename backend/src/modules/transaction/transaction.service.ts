@@ -236,27 +236,19 @@ export class TransactionService {
     };
   }
 
-  async transactionByUpload(file: File, userId: number) {
+  async processSingleSlip(file: File, userId: number) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     const text = await ocrService.extractTextFromImage(buffer);
-    if (!text) {
-      throw new BadRequestError("ไม่สามารถอ่านข้อความจากภาพได้");
-    }
+    if (!text) throw new BadRequestError("ไม่สามารถอ่านข้อความจากภาพได้");
 
     const isSlip = await openAIService.checkSlipType(text);
-    if (!isSlip) {
-      throw new BadRequestError("รูปที่อัปโหลดไม่ใช่สลิปการเงิน");
-    }
+    if (!isSlip) throw new BadRequestError("รูปที่อัปโหลดไม่ใช่สลิปการเงิน");
 
     const categories = await db.query.category.findMany({
       where: and(eq(category.userId, userId), isNull(category.deletedAt)),
-      columns: {
-        id: true,
-        name: true,
-        type: true,
-      },
+      columns: { id: true, name: true, type: true },
     });
 
     const userData = await db.query.user.findFirst({
@@ -264,9 +256,7 @@ export class TransactionService {
       columns: { name: true },
     });
 
-    if (!userData) {
-      throw new NotFoundError("User not found");
-    }
+    if (!userData) throw new NotFoundError("User not found");
 
     const formattedCategories = categories.map((c) => ({
       id: c.id,
@@ -282,6 +272,32 @@ export class TransactionService {
 
     return transactionData;
   }
+
+  async transactionByUpload(files: File[], userId: number) {
+    const results = await Promise.allSettled(
+      files.map((file) => this.processSingleSlip(file, userId))
+    );
+
+    return results.map((result, index) => {
+      if (result.status === "fulfilled") {
+        return {
+          status: "success",
+          fileName: files[index].name,
+          data: result.value,
+        };
+      } else {
+        return {
+          status: "error",
+          fileName: files[index].name,
+          error:
+            result.reason instanceof Error
+              ? result.reason.message
+              : "Unknown error",
+        };
+      }
+    });
+  }
+
   async updateTransaction(
     id: number,
     data: transactionSchema.updateTransaction,

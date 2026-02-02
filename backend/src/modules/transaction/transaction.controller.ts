@@ -103,16 +103,18 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
     async ({ body, user, set }) => {
       const userId = Number(user.id);
 
-      const result = await transactionService.transactionByUpload(
+      const results = await transactionService.transactionByUpload(
         body.receipt,
         userId
       );
 
       set.status = StatusCodes.OK;
 
+      const successCount = results.filter((r) => r.status === "success").length;
+
       return {
-        message: "OCR และการแปลงข้อมูลสำเร็จ",
-        transactionData: result,
+        message: `ประมวลผลเสร็จสิ้น สำเร็จ ${successCount} จาก ${results.length} รายการ`,
+        results: results,
       };
     },
     {

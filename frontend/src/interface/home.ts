@@ -88,10 +88,41 @@ export interface Category {
   name: string;
 }
 
+export interface PendingTransaction {
+  id: string;
+  fileIndex: number;
+  data: {
+    date: string;
+    description: string;
+    type: string;
+    categoryId: string;
+    amount: string;
+    fromAccount: string;
+    toAccount: string;
+  };
+}
+
+interface AIExctractedData {
+  date?: string;
+  description?: string;
+  type?: string;
+  categoryId?: string | number;
+  amount?: string | number;
+  fromAccount?: string;
+  toAccount?: string;
+}
+
+export interface UploadResult {
+  status: 'success' | 'error';
+  fileName: string;
+  data?: AIExctractedData;
+  error?: string;
+}
+
 export interface FileUploadProps {
-  selectedFile: File | null;
-  previewUrl: string | null;
+  files: File[];
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveFile: (index: number) => void;
 }
 
 export interface TransactionFormProps {

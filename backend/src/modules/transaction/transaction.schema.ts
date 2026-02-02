@@ -44,9 +44,9 @@ export const createTransaction = t.Object({
 export type createTransaction = Static<typeof createTransaction>;
 
 export const uploadReceipt = t.Object({
-  receipt: t.File({
+  receipt: t.Files({
     maxSize: 5 * 1024 * 1024,
-    error: "Image must be less than 5MB",
+    minItems: 1,
   }),
 });
 
