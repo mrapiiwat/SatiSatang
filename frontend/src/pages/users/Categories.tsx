@@ -22,7 +22,7 @@ const Categories = () => {
 
   useEffect(() => {
     fetchCategories();
-  }, [selectedType, fetchCategories]);
+  }, [selectedType, fetchCategories, categories]);
 
   return (
     <PageWrapper animation="scale-fade">
