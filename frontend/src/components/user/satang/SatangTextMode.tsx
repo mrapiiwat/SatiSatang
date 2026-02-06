@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useLayoutEffect } from 'react';
 import { GoArrowUp } from 'react-icons/go';
-import Face from '../../../assets/Page-1.svg';
 import type { SatangTextModeProps } from '../../../interface/satang';
 import TypingIndicator from './TypingIndicator';
 import PageWrapper from '../../PageWrapper';
+import TrackingFace from './TrackingFace';
 
 const SatangTextMode: React.FC<SatangTextModeProps> = ({
-  toggleVoiceMode,
   text,
   setText,
   sendMessage,
@@ -104,12 +103,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
         </div>
 
         <div className="flex flex-row justify-between gap-3 px-2 py-4">
-          <div
-            onClick={toggleVoiceMode}
-            className="flex justify-center items-center min-w-16 min-h-16 bg-blue-600 rounded-full cursor-pointer"
-          >
-            <img src={Face} className="w-7 h-7" />
-          </div>
+          <TrackingFace />
 
           <form className="w-full relative" onSubmit={handleSubmit}>
             <input

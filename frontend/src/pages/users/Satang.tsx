@@ -1,21 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import SatangTextMode from '../../components/user/satang/SatangTextMode';
-import SatangVoiceMode from '../../components/user/satang/SatangVoiceMode';
 import type { ChatMessage } from '../../interface/satang';
 import axios from '../../api/axios';
 import { fetchWithAuth } from '../../api/fetch';
 
 const Satang: React.FC = () => {
-  const [isVoiceMode, setIsVoiceMode] = useState(true);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [isMicOn, setIsMicOn] = useState(true);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
-
-  const toggleVoiceMode = () => setIsVoiceMode((prev) => !prev);
-  const toggleMic = () => setIsMicOn((prev) => !prev);
 
   const fetchSession = async (cursor?: number) => {
     try {
@@ -138,24 +132,15 @@ const Satang: React.FC = () => {
 
   return (
     <div>
-      {isVoiceMode ? (
-        <SatangVoiceMode
-          toggleMic={toggleMic}
-          isMicOn={isMicOn}
-          toggleVoiceMode={toggleVoiceMode}
-        />
-      ) : (
-        <SatangTextMode
-          toggleVoiceMode={toggleVoiceMode}
-          text={text}
-          setText={setText}
-          sendMessage={sendMessage}
-          messages={messages}
-          isTyping={isTyping}
-          loadMore={loadMore}
-          hasMore={hasMore}
-        />
-      )}
+      <SatangTextMode
+        text={text}
+        setText={setText}
+        sendMessage={sendMessage}
+        messages={messages}
+        isTyping={isTyping}
+        loadMore={loadMore}
+        hasMore={hasMore}
+      />
     </div>
   );
 };

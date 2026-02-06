@@ -8,7 +8,6 @@ export interface ChatMessage {
 }
 
 export interface SatangTextModeProps {
-  toggleVoiceMode: () => void;
   text: string;
   setText: React.Dispatch<React.SetStateAction<string>>;
   sendMessage: (text: string) => void;

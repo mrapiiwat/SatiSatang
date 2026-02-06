@@ -242,7 +242,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
       )}
 
-      <Dialog open={loading} onClose={() => { }} className="relative z-[80]">
+      <Dialog open={loading} onClose={() => {}} className="relative z-[80]">
         <div className="fixed inset-0 bg-black-600/70 backdrop-blur-sm" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="bg-white rounded-3xl w-full max-w-sm p-10 flex flex-col items-center justify-center shadow-sm">
@@ -254,7 +254,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </Dialog.Panel>
         </div>
       </Dialog>
-      <Dialog open={isOpen} onClose={() => { }} className="relative z-[70]">
+      <Dialog open={isOpen} onClose={() => {}} className="relative z-[70]">
         <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
 
         <div className="fixed inset-0 flex flex-col items-center justify-center p-5 pointer-events-none">
