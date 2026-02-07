@@ -1,7 +1,7 @@
 import { and, desc, eq, ilike, lt, sql } from "drizzle-orm";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { openai } from "@/common/config/openai";
-import { NotFoundError } from "@/common/errors";
+import { NotFoundError } from "@/common/exceptions";
 import { financialService } from "@/common/services/financial.service";
 import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";

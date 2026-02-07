@@ -1,6 +1,6 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
-import { BadRequestError } from "@/common/errors";
+import { BadRequestError } from "@/common/exceptions";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
 import * as userSchema from "./user.schema";
 import { UserService } from "./user.service";

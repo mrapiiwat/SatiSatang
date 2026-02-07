@@ -12,7 +12,7 @@ import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
-} from "@/common/errors";
+} from "@/common/exceptions";
 import { db } from "@/db";
 import { category, goals, oauthAccount, transaction, user } from "@/db/schema";
 import type * as userSchema from "./user.schema";

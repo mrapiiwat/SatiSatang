@@ -19,7 +19,7 @@ import {
 } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { BUCKET_NAME, s3Client } from "@/common/config/s3";
-import { BadRequestError, NotFoundError } from "@/common/errors";
+import { BadRequestError, NotFoundError } from "@/common/exceptions";
 import { SmartCategorizer } from "@/common/services/categorizer";
 import { OCRService } from "@/common/services/ocr.service";
 import { OpenAIService } from "@/common/services/openai.service";

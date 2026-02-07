@@ -1,5 +1,5 @@
 import type { Elysia } from "elysia";
-import { UnauthorizedError } from "@/common/errors";
+import { UnauthorizedError } from "@/common/exceptions";
 import { setup } from "@/setup";
 
 export const authenticateJWT = (app: Elysia) =>

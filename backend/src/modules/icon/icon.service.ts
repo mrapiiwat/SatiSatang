@@ -7,7 +7,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { and, desc, eq, ilike, isNull, or } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { BUCKET_NAME, s3Client } from "@/common/config/s3";
-import { NotFoundError } from "@/common/errors";
+import { NotFoundError } from "@/common/exceptions";
 import { db } from "@/db";
 import { icon } from "@/db/schema";
 import type * as iconSchema from "./icon.schema";

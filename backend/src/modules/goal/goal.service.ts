@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, isNull, lte, or } from "drizzle-orm";
-import { BadRequestError, NotFoundError } from "@/common/errors";
+import { BadRequestError, NotFoundError } from "@/common/exceptions";
 import { db } from "@/db";
 import { goals } from "@/db/schema";
 import type * as goalSchema from "./goal.schema";

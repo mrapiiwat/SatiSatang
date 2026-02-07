@@ -1,5 +1,5 @@
 import { and, asc, eq, ilike, or, type SQL } from "drizzle-orm";
-import { NotFoundError } from "@/common/errors";
+import { NotFoundError } from "@/common/exceptions";
 import { serializeBigInt } from "@/common/utils/serializer";
 import { db } from "@/db";
 import { stock } from "@/db/schema";

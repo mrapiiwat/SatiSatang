@@ -2,7 +2,7 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { and, eq, gte, ilike, isNull, or, type SQL } from "drizzle-orm";
 import { BUCKET_NAME, s3Client } from "@/common/config/s3";
-import { BadRequestError, NotFoundError } from "@/common/errors";
+import { BadRequestError, NotFoundError } from "@/common/exceptions";
 import { db } from "@/db";
 import { category, goals } from "@/db/schema";
 import type * as categorySchema from "./category.schema";

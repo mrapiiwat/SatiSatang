@@ -4,7 +4,7 @@ import {
   NotFoundError,
   TooManyRequestsError,
   UnauthorizedError,
-} from "@/common/errors";
+} from "@/common/exceptions";
 import {
   generateOTP,
   sendResetEmail,

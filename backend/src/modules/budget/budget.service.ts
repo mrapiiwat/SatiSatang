@@ -1,5 +1,5 @@
 import { and, eq, gte, isNull, lte, or, sum } from "drizzle-orm";
-import { BadRequestError } from "@/common/errors";
+import { BadRequestError } from "@/common/exceptions";
 import { db } from "@/db";
 import { budgets, category, transaction } from "@/db/schema";
 import type * as budgetSchema from "./budget.schema";
