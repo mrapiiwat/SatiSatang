@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import SatangTextMode from '../../components/user/satang/SatangTextMode';
 import type { ChatMessage } from '../../interface/satang';
 import axios from '../../api/axios';
@@ -10,8 +10,16 @@ const Satang: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-  const fetchSession = async (cursor?: number) => {
+  const isLoadingRef = useRef(false);
+
+  const fetchSession = useCallback(async (cursor?: number) => {
+    if (isLoadingRef.current) return;
+
+    isLoadingRef.current = true;
+    setIsLoadingHistory(true);
+
     try {
       const res = await axios.get('/satang/session', {
         params: { cursor, limit: 20 },
@@ -29,22 +37,28 @@ const Satang: React.FC = () => {
       if (!cursor) {
         setMessages(msgs);
       } else {
-        setMessages((prev) => [...msgs.filter((m) => !prev.find((p) => p.id === m.id)), ...prev]);
+        setMessages((prev) => {
+          const newMsgs = msgs.filter((m) => !prev.find((p) => p.id === m.id));
+          return [...newMsgs, ...prev];
+        });
       }
 
       setNextCursor(data.nextCursor);
       setHasMore(data.hasMore);
     } catch (error) {
       console.log('Failed to fetch session:', error);
+    } finally {
+      isLoadingRef.current = false;
+      setIsLoadingHistory(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchSession();
-  }, []);
+  }, [fetchSession]);
 
   const loadMore = async () => {
-    if (!hasMore || !nextCursor) return;
+    if (!hasMore || !nextCursor || isLoadingRef.current) return;
     await fetchSession(nextCursor);
   };
 
@@ -140,6 +154,7 @@ const Satang: React.FC = () => {
         isTyping={isTyping}
         loadMore={loadMore}
         hasMore={hasMore}
+        isLoadingHistory={isLoadingHistory}
       />
     </div>
   );

@@ -15,6 +15,7 @@ export interface SatangTextModeProps {
   isTyping: boolean;
   loadMore: () => Promise<void>;
   hasMore: boolean;
+  isLoadingHistory: boolean;
 }
 
 export interface SatangVoiceModeProps {
