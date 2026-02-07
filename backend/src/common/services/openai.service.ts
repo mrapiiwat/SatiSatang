@@ -21,7 +21,7 @@ export interface User {
   name: string;
 }
 
-const MODEL_NAME = "gpt-5-nano";
+const MODEL_NAME = "gpt-4o";
 const EMBEDDING_MODEL = "text-embedding-3-small";
 
 export class OpenAIService {
@@ -42,26 +42,6 @@ export class OpenAIService {
     } catch (error) {
       console.error("[OpenAI] Embedding Error:", error);
       throw new Error("Failed to generate embedding");
-    }
-  }
-
-  async *chatStream(messages: ChatMessage[]) {
-    try {
-      const stream = await openai.chat.completions.create({
-        model: MODEL_NAME,
-        stream: true,
-        messages: messages,
-      });
-
-      for await (const chunk of stream) {
-        const content = chunk.choices?.[0]?.delta?.content || "";
-        if (content) {
-          yield content;
-        }
-      }
-    } catch (error) {
-      console.error("[OpenAI] Satang Stream Error:", error);
-      throw new Error("Failed to connect to OpenAI");
     }
   }
 

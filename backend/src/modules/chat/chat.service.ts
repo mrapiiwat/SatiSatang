@@ -1,13 +1,18 @@
 import { and, desc, eq, ilike, lt, sql } from "drizzle-orm";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { openai } from "@/common/config/openai";
 import { NotFoundError } from "@/common/errors";
+import { financialService } from "@/common/services/financial.service";
 import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
+import { SATANG_TOOLS } from "@/common/utils/tools";
 import { db } from "@/db";
 import { category, chatMessage, chatSession, icon, user } from "@/db/schema";
 import { BotType } from "./chat.schema";
 
 const ragService = new RAGService();
 const openAIService = new OpenAIService();
+const MODEL_NAME = "gpt-4o";
 
 export class ChatService {
   async getOrCreateSession(
@@ -114,7 +119,7 @@ export class ChatService {
   }
 
   async *chatWithSatang(userId: number, content: string) {
-    const { id: sessionId, messages: history } = await this.getOrCreateSession(
+    const { id: sessionId } = await this.getOrCreateSession(
       userId,
       BotType.Satang
     );
@@ -126,59 +131,129 @@ export class ChatService {
       content,
     });
 
-    const contextHistory = history.slice(-4).map((m) => ({
+    const memories = await ragService.searchMemory(userId, content);
+
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    const systemPrompt = `You are "Satang", a smart financial assistant.
+    User ID: ${userId}
+    Current Date: ${todayStr} (Today is ${today.toDateString()})
+
+    Relevant Memories:
+    ${memories.length ? memories.join("\n") : "- No prior context."}
+    
+    Guidelines for Tool Selection:
+    1. **Summaries/Balance**: If user asks about "balance", "total overview", "income vs expense" -> Call 'get_financial_summary'.
+    2. **Behavior/Context**: If user asks "what did I buy?", "list items", "history", or specific details -> Call 'search_transactions' (Vector Search).
+    3. **Specific Calculation**: If user asks "how much spent on [Keyword]?" (e.g., coffee, grab) -> Call 'calculate_spending_by_keyword' (SQL).
+    4. **Category Calculation**: If user asks "how much spent on [Category]?" (e.g., food, travel) -> Call 'get_spending_by_category' (SQL).
+    
+    Guidelines for Date/Time:
+    - If user asks about time (e.g., "this month", "last year"), ALWAYS calculate 'startDate' and 'endDate' based on Current Date.
+    - Example: If today is 2026-02-07 and user asks "this month", params are startDate="2026-02-01", endDate="2026-02-28".
+    
+    General:
+    - Always answer in Thai.
+    `;
+
+    const history = await db.query.chatMessage.findMany({
+      where: eq(chatMessage.sessionId, sessionId),
+      orderBy: [desc(chatMessage.createdAt)],
+      limit: 4,
+    });
+
+    const chatHistory = history.reverse().map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     }));
 
-    const smartQuery = await ragService.contextualizeQuery(
-      content,
-      contextHistory
-    );
-
-    const [memories, stocks] = await Promise.all([
-      ragService.searchMemory(userId, smartQuery),
-      ragService.searchStock(smartQuery),
-    ]);
-
-    const contextBlock = `
-    [Chat Memory]:
-    ${memories.length ? memories.map((m) => `- ${m}`).join("\n") : "- No relevant memory."}
-
-    [Stock Knowledge]:
-    ${stocks.length ? JSON.stringify(stocks) : "- No stock data found."}
-    `;
-
-    const systemPrompt = `You are "Satang" (สตางค์), an investment assistant.
-    Answer based ONLY on the context below. If unsure, say "ไม่พบข้อมูลครับ" or provide general investment advice explicitly stating it is general knowledge.
-    
-    Context:
-    ${contextBlock}`;
-
-    void ragService.addMemory(userId, content, "user");
-
-    const stream = openAIService.chatStream([
+    const messages = [
       { role: "system", content: systemPrompt },
-      ...contextHistory,
+      ...chatHistory,
       { role: "user", content },
-    ]);
+    ] as ChatCompletionMessageParam[];
+
+    const decision = await openai.chat.completions.create({
+      model: MODEL_NAME,
+      messages: messages,
+      tools: SATANG_TOOLS,
+      tool_choice: "auto",
+    });
+
+    const aiMsg = decision.choices[0].message;
+
+    if (aiMsg.tool_calls) {
+      messages.push(aiMsg);
+
+      for (const tool of aiMsg.tool_calls) {
+        if (tool.type !== "function") continue;
+        const fnName = tool.function.name;
+        const args = JSON.parse(tool.function.arguments);
+        let result = "";
+
+        console.log(`[Satang] Executing Tool: ${fnName}`);
+
+        if (fnName === "get_financial_summary") {
+          result = await financialService.getSummary(
+            userId,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "search_transactions") {
+          const txs = await ragService.searchTransactions(
+            userId,
+            args.query,
+            args.startDate,
+            args.endDate
+          );
+          result = txs.length ? txs.join("\n") : "ไม่พบข้อมูลธุรกรรมในช่วงเวลานี้ครับ";
+        } else if (fnName === "search_stock_knowledge") {
+          const stocks = await ragService.searchStock(args.query);
+          result = JSON.stringify(stocks);
+        } else if (fnName === "calculate_spending_by_keyword") {
+          result = await financialService.getSpendingStats(
+            userId,
+            args.keyword,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "get_spending_by_category") {
+          result = await financialService.getSpendingByCategory(
+            userId,
+            args.categoryName,
+            args.startDate,
+            args.endDate
+          );
+        }
+
+        messages.push({
+          role: "tool",
+          tool_call_id: tool.id,
+          content: typeof result === "string" ? result : JSON.stringify(result),
+        });
+      }
+    }
+
+    const stream = await openai.chat.completions.create({
+      model: MODEL_NAME,
+      messages: messages,
+      stream: true,
+    });
 
     let fullReply = "";
 
     for await (const chunk of stream) {
-      if (chunk) {
-        fullReply += chunk;
-        yield chunk;
+      const text = chunk.choices[0]?.delta?.content || "";
+      if (text) {
+        fullReply += text;
+        yield text;
       }
     }
 
-    await db.insert(chatMessage).values({
-      sessionId,
-      userId,
-      role: "assistant",
-      content: fullReply,
-    });
-
+    await db
+      .insert(chatMessage)
+      .values({ sessionId, userId, role: "assistant", content: fullReply });
     void ragService.addMemory(userId, fullReply, "assistant");
   }
 }

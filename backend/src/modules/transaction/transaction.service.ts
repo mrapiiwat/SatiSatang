@@ -23,11 +23,13 @@ import { BadRequestError, NotFoundError } from "@/common/errors";
 import { SmartCategorizer } from "@/common/services/categorizer";
 import { OCRService } from "@/common/services/ocr.service";
 import { OpenAIService } from "@/common/services/openai.service";
+import { RAGService } from "@/common/services/rag.service";
 import { db } from "@/db";
 import { category, goalTransaction, transaction, user } from "@/db/schema";
 import type * as transactionSchema from "./transaction.schema";
 
 const ocrService = new OCRService();
+const ragService = new RAGService();
 const openAIService = new OpenAIService();
 
 export class TransactionService {
@@ -99,6 +101,7 @@ export class TransactionService {
       },
     };
   }
+
   async getTotalExpense(
     userId: number,
     query: transactionSchema.getTotalExpenseQuery
@@ -159,6 +162,7 @@ export class TransactionService {
       throw new Error("Cannot generate receipt URL");
     }
   }
+
   async createTransaction(
     data: transactionSchema.createTransaction,
     userId: number
@@ -208,6 +212,22 @@ export class TransactionService {
         fromAccount: data.fromAccount,
       })
       .returning();
+
+    ragService
+      .addTransactionIndex({
+        id: newTransaction.id,
+        type: newTransaction.type || "EXPENSE",
+        amount: newTransaction.amount,
+        description: newTransaction.description,
+        userId: newTransaction.userId,
+        createdAt: new Date(newTransaction.createdAt).getTime(),
+      })
+      .catch((err) => {
+        console.error(
+          `[RAG] Failed to index transaction ${newTransaction.id}:`,
+          err
+        );
+      });
 
     this.categorizer.trainModel(userId).catch((err) => {
       console.error(`Background training failed for user ${userId}:`, err);
@@ -363,6 +383,17 @@ export class TransactionService {
       .where(eq(transaction.id, id))
       .returning();
 
+    ragService
+      .addTransactionIndex({
+        id: updatedTxn.id,
+        type: updatedTxn.type || "EXPENSE",
+        amount: updatedTxn.amount,
+        description: updatedTxn.description,
+        userId: updatedTxn.userId,
+        createdAt: new Date(updatedTxn.createdAt).getTime(),
+      })
+      .catch(console.error);
+
     return updatedTxn;
   }
 
@@ -402,6 +433,8 @@ export class TransactionService {
           isNull(transaction.deletedAt)
         )
       );
+
+    ragService.deleteTransactionIndex(id).catch(console.error);
 
     return { message: "Transaction deleted successfully" };
   }

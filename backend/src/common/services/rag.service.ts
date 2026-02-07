@@ -5,6 +5,7 @@ import { generateUUIDFromString } from "@/common/utils/uuid";
 
 const CHAT_COLLECTION = Bun.env.CHAT_COLLECTION ?? "memory";
 const STOCK_COLLECTION = Bun.env.STOCK_COLLECTION ?? "stocks";
+const TRANSACTION_COLLECTION = Bun.env.TRANSACTION_COLLECTION ?? "transaction";
 
 export interface StockData {
   symbol: string;
@@ -14,12 +15,26 @@ export interface StockData {
   // biome-ignore lint/suspicious/noExplicitAny: Allow dynamic properties for external stock data
   [key: string]: any;
 }
+
+export interface TransactionIndexData {
+  id: number;
+  type: string;
+  amount: number;
+  description: string | null;
+  userId: number;
+  createdAt: number;
+}
+
 const MODEL_NAME = "gpt-5-nano";
 const EMBEDDING_MODEL = "text-embedding-3-small";
 
 export class RAGService {
   async ensureCollections(): Promise<void> {
-    const collections = [CHAT_COLLECTION, STOCK_COLLECTION];
+    const collections = [
+      CHAT_COLLECTION,
+      STOCK_COLLECTION,
+      TRANSACTION_COLLECTION,
+    ];
 
     for (const name of collections) {
       try {
@@ -34,7 +49,7 @@ export class RAGService {
           },
         });
 
-        if (name === CHAT_COLLECTION) {
+        if (name === CHAT_COLLECTION || name === TRANSACTION_COLLECTION) {
           await qdrantClient.createPayloadIndex(name, {
             field_name: "userId",
             field_schema: "keyword",
@@ -84,24 +99,19 @@ export class RAGService {
     }
   }
 
-  async searchMemory(userId: number, query: string, topK = 5) {
+  async searchMemory(userId: number, query: string) {
     try {
       const vector = await this.getEmbedding(query);
-
       const result = await qdrantClient.search(CHAT_COLLECTION, {
         vector,
-        limit: topK,
+        limit: 3,
         filter: {
           must: [{ key: "userId", match: { value: userId.toString() } }],
         },
       });
-
-      return result
-        .filter((r) => r.score > 0.65)
-        .map((r) => r.payload?.content as string)
-        .filter(Boolean);
-    } catch (error) {
-      console.error("[RAG] Search memory error:", error);
+      return result.map((r) => r.payload?.content as string).filter(Boolean);
+    } catch (e) {
+      console.error(e);
       return [];
     }
   }
@@ -150,5 +160,94 @@ export class RAGService {
         });
       })
       .catch((e) => console.error("[RAG] Add memory failed:", e));
+  }
+
+  async addTransactionIndex(tx: TransactionIndexData) {
+    const content = `Transaction ${tx.type}: ${tx.amount} THB. Description: ${tx.description}`;
+    const vector = await this.getEmbedding(content);
+    await qdrantClient.upsert(TRANSACTION_COLLECTION, {
+      points: [
+        {
+          id: generateUUIDFromString(`tx-${tx.id}`),
+          vector,
+          payload: {
+            userId: tx.userId.toString(),
+            type: tx.type,
+            amount: tx.amount,
+            description: tx.description,
+            createdAt: new Date(tx.createdAt).toISOString().split("T")[0],
+          },
+        },
+      ],
+    });
+  }
+
+  async searchTransactions(
+    userId: number,
+    query: string,
+    startDate?: string,
+    endDate?: string
+  ) {
+    try {
+      const vector = await this.getEmbedding(query);
+
+      type QdrantFilter =
+        | { key: string; match: { value: string | number | boolean } }
+        | { key: string; range: { gte?: number; lte?: number } };
+
+      const mustFilters: QdrantFilter[] = [
+        { key: "userId", match: { value: userId } },
+      ];
+
+      if (startDate || endDate) {
+        const rangeBody: { gte?: number; lte?: number } = {};
+
+        if (startDate) {
+          rangeBody.gte = new Date(startDate).getTime();
+        }
+
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          rangeBody.lte = end.getTime();
+        }
+
+        if (Object.keys(rangeBody).length > 0) {
+          mustFilters.push({
+            key: "createdAt",
+            range: rangeBody,
+          });
+        }
+      }
+
+      console.log(
+        "[RAG] Filters payload:",
+        JSON.stringify(mustFilters, null, 2)
+      );
+
+      const result = await qdrantClient.search(TRANSACTION_COLLECTION, {
+        vector,
+        limit: 5,
+        filter: { must: mustFilters },
+      });
+
+      return result.map(
+        (r) =>
+          `[${new Date(r.payload?.createdAt as number).toLocaleDateString()}] ${r.payload?.description}: ${r.payload?.amount}`
+      );
+    } catch (e) {
+      console.error("[RAG] Search error:", e);
+      return [];
+    }
+  }
+
+  async deleteTransactionIndex(transactionId: number) {
+    try {
+      await qdrantClient.delete(TRANSACTION_COLLECTION, {
+        points: [generateUUIDFromString(`tx-${transactionId}`)],
+      });
+    } catch (e) {
+      console.error(`[RAG] Failed to delete transaction ${transactionId}:`, e);
+    }
   }
 }

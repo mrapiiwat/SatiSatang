@@ -9,11 +9,3 @@ export const redis = new Redis({
     return delay;
   },
 });
-
-redis.on("error", (err) => {
-  console.error("Redis Connection Error:", err);
-});
-
-redis.on("connect", () => {
-  console.log("Redis Connected");
-});
