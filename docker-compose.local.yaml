@@ -19,23 +19,25 @@ services:
     ports:
       - ${BACKEND_PORT}:8080
     depends_on:
-      - postgres
+      - db
       - minio
       - qdrant
       - redis
 
-  postgres:
-    image: postgres:16
+  db:
+    build:
+      context: ./db
+      dockerfile: dockerfile
     container_name: satisatang-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${DATABASE_PORT}:5432"
     volumes:
-      - satisatang_postgres_data:/var/lib/postgresql/data
+      - satisatang_postgres_data:/var/lib/postgresql
 
   minio:
     image: minio/minio

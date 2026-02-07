@@ -181,10 +181,12 @@ export class TransactionService {
     }
 
     let filename: string | null = null;
+    let s3Key: string | null = null;
     if (data.receipt) {
       const file = data.receipt;
       const ext = file.name.split(".").pop();
       filename = `${uuidv4()}.${ext}`;
+      s3Key = `receipts/${filename}`;
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = new Uint8Array(arrayBuffer);
@@ -192,7 +194,7 @@ export class TransactionService {
       await s3Client.send(
         new PutObjectCommand({
           Bucket: BUCKET_NAME,
-          Key: filename,
+          Key: s3Key,
           Body: buffer,
           ContentType: file.type,
         })
@@ -206,7 +208,7 @@ export class TransactionService {
         description: data.description,
         amount: data.amount,
         categoryId: data.categoryId,
-        receipt: filename,
+        receipt: s3Key,
         userId: userId,
         toAccount: data.toAccount,
         fromAccount: data.fromAccount,
@@ -335,9 +337,25 @@ export class TransactionService {
       throw new NotFoundError("Transaction not found");
     }
 
-    let filename = existingTxn.receipt;
+    let finalReceiptPath = existingTxn.receipt;
 
     if (data.receipt) {
+      const file = data.receipt;
+      const ext = file.name.split(".").pop();
+      const newFilename = `${uuidv4()}.${ext}`;
+      const newS3Key = `receipts/${newFilename}`;
+
+      const buffer = new Uint8Array(await file.arrayBuffer());
+
+      await s3Client.send(
+        new PutObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: newS3Key,
+          Body: buffer,
+          ContentType: file.type,
+        })
+      );
+
       if (existingTxn.receipt) {
         try {
           await s3Client.send(
@@ -351,23 +369,9 @@ export class TransactionService {
         }
       }
 
-      const file = data.receipt;
-      const ext = file.name.split(".").pop();
-      const newFilename = `${uuidv4()}.${ext}`;
-
-      const buffer = new Uint8Array(await file.arrayBuffer());
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: newFilename,
-          Body: buffer,
-          ContentType: file.type,
-        })
-      );
-
-      filename = newFilename;
+      finalReceiptPath = newS3Key;
     }
+
     const [updatedTxn] = await db
       .update(transaction)
       .set({
@@ -375,7 +379,7 @@ export class TransactionService {
         description: data.description ?? existingTxn.description,
         amount: data.amount ? data.amount : existingTxn.amount,
         categoryId: data.categoryId ?? existingTxn.categoryId,
-        receipt: filename,
+        receipt: finalReceiptPath,
         toAccount: data.toAccount ?? existingTxn.toAccount,
         fromAccount: data.fromAccount ?? existingTxn.fromAccount,
         updatedAt: new Date(),

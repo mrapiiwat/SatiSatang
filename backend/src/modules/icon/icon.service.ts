@@ -18,6 +18,7 @@ export class IconService {
 
     const ext = file.name.split(".").pop();
     const filename = `${uuidv4()}.${ext}`;
+    const s3Key = `icons/${filename}`;
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
@@ -25,7 +26,7 @@ export class IconService {
     await s3Client.send(
       new PutObjectCommand({
         Bucket: BUCKET_NAME,
-        Key: filename,
+        Key: s3Key,
         Body: buffer,
         ContentType: file.type,
       })
@@ -34,7 +35,7 @@ export class IconService {
     const [newIcon] = await db
       .insert(icon)
       .values({
-        url: filename,
+        url: s3Key,
         description: data.description || null,
         userId: userId,
       })
@@ -132,6 +133,7 @@ export class IconService {
       const file = data.url;
       const ext = file.name.split(".").pop();
       const filename = `${uuidv4()}.${ext}`;
+      const s3Key = `icons/${filename}`;
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = new Uint8Array(arrayBuffer);
@@ -139,7 +141,7 @@ export class IconService {
       await s3Client.send(
         new PutObjectCommand({
           Bucket: BUCKET_NAME,
-          Key: filename,
+          Key: s3Key,
           Body: buffer,
           ContentType: file.type,
         })
@@ -158,7 +160,7 @@ export class IconService {
         }
       }
 
-      newStoragePath = filename;
+      newStoragePath = s3Key;
     }
 
     const [updatedIcon] = await db
