@@ -19,7 +19,6 @@ QDRANT_PORT = os.getenv("QDRANT_PORT")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-
 MAX_RETRIES = 5
 RETRY_DELAY = 5
 
@@ -53,8 +52,8 @@ def get_embedding(text: str):
 
 
 with get_conn() as conn:
-    result = conn.execute(text('SELECT "symbol" FROM "Stock"'))
-    symbols = [row["symbol"] for row in result.mappings()]
+    result = conn.execute(text("SELECT symbol FROM stocks"))
+    symbols = [row.symbol for row in result.mappings()]
 
     for symbol in symbols:
         try:
@@ -62,81 +61,81 @@ with get_conn() as conn:
             info = ticker.info
             now = datetime.utcnow()
             description = info.get("longBusinessSummary") or ""
-            
+
             data = {
                 "symbol": symbol,
                 "name": info.get("shortName") or info.get("longName") or "",
-                "quoteType": info.get("quoteType") or "",
+                "quote_type": info.get("quoteType") or "",
                 "currency": info.get("currency") or "THB",
                 "market": info.get("exchange") or "SET",
-                "regularMarketPrice": info.get("regularMarketPrice") or 0.0,
-                "regularMarketOpen": info.get("regularMarketOpen") or 0.0,
-                "regularMarketHigh": info.get("regularMarketDayHigh") or 0.0,
-                "regularMarketLow": info.get("regularMarketDayLow") or 0.0,
-                "previousClose": info.get("previousClose") or 0.0,
-                "dayHigh": info.get("dayHigh") or 0.0,
-                "dayLow": info.get("dayLow") or 0.0,
+                "regular_market_price": info.get("regularMarketPrice") or 0.0,
+                "regular_market_open": info.get("regularMarketOpen") or 0.0,
+                "regular_market_high": info.get("regularMarketDayHigh") or 0.0,
+                "regular_market_low": info.get("regularMarketDayLow") or 0.0,
+                "previous_close": info.get("previousClose") or 0.0,
+                "day_high": info.get("dayHigh") or 0.0,
+                "day_low": info.get("dayLow") or 0.0,
                 "volume": info.get("volume") or 0,
-                "averageVolume": info.get("averageVolume") or 0,
-                "fiftyDayAverage": info.get("fiftyDayAverage") or 0.0,
-                "twoHundredDayAverage": info.get("twoHundredDayAverage") or 0.0,
-                "fiftyTwoWeekLow": info.get("fiftyTwoWeekLow") or 0.0,
-                "fiftyTwoWeekHigh": info.get("fiftyTwoWeekHigh") or 0.0,
-                "fiftyTwoWeekChangePercent": info.get("52WeekChange") or 0.0,
-                "regularMarketChange": info.get("regularMarketChange") or 0.0,
-                "regularMarketChangePercent": info.get("regularMarketChangePercent")
+                "average_volume": info.get("averageVolume") or 0,
+                "fifty_day_average": info.get("fiftyDayAverage") or 0.0,
+                "two_hundred_day_average": info.get("twoHundredDayAverage") or 0.0,
+                "fifty_two_week_low": info.get("fiftyTwoWeekLow") or 0.0,
+                "fifty_two_week_high": info.get("fiftyTwoWeekHigh") or 0.0,
+                "fifty_two_week_change_percent": info.get("52WeekChange") or 0.0,
+                "regular_market_change": info.get("regularMarketChange") or 0.0,
+                "regular_market_change_percent": info.get("regularMarketChangePercent")
                 or 0.0,
-                "marketState": info.get("marketState") or "",
+                "market_state": info.get("marketState") or "",
                 "tradeable": info.get("tradeable") or False,
-                "lastUpdated": now,
-                "createdAt": now,
-                "updatedAt": now,
-                "description": description
+                "last_updated": now,
+                "created_at": now,
+                "updated_at": now,
+                "description": description,
             }
 
             query = text(
                 """
-            INSERT INTO "Stock" (
-                "symbol", "name", "quoteType", "currency", "market",
-                "regularMarketPrice", "regularMarketOpen", "regularMarketHigh", "regularMarketLow",
-                "previousClose", "dayHigh", "dayLow", "volume", "averageVolume",
-                "fiftyDayAverage", "twoHundredDayAverage", "fiftyTwoWeekLow", "fiftyTwoWeekHigh",
-                "fiftyTwoWeekChangePercent", "regularMarketChange", "regularMarketChangePercent",
-                "marketState", "tradeable", "lastUpdated", "createdAt", "updatedAt", "description"
+            INSERT INTO stocks (
+                symbol, name, quote_type, currency, market,
+                regular_market_price, regular_market_open, regular_market_high, regular_market_low,
+                previous_close, day_high, day_low, volume, average_volume,
+                fifty_day_average, two_hundred_day_average, fifty_two_week_low, fifty_two_week_high,
+                fifty_two_week_change_percent, regular_market_change, regular_market_change_percent,
+                market_state, tradeable, last_updated, created_at, updated_at, description
             ) VALUES (
-                :symbol, :name, :quoteType, :currency, :market,
-                :regularMarketPrice, :regularMarketOpen, :regularMarketHigh, :regularMarketLow,
-                :previousClose, :dayHigh, :dayLow, :volume, :averageVolume,
-                :fiftyDayAverage, :twoHundredDayAverage, :fiftyTwoWeekLow, :fiftyTwoWeekHigh,
-                :fiftyTwoWeekChangePercent, :regularMarketChange, :regularMarketChangePercent,
-                :marketState, :tradeable, :lastUpdated, :createdAt, :updatedAt, :description
+                :symbol, :name, :quote_type, :currency, :market,
+                :regular_market_price, :regular_market_open, :regular_market_high, :regular_market_low,
+                :previous_close, :day_high, :day_low, :volume, :average_volume,
+                :fifty_day_average, :two_hundred_day_average, :fifty_two_week_low, :fifty_two_week_high,
+                :fifty_two_week_change_percent, :regular_market_change, :regular_market_change_percent,
+                :market_state, :tradeable, :last_updated, :created_at, :updated_at, :description
             )
-            ON CONFLICT ("symbol") DO UPDATE SET
-                "name" = EXCLUDED."name",
-                "quoteType" = EXCLUDED."quoteType",
-                "currency" = EXCLUDED."currency",
-                "market" = EXCLUDED."market",
-                "regularMarketPrice" = EXCLUDED."regularMarketPrice",
-                "regularMarketOpen" = EXCLUDED."regularMarketOpen",
-                "regularMarketHigh" = EXCLUDED."regularMarketHigh",
-                "regularMarketLow" = EXCLUDED."regularMarketLow",
-                "previousClose" = EXCLUDED."previousClose",
-                "dayHigh" = EXCLUDED."dayHigh",
-                "dayLow" = EXCLUDED."dayLow",
-                "volume" = EXCLUDED."volume",
-                "averageVolume" = EXCLUDED."averageVolume",
-                "fiftyDayAverage" = EXCLUDED."fiftyDayAverage",
-                "twoHundredDayAverage" = EXCLUDED."twoHundredDayAverage",
-                "fiftyTwoWeekLow" = EXCLUDED."fiftyTwoWeekLow",
-                "fiftyTwoWeekHigh" = EXCLUDED."fiftyTwoWeekHigh",
-                "fiftyTwoWeekChangePercent" = EXCLUDED."fiftyTwoWeekChangePercent",
-                "regularMarketChange" = EXCLUDED."regularMarketChange",
-                "regularMarketChangePercent" = EXCLUDED."regularMarketChangePercent",
-                "marketState" = EXCLUDED."marketState",
-                "tradeable" = EXCLUDED."tradeable",
-                "lastUpdated" = EXCLUDED."lastUpdated",
-                "updatedAt" = EXCLUDED."updatedAt",
-                "description" = EXCLUDED."description"
+            ON CONFLICT (symbol) DO UPDATE SET
+                name = EXCLUDED.name,
+                quote_type = EXCLUDED.quote_type,
+                currency = EXCLUDED.currency,
+                market = EXCLUDED.market,
+                regular_market_price = EXCLUDED.regular_market_price,
+                regular_market_open = EXCLUDED.regular_market_open,
+                regular_market_high = EXCLUDED.regular_market_high,
+                regular_market_low = EXCLUDED.regular_market_low,
+                previous_close = EXCLUDED.previous_close,
+                day_high = EXCLUDED.day_high,
+                day_low = EXCLUDED.day_low,
+                volume = EXCLUDED.volume,
+                average_volume = EXCLUDED.average_volume,
+                fifty_day_average = EXCLUDED.fifty_day_average,
+                two_hundred_day_average = EXCLUDED.two_hundred_day_average,
+                fifty_two_week_low = EXCLUDED.fifty_two_week_low,
+                fifty_two_week_high = EXCLUDED.fifty_two_week_high,
+                fifty_two_week_change_percent = EXCLUDED.fifty_two_week_change_percent,
+                regular_market_change = EXCLUDED.regular_market_change,
+                regular_market_change_percent = EXCLUDED.regular_market_change_percent,
+                market_state = EXCLUDED.market_state,
+                tradeable = EXCLUDED.tradeable,
+                last_updated = EXCLUDED.last_updated,
+                updated_at = EXCLUDED.updated_at,
+                description = EXCLUDED.description
             """
             )
             conn.execute(query, data)

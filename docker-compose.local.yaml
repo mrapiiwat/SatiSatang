@@ -9,6 +9,8 @@ services:
       - ${FRONTEND_PORT}:5173
     depends_on:
       - backend
+    networks:
+      - satisatang-network
       
   backend:
     build: ./backend
@@ -23,6 +25,20 @@ services:
       - minio
       - qdrant
       - redis
+    networks:
+      - satisatang-network
+
+  cron-job:
+    build: ./cron
+    container_name: cron-job
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - qdrant
+    networks:
+      - satisatang-network
 
   db:
     build:
@@ -38,6 +54,8 @@ services:
       - "${DATABASE_PORT}:5432"
     volumes:
       - satisatang_postgres_data:/var/lib/postgresql
+    networks:
+      - satisatang-network
 
   minio:
     image: minio/minio
@@ -52,6 +70,8 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - satisatang_minio_data:/data
+    networks:
+      - satisatang-network
 
   qdrant:
     image: qdrant/qdrant:v1.3.0
@@ -61,6 +81,8 @@ services:
     volumes:
       - satisatang_qdrant_data:/qdrant/storage
     restart: unless-stopped
+    networks:
+      - satisatang-network
   
   redis:
     image: redis:7
@@ -73,6 +95,8 @@ services:
       - "${REDIS_PORT}:6379"
     volumes:
       - satisatang_redis_data:/data
+    networks:
+      - satisatang-network
 
 networks:
   satisatang-network:
