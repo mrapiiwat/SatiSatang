@@ -32,6 +32,7 @@ const Categories = () => {
           categories={categories}
           setCategories={setCategories}
           onAddClick={() => setIsModalOpen(true)}
+          refresh={fetchCategories}
         />
         <CategoryModal
           isOpen={isModalOpen}

@@ -9,7 +9,12 @@ import type { CategoriesType, CategoryListProps } from '../../../interface/categ
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 
-const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, setCategories }) => {
+const CategoryList: React.FC<CategoryListProps> = ({
+  categories,
+  onAddClick,
+  setCategories,
+  refresh,
+}) => {
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);
   const [loading, setLoading] = useState(false);
   const [editData, setEditData] = useState({ name: '', iconId: '' });
@@ -45,15 +50,19 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onAddClick, set
         iconId: Number(editData.iconId),
       });
 
-      await showToastAlert('แก้ไขหมวดหมู่สำเร็จ', 'success');
+      showToastAlert('แก้ไขหมวดหมู่สำเร็จ', 'success');
 
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === editingCategory.id
-            ? { ...cat, name: res.data.data.name, icon: res.data.data.icon }
-            : cat,
-        ),
-      );
+      if (refresh) {
+        refresh();
+      } else {
+        setCategories((prev) =>
+          prev.map((cat) =>
+            cat.id === editingCategory.id
+              ? { ...cat, name: res.data.data.name, icon: res.data.data.icon }
+              : cat,
+          ),
+        );
+      }
 
       handleCloseModal();
     } catch (err: unknown) {

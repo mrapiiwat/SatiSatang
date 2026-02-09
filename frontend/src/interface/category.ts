@@ -23,6 +23,7 @@ export interface CategoryListProps {
   categories: CategoriesType[];
   setCategories: React.Dispatch<React.SetStateAction<CategoriesType[]>>;
   onAddClick: () => void;
+  refresh?: () => void;
 }
 
 export interface Transaction {
