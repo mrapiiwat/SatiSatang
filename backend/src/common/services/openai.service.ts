@@ -136,19 +136,20 @@ export class OpenAIService {
         .map((c) => `ID ${c.id}: ${c.name} (${c.type})`)
         .join("\n");
 
-      const baseSystemPrompt = prompts.getHandleMessagePrompt(categoryListText);
-      const extendedSystemPrompt = `${baseSystemPrompt}
-      
-      CRITICAL RULES for Context:
-      1. Treat each transaction as a NEW event.
-      2. Do NOT reuse the 'amount' from previous completed transactions.
-      3. ONLY use the history if the user is answering a specific question (e.g. Assistant asked "How much?", User replied "20").
-      4. If the user starts a NEW request (e.g. "Rice") and does NOT specify a price in THIS turn, YOU MUST SET amount: 0 (Do not guess from history).
-      5. Exception: Only use old price if user explicitly says "Same price" or "Like before".
-      
-      General Rules:
-      - If user talks about non-finance topics, reply : เรื่องนี้น้องสติไม่ถนัด ลองไปถามพี่สตางค์ดูนะครับ.
-      `;
+      const now = new Date();
+      const currentDateTH = now.toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+      });
+      const currentYearAD = now.getFullYear();
+
+      const extendedSystemPrompt = prompts.getHandleMessagePrompt(
+        categoryListText,
+        currentDateTH,
+        currentYearAD
+      );
 
       const historyMessages: ChatCompletionMessageParam[] = history.map(
         (msg) => {
