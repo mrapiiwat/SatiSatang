@@ -25,6 +25,10 @@ export const satiLog = t.Object({
   content: t.String(),
 });
 
+export const paramsId = t.Object({
+  id: t.Numeric(),
+});
+
 export type getSessionQuery = Static<typeof getSessionQuery>;
 export type checkMessage = Static<typeof checkMessage>;
 export type chatMessage = Static<typeof chatMessage>;

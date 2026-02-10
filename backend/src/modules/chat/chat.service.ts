@@ -334,4 +334,13 @@ export class ChatService {
       .values({ sessionId, userId, role: "assistant", content: fullReply });
     void ragService.addMemory(userId, fullReply, "assistant");
   }
+
+  async updateMessage(messageId: number, content: string) {
+    await db
+      .update(chatMessage)
+      .set({ content })
+      .where(eq(chatMessage.id, messageId));
+
+    return { success: true };
+  }
 }

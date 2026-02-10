@@ -6,9 +6,9 @@ import AddMenu from './AddMenu';
 import PageWrapper from '../../PageWrapper';
 import type { SatiProps, DraftData } from '../../../interface/home';
 import axios from '../../../api/axios';
-import type { ChatMessage } from '../../../interface/home';
+import type { ChatMessage, DraftStatus } from '../../../interface/home';
 import TypingIndicator from '../satang/TypingIndicator';
-import DraftCard, { type DraftStatus } from './DraftCard';
+import DraftCard from './DraftCard';
 import Modal from '../../Modal';
 import Manual from './Manual';
 
@@ -133,18 +133,21 @@ const Sati: React.FC<SatiProps> = ({
     setIsManualOpen(true);
   };
 
-  const handleSaveEditedDraft = (newData: DraftData) => {
+  const handleSaveEditedDraft = async (newData: DraftData) => {
     if (editingMessageId) {
+      let newContentStr = '';
+
       setMessages((prev) =>
         prev.map((msg) => {
           if (msg.id === editingMessageId) {
             try {
               const parsed = JSON.parse(msg.content);
-              const newContent = JSON.stringify({
+              const newContentObj = {
                 ...parsed,
                 data: newData,
-              });
-              return { ...msg, content: newContent };
+              };
+              newContentStr = JSON.stringify(newContentObj);
+              return { ...msg, content: newContentStr };
             } catch {
               return msg;
             }
@@ -152,7 +155,18 @@ const Sati: React.FC<SatiProps> = ({
           return msg;
         }),
       );
+
+      if (newContentStr) {
+        try {
+          await axios.put(`/sati/message/${editingMessageId}`, {
+            content: newContentStr,
+          });
+        } catch (error) {
+          console.error('Failed to update draft on server:', error);
+        }
+      }
     }
+
     setIsManualOpen(false);
     setEditingDraft(null);
     setEditingMessageId(null);
@@ -311,7 +325,6 @@ const Sati: React.FC<SatiProps> = ({
     }
   };
 
-  // ✅ แก้ไข: ลบ isLastMessage ออกจาก arguments เพราะไม่ได้ใช้
   const renderMessageContent = (msg: ChatMessage, index: number) => {
     if (msg.role === 'user') return msg.content;
 
@@ -388,7 +401,6 @@ const Sati: React.FC<SatiProps> = ({
                     !isUser &&
                     msg.content.trim().startsWith('{') &&
                     msg.content.includes('"create_transaction"');
-                  // ลบ isLastMessage = ... ออก
 
                   return (
                     <div
@@ -401,7 +413,6 @@ const Sati: React.FC<SatiProps> = ({
                             : 'bg-gray-100 text-black p-3 rounded-2xl rounded-tl-none self-start w-fit max-w-[85%]'
                       }`}
                     >
-                      {/* เรียก function โดยไม่ต้องส่ง isLastMessage */}
                       {renderMessageContent(msg, index)}
                     </div>
                   );
@@ -452,7 +463,6 @@ const Sati: React.FC<SatiProps> = ({
           </div>
         </div>
 
-        {/* Modal สำหรับแก้ไข Manual */}
         <Modal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)}>
           <Manual
             onClose={() => setIsManualOpen(false)}

@@ -57,26 +57,22 @@ const DraftCard: React.FC<{
     <div className="w-full max-w-[55%] mt-4 mb-2 animate-fade-in-up">
       <div className="flex gap-3 items-start relative ">
         <div className="flex gap-2 h-full shrink-0 ">
-          <div className="w-1 bg-blue-700 h-[74px]"></div>
+          <div className="w-1 bg-blue-700 h-[74px] rounded-full"></div>
 
           <div className="flex flex-col gap-1 justify-center items-center w-full">
-            <span className="text-blue-700 font-semibold text-lg leading-none mb-1">วันนี้</span>
-            <span className="text-blue-700 font-semibold text-lg leading-none tracking-tighter">
+            <span className="text-blue-700 text-base font-medium leading-none mb-1">วันนี้</span>
+            <span className="text-blue-700 text-base font-medium leading-none tracking-tighter">
               {dateNum}
             </span>
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div
-            className={`p-4 flex items-center justify-between shadow-sm border border-transparent mb-3 relative group ${
-              isExpense ? 'bg-[#DAD1F9]' : 'bg-[#DDF5CD]'
-            }`}
-          >
+        <div className="flex-1 min-w-0 ">
+          <div className="p-4 flex items-center justify-between shadow-sm border border-transparent mb-3 relative group bg-blue-600/20 rounded-md">
             {shouldShowButtons && (
               <button
                 onClick={onEdit}
-                className="absolute top-1 right-1 bg-white/50 hover:bg-white rounded-full p-1.5 transition-all cursor-pointer z-10"
+                className="absolute top-[-10px] right-[-10px] bg-white border border-blue-600/20 hover:bg-black-100 rounded-full p-2 transition-all cursor-pointer z-10"
                 title="แก้ไขรายละเอียด"
               >
                 <FaPen size={10} className="text-gray-600" />
