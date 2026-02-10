@@ -1,5 +1,12 @@
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { openai } from "@/common/config/openai";
 import * as prompts from "@/common/utils/prompts";
+import { SATI_TOOLS } from "@/common/utils/tools";
+
+export interface ChatHistoryItem {
+  role: "user" | "assistant" | "system" | string;
+  content: string | null;
+}
 
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
@@ -119,102 +126,92 @@ export class OpenAIService {
     }
   }
 
-  async handleMessage(content: string, categories: Category[], icons: Icon[]) {
+  async handleMessage(
+    content: string,
+    categories: Category[],
+    history: ChatHistoryItem[] = []
+  ) {
     try {
       const categoryListText = categories
-        .map((c) => `${c.id}: ${c.name} (${c.type})`)
+        .map((c) => `ID ${c.id}: ${c.name} (${c.type})`)
         .join("\n");
 
-      const iconListText = icons
-        .map((i) => `${i.id}: ${i.description ?? "ไม่มีคำอธิบาย"}`)
-        .join("\n");
+      const baseSystemPrompt = prompts.getHandleMessagePrompt(categoryListText);
+      const extendedSystemPrompt = `${baseSystemPrompt}
+      
+      CRITICAL RULES for Context:
+      1. Treat each transaction as a NEW event.
+      2. Do NOT reuse the 'amount' from previous completed transactions.
+      3. ONLY use the history if the user is answering a specific question (e.g. Assistant asked "How much?", User replied "20").
+      4. If the user starts a NEW request (e.g. "Rice") and does NOT specify a price in THIS turn, YOU MUST SET amount: 0 (Do not guess from history).
+      5. Exception: Only use old price if user explicitly says "Same price" or "Like before".
+      
+      General Rules:
+      - If user talks about non-finance topics, reply : เรื่องนี้น้องสติไม่ถนัด ลองไปถามพี่สตางค์ดูนะครับ.
+      `;
 
-      const systemPrompt = prompts.getHandleMessagePrompt(
-        categoryListText,
-        iconListText
+      const historyMessages: ChatCompletionMessageParam[] = history.map(
+        (msg) => {
+          let cleanContent = msg.content || "";
+
+          try {
+            if (cleanContent.trim().startsWith("{")) {
+              const parsed = JSON.parse(cleanContent);
+              if (parsed.type === "create_transaction") {
+                cleanContent = `[COMPLETED TRANSACTION: ${parsed.data.description} amount ${parsed.data.amount}]`;
+              } else if (parsed.message) {
+                cleanContent = parsed.message;
+              }
+            }
+          } catch (e) {
+            console.log(e);
+          }
+
+          return {
+            role: msg.role === "user" ? "user" : "assistant",
+            content: cleanContent,
+          } as ChatCompletionMessageParam;
+        }
       );
+
+      const messages: ChatCompletionMessageParam[] = [
+        { role: "system", content: extendedSystemPrompt },
+        ...historyMessages,
+        { role: "user", content },
+      ];
 
       const response = await openai.chat.completions.create({
         model: MODEL_NAME,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content },
-        ],
-        functions: [
-          {
-            name: "create_transaction",
-            description: "สร้าง transaction",
-            parameters: {
-              type: "object",
-              properties: {
-                type: { type: "string", enum: ["INCOME", "EXPENSE"] },
-                description: { type: ["string", "null"] },
-                amount: { type: ["number", "null"] },
-                categoryId: { type: ["string", "null"] },
-              },
-              required: ["type"],
-            },
-          },
-          {
-            name: "create_category",
-            description: "สร้าง category",
-            parameters: {
-              type: "object",
-              properties: {
-                name: { type: ["string", "null"] },
-                type: { type: ["string", "null"], enum: ["INCOME", "EXPENSE"] },
-                iconId: { type: ["number", "null"] },
-              },
-            },
-          },
-          {
-            name: "create_budget",
-            description: "สร้าง budget",
-            parameters: {
-              type: "object",
-              properties: {
-                amount: { type: ["number", "null"] },
-                categoryId: { type: ["string", "null"] },
-                frequency: {
-                  type: ["string", "null"],
-                  enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
-                },
-              },
-            },
-          },
-          {
-            name: "create_goal",
-            description: "สร้าง goal",
-            parameters: {
-              type: "object",
-              properties: {
-                name: { type: ["string", "null"] },
-                amount: { type: ["number", "null"] },
-                deadline: { type: ["string", "null"] },
-              },
-            },
-          },
-        ],
-        function_call: "auto",
+        messages: messages,
+        tools: SATI_TOOLS,
+        tool_choice: "auto",
       });
 
       const choice = response.choices[0].message;
 
-      if (!choice?.function_call) {
-        return { type: "unclassified", message: content };
+      if (!choice.tool_calls || choice.tool_calls.length === 0) {
+        return {
+          type: "message",
+          message: choice.content || "ไม่เข้าใจคำสั่งครับ",
+        };
       }
 
-      const { name, arguments: args } = choice.function_call;
-      const parsedArgs = JSON.parse(args);
+      const toolCall = choice.tool_calls[0];
 
-      for (const key in parsedArgs) {
-        if (parsedArgs[key] === undefined) parsedArgs[key] = null;
+      if (toolCall.type !== "function") {
+        return { type: "unclassified", message: "Unsupported tool type" };
       }
 
-      return { type: name, data: parsedArgs };
+      const fnName = toolCall.function.name;
+      const args = JSON.parse(toolCall.function.arguments);
+
+      return {
+        type: fnName,
+        data: args,
+      };
     } catch (error) {
       console.error("[OpenAI] handleMessage Error:", error);
-      throw new Error("Failed to process message");
+      return { type: "message", message: "ระบบขัดข้องชั่วคราวครับ" };
     }
   }
 }

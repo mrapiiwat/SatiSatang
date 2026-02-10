@@ -84,3 +84,72 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
     },
   },
 ];
+
+export const SATI_TOOLS: ChatCompletionTool[] = [
+  {
+    type: "function",
+    function: {
+      name: "create_transaction",
+      description: "ใช้เมื่อ User ต้องการบันทึกรายรับหรือรายจ่าย",
+      parameters: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            enum: ["INCOME", "EXPENSE"],
+            description: "EXPENSE = รายจ่าย, INCOME = รายรับ",
+          },
+          amount: { type: "number", description: "จำนวนเงิน (ไม่ต้องติดลบ)" },
+          description: { type: "string", description: "รายละเอียดรายการ" },
+          categoryId: {
+            type: "number",
+            description: "ID ของหมวดหมู่ที่ตรงกับรายการที่สุด (จาก List ที่ให้ไป)",
+          },
+        },
+        required: ["type", "amount"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_budget",
+      description: "ใช้เมื่อ User ต้องการตั้งงบประมาณ",
+      parameters: {
+        type: "object",
+        properties: {
+          amount: { type: "number" },
+          categoryId: {
+            type: "number",
+            description: "Category ID ที่ต้องการตั้งงบ",
+          },
+          frequency: {
+            type: "string",
+            enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
+            description: "ความถี่ของงบประมาณ",
+          },
+        },
+        required: ["amount", "frequency"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_goal",
+      description: "ใช้เมื่อ User ต้องการตั้งเป้าหมายออมเงิน",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "ชื่อเป้าหมาย" },
+          amount: { type: "number", description: "จำนวนเงินเป้าหมาย" },
+          deadline: {
+            type: "string",
+            description: "วันที่ครบกำหนด (ISO Date YYYY-MM-DD)",
+          },
+        },
+        required: ["name", "amount"],
+      },
+    },
+  },
+];

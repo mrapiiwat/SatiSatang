@@ -164,6 +164,7 @@ export interface SatiProps {
   isMenuOpen: boolean;
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleMenuSelect: (type: string) => void;
+  onRefresh?: () => void;
 }
 
 export interface GoalTransaction {
@@ -211,4 +212,17 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   createdAt: string;
+}
+
+export interface DraftData {
+  type: 'INCOME' | 'EXPENSE';
+  amount: number;
+  description: string;
+  category: string;
+  categoryId: number;
+}
+
+export interface CategoryType {
+  id: number;
+  icon: string;
 }

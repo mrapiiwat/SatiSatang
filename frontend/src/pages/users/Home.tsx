@@ -577,6 +577,7 @@ const Home = () => {
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
           handleMenuSelect={handleMenuSelect}
+          onRefresh={handleRefreshAll}
         />
       )}
 

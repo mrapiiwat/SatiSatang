@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, lt, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, lt } from "drizzle-orm";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { openai } from "@/common/config/openai";
 import { NotFoundError } from "@/common/exceptions";
@@ -7,7 +7,8 @@ import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { SATANG_TOOLS } from "@/common/utils/tools";
 import { db } from "@/db";
-import { category, chatMessage, chatSession, icon, user } from "@/db/schema";
+import { category, chatMessage, chatSession, user } from "@/db/schema";
+import type * as chatSchema from "./chat.schema";
 import { BotType } from "./chat.schema";
 
 const ragService = new RAGService();
@@ -107,15 +108,92 @@ export class ChatService {
   }
 
   async processSatiMessage(userId: number, content: string) {
+    const { id: sessionId } = await this.getOrCreateSession(
+      userId,
+      BotType.Sati
+    );
+
+    const lastMessage = await db.query.chatMessage.findFirst({
+      where: eq(chatMessage.sessionId, sessionId),
+      orderBy: [desc(chatMessage.createdAt)],
+    });
+
+    if (lastMessage && lastMessage.role === "assistant") {
+      try {
+        const parsed = JSON.parse(lastMessage.content);
+        if (
+          parsed.type === "create_transaction" ||
+          parsed.ui_type === "CONFIRM_CARD"
+        ) {
+          await db
+            .delete(chatMessage)
+            .where(eq(chatMessage.id, lastMessage.id));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    await db.insert(chatMessage).values({
+      sessionId,
+      userId,
+      role: "user",
+      content,
+    });
+
     const categories = await db.query.category.findMany({
       where: eq(category.userId, userId),
     });
 
-    const icons = await db.query.icon.findMany({
-      where: sql`${icon.userId} IS NULL OR ${icon.userId} = ${userId}`,
+    const rawHistory = await db.query.chatMessage.findMany({
+      where: eq(chatMessage.sessionId, sessionId),
+      orderBy: [desc(chatMessage.createdAt)],
+      limit: 3,
     });
 
-    return await openAIService.handleMessage(content, categories, icons);
+    const history = rawHistory.reverse();
+
+    let result = await openAIService.handleMessage(
+      content,
+      categories,
+      history
+    );
+
+    if (result.type === "create_transaction") {
+      const amount = Number(result.data.amount);
+
+      if (!amount || amount === 0 || Number.isNaN(amount)) {
+        result = {
+          type: "message",
+          message: `รายการ "${result.data.description || "นี้"}" ราคาเท่าไหร่ครับ?`,
+        };
+      }
+    }
+
+    await db.insert(chatMessage).values({
+      sessionId,
+      userId,
+      role: "assistant",
+      content: JSON.stringify(result),
+    });
+
+    return result;
+  }
+
+  async chatWithSati(userId: number, data: chatSchema.satiLog) {
+    const { id: sessionId } = await this.getOrCreateSession(
+      userId,
+      BotType.Sati
+    );
+
+    await db.insert(chatMessage).values({
+      sessionId,
+      userId,
+      role: data.role,
+      content: data.content,
+    });
+
+    return { success: true };
   }
 
   async *chatWithSatang(userId: number, content: string) {
