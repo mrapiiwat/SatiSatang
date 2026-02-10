@@ -4,7 +4,8 @@ import type { SingleValue } from 'react-select';
 export interface ManualProps {
   onClose: () => void;
   onSuccess: () => void;
-  editData?: Transaction | null;
+  editData?: Transaction | DraftData | null;
+  onUpdateDraft?: (data: DraftData) => void;
 }
 
 export interface UploadProps {
@@ -218,7 +219,7 @@ export interface DraftData {
   type: 'INCOME' | 'EXPENSE';
   amount: number;
   description: string;
-  category: string;
+  category?: string;
   categoryId: number;
 }
 
@@ -226,3 +227,5 @@ export interface CategoryType {
   id: number;
   icon: string;
 }
+
+export type DraftStatus = 'pending' | 'confirmed' | 'cancelled';

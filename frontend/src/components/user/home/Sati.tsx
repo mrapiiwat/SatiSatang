@@ -4,11 +4,13 @@ import { FaPlus } from 'react-icons/fa6';
 import { GoArrowUp } from 'react-icons/go';
 import AddMenu from './AddMenu';
 import PageWrapper from '../../PageWrapper';
-import type { SatiProps } from '../../../interface/home';
+import type { SatiProps, DraftData } from '../../../interface/home';
 import axios from '../../../api/axios';
-import type { ChatMessage, DraftData } from '../../../interface/home';
+import type { ChatMessage } from '../../../interface/home';
 import TypingIndicator from '../satang/TypingIndicator';
-import DraftCard from './DraftCard';
+import DraftCard, { type DraftStatus } from './DraftCard';
+import Modal from '../../Modal';
+import Manual from './Manual';
 
 const Sati: React.FC<SatiProps> = ({
   handleCloseChatModal,
@@ -27,6 +29,10 @@ const Sati: React.FC<SatiProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+  const [isManualOpen, setIsManualOpen] = useState(false);
+  const [editingDraft, setEditingDraft] = useState<DraftData | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
 
   const prevMessagesLengthRef = useRef(messages.length);
   const isUserScrolledRef = useRef(false);
@@ -120,6 +126,43 @@ const Sati: React.FC<SatiProps> = ({
     container.addEventListener('scroll', onScroll);
     return () => container.removeEventListener('scroll', onScroll);
   }, [hasMore, isLoading, nextCursor, fetchSession]);
+
+  const handleEditDraft = (draft: DraftData, msgId: number) => {
+    setEditingDraft(draft);
+    setEditingMessageId(msgId);
+    setIsManualOpen(true);
+  };
+
+  const handleSaveEditedDraft = (newData: DraftData) => {
+    if (editingMessageId) {
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg.id === editingMessageId) {
+            try {
+              const parsed = JSON.parse(msg.content);
+              const newContent = JSON.stringify({
+                ...parsed,
+                data: newData,
+              });
+              return { ...msg, content: newContent };
+            } catch {
+              return msg;
+            }
+          }
+          return msg;
+        }),
+      );
+    }
+    setIsManualOpen(false);
+    setEditingDraft(null);
+    setEditingMessageId(null);
+  };
+
+  const handleManualSuccess = () => {
+    setIsManualOpen(false);
+    setEditingDraft(null);
+    if (onRefresh) onRefresh();
+  };
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -268,7 +311,8 @@ const Sati: React.FC<SatiProps> = ({
     }
   };
 
-  const renderMessageContent = (msg: ChatMessage, isLastMessage: boolean) => {
+  // ✅ แก้ไข: ลบ isLastMessage ออกจาก arguments เพราะไม่ได้ใช้
+  const renderMessageContent = (msg: ChatMessage, index: number) => {
     if (msg.role === 'user') return msg.content;
 
     try {
@@ -278,12 +322,19 @@ const Sati: React.FC<SatiProps> = ({
         (parsed.type === 'create_transaction' || parsed.ui_type === 'CONFIRM_CARD') &&
         parsed.data
       ) {
+        const nextMsg = messages[index + 1];
+        let status: DraftStatus = 'pending';
+        if (nextMsg && nextMsg.role === 'user') {
+          status = nextMsg.content === 'ตกลง' ? 'confirmed' : 'cancelled';
+        }
+
         return (
           <DraftCard
             data={parsed.data}
             onConfirm={() => handleConfirmSave(parsed.data)}
             onCancel={() => handleCancel(msg.id)}
-            isHistory={!isLastMessage}
+            onEdit={() => handleEditDraft(parsed.data, msg.id)}
+            status={status}
           />
         );
       }
@@ -337,7 +388,7 @@ const Sati: React.FC<SatiProps> = ({
                     !isUser &&
                     msg.content.trim().startsWith('{') &&
                     msg.content.includes('"create_transaction"');
-                  const isLastMessage = index === messages.length - 1;
+                  // ลบ isLastMessage = ... ออก
 
                   return (
                     <div
@@ -350,7 +401,8 @@ const Sati: React.FC<SatiProps> = ({
                             : 'bg-gray-100 text-black p-3 rounded-2xl rounded-tl-none self-start w-fit max-w-[85%]'
                       }`}
                     >
-                      {renderMessageContent(msg, isLastMessage)}
+                      {/* เรียก function โดยไม่ต้องส่ง isLastMessage */}
+                      {renderMessageContent(msg, index)}
                     </div>
                   );
                 })}
@@ -399,6 +451,16 @@ const Sati: React.FC<SatiProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Modal สำหรับแก้ไข Manual */}
+        <Modal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)}>
+          <Manual
+            onClose={() => setIsManualOpen(false)}
+            onSuccess={handleManualSuccess}
+            editData={editingDraft}
+            onUpdateDraft={handleSaveEditedDraft}
+          />
+        </Modal>
       </PageWrapper>
     </div>
   );

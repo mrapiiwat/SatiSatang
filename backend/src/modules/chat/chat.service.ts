@@ -148,7 +148,7 @@ export class ChatService {
     const rawHistory = await db.query.chatMessage.findMany({
       where: eq(chatMessage.sessionId, sessionId),
       orderBy: [desc(chatMessage.createdAt)],
-      limit: 3,
+      limit: 5,
     });
 
     const history = rawHistory.reverse();
