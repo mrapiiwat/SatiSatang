@@ -282,7 +282,7 @@ const Sati: React.FC<SatiProps> = ({
     }
   };
 
-  const handleCancel = async (msgId: number) => {
+  const handleCancel = async (_msgId: number) => {
     const userCancelText = 'ยกเลิก';
     const botCancelText = JSON.stringify({
       type: 'message',
@@ -292,8 +292,6 @@ const Sati: React.FC<SatiProps> = ({
     setIsSending(true);
 
     try {
-      setMessages((prev) => prev.filter((m) => m.id !== msgId));
-
       await axios.post('/sati/log', { role: 'user', content: userCancelText });
       await axios.post('/sati/log', { role: 'assistant', content: botCancelText });
 

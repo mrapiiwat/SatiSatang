@@ -113,27 +113,6 @@ export class ChatService {
       BotType.Sati
     );
 
-    const lastMessage = await db.query.chatMessage.findFirst({
-      where: eq(chatMessage.sessionId, sessionId),
-      orderBy: [desc(chatMessage.createdAt)],
-    });
-
-    if (lastMessage && lastMessage.role === "assistant") {
-      try {
-        const parsed = JSON.parse(lastMessage.content);
-        if (
-          parsed.type === "create_transaction" ||
-          parsed.ui_type === "CONFIRM_CARD"
-        ) {
-          await db
-            .delete(chatMessage)
-            .where(eq(chatMessage.id, lastMessage.id));
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    }
-
     await db.insert(chatMessage).values({
       sessionId,
       userId,
