@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FaCheck, FaUtensils, FaPen } from 'react-icons/fa6';
+import { FaCheck, FaPen } from 'react-icons/fa6';
 import type { DraftData, CategoryType, DraftStatus } from '../../../interface/home';
 import { RxCross2 } from 'react-icons/rx';
 import axios from '../../../api/axios';
 import Image from '../../Image';
+import goalIcon from '../../../assets/goal.png';
 
 const DraftCard: React.FC<{
   data: DraftData;
@@ -89,7 +90,7 @@ const DraftCard: React.FC<{
             )}
 
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-11 h-11 bg-[#2D2D2D] rounded-full flex items-center justify-center shrink-0 overflow-hidden">
+              <div className="w-11 h-11 bg-[#2D2D2D] rounded-full flex items-center justify-center shrink-0">
                 {categoryIconUrl ? (
                   <Image
                     src={categoryIconUrl}
@@ -97,7 +98,7 @@ const DraftCard: React.FC<{
                     className="w-full h-full object-cover border-2 border-black-900/70 rounded-full"
                   />
                 ) : (
-                  <FaUtensils className="text-white text-sm" />
+                  <img src={goalIcon} alt="goal" />
                 )}
               </div>
 

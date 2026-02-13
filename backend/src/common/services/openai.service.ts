@@ -134,12 +134,19 @@ export class OpenAIService {
   async handleMessage(
     userId: number,
     content: string,
-    categories: Category[],
+    categories: (Category & { isGoal?: boolean })[],
     history: ChatHistoryItem[] = []
   ) {
     try {
-      const categoryListText = categories
+      const normalCategories = categories.filter((c) => !c.isGoal);
+      const goalCategories = categories.filter((c) => c.isGoal);
+
+      const categoryListText = normalCategories
         .map((c) => `ID ${c.id}: ${c.name} (${c.type})`)
+        .join("\n");
+
+      const goalListText = goalCategories
+        .map((g) => `GOAL_ID ${g.id}: ${g.name} (เป้าหมาย)`)
         .join("\n");
 
       const now = new Date();
@@ -153,6 +160,7 @@ export class OpenAIService {
 
       const extendedSystemPrompt = prompts.getHandleMessagePrompt(
         categoryListText,
+        goalListText,
         currentDateTH,
         currentYearAD
       );
@@ -293,6 +301,16 @@ export class OpenAIService {
           }
         } catch (err) {
           console.error("Check goal duplicate error:", err);
+        }
+      }
+
+      if (fnName === "create_transaction") {
+        const isGoalId = goalCategories.some(
+          (g) => String(g.id) === String(args.categoryId)
+        );
+
+        if (isGoalId) {
+          args.isGoal = true;
         }
       }
 

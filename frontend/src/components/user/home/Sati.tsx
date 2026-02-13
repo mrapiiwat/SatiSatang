@@ -288,14 +288,15 @@ const Sati: React.FC<SatiProps> = ({
     setIsSending(true);
 
     try {
-      const formData = new FormData();
-      formData.append('type', draftData.type);
-      formData.append('amount', draftData.amount.toString());
-      formData.append('description', draftData.description);
-      formData.append('categoryId', draftData.categoryId.toString());
-      await axios.post('/transaction', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const payload = {
+        type: draftData.type,
+        amount: Number(draftData.amount),
+        description: draftData.description,
+        categoryId: Number(draftData.categoryId),
+        isGoal: draftData.isGoal || false,
+      };
+
+      await axios.post('/transaction', payload);
 
       if (onRefresh) onRefresh();
 

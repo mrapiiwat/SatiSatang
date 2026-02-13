@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, lt } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, isNull, lt, or } from "drizzle-orm";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { openai } from "@/common/config/openai";
 import { NotFoundError } from "@/common/exceptions";
@@ -7,7 +7,7 @@ import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { SATANG_TOOLS } from "@/common/utils/tools";
 import { db } from "@/db";
-import { category, chatMessage, chatSession, user } from "@/db/schema";
+import { category, chatMessage, chatSession, goals, user } from "@/db/schema";
 import type * as chatSchema from "./chat.schema";
 import { BotType } from "./chat.schema";
 
@@ -124,6 +124,31 @@ export class ChatService {
       where: eq(category.userId, userId),
     });
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const userGoals = await db.query.goals.findMany({
+      where: and(
+        eq(goals.userId, userId),
+        eq(goals.finished, false),
+        or(gte(goals.deadline, today), isNull(goals.deadline))
+      ),
+    });
+
+    const allCategoriesForAI = [
+      ...categories.map((c) => ({
+        ...c,
+        isGoal: false,
+      })),
+      ...userGoals.map((g) => ({
+        id: g.id,
+        name: g.name,
+        type: "EXPENSE",
+        userId: g.userId,
+        isGoal: true,
+      })),
+    ];
+
     const rawHistory = await db.query.chatMessage.findMany({
       where: eq(chatMessage.sessionId, sessionId),
       orderBy: [desc(chatMessage.createdAt)],
@@ -135,7 +160,7 @@ export class ChatService {
     let result = await openAIService.handleMessage(
       userId,
       content,
-      categories,
+      allCategoriesForAI,
       history
     );
 

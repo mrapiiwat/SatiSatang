@@ -217,6 +217,7 @@ export interface DraftData {
   description: string;
   category?: string;
   categoryId: number;
+  isGoal?: boolean;
 }
 
 export interface CategoryType {

@@ -67,7 +67,7 @@ const GoalDraftCard: React.FC<{
               >
                 เป้าหมายใหม่
               </span>
-              <span className="text-black text-sm leading-tight truncate pr-2 font-semibold">
+              <span className="text-black text-sm leading-tight truncate pr-2 font-normal">
                 {data.name}
               </span>
             </div>
