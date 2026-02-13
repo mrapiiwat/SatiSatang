@@ -10,7 +10,6 @@ import type {
   CategoryResponse,
   ManualProps,
   OptionType,
-  DraftData,
 } from '../../../interface/home';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
@@ -149,11 +148,12 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
       return showToastAlert('จำนวนเงินต้องมากกว่า 0', 'error');
     }
 
-    const payload: DraftData = {
+    const payload = {
       type: selectedType.value as 'INCOME' | 'EXPENSE',
       description: detail,
       categoryId: selectedCategory.value,
       amount: Number(amount),
+      isGoal: selectedCategory.isGoal || false,
     };
 
     if (onUpdateDraft) {
@@ -189,7 +189,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
   };
 
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
       <div className="bg-white w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-5">
           <h4 className="font-medium">
