@@ -70,6 +70,33 @@ export class BudgetService {
     return newBudget;
   }
 
+  async checkDuplicate(
+    userId: number,
+    categoryId: number,
+    frequency: budgetSchema.Frequency
+  ) {
+    const { start, end } = getPeriodRangeByFrequency(frequency);
+
+    const existingBudget = await db.query.budgets.findFirst({
+      where: and(
+        eq(budgets.userId, userId),
+        eq(budgets.categoryId, categoryId),
+        eq(budgets.frequency, frequency),
+        gte(budgets.createdAt, start),
+        lte(budgets.createdAt, end)
+      ),
+    });
+
+    return !!existingBudget;
+  }
+
+  async getTargetCategory(categoryId: number) {
+    const targetCategory = await db.query.category.findFirst({
+      where: eq(category.id, categoryId),
+    });
+    return targetCategory;
+  }
+
   async getBudgets(userId: number, query: budgetSchema.getBudgetsQuery) {
     const { month, year, isOverDeadline } = query;
     const now = new Date();

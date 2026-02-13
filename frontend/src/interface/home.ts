@@ -225,7 +225,14 @@ export interface DraftData {
 
 export interface CategoryType {
   id: number;
+  name: string;
   icon: string;
 }
 
 export type DraftStatus = 'pending' | 'confirmed' | 'cancelled';
+
+export interface BudgetDraftData {
+  amount: number;
+  categoryId: number;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+}

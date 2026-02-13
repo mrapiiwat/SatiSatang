@@ -50,13 +50,11 @@ const DraftCard: React.FC<{
 
   const isCancelled = status === 'cancelled';
   const bgClass = isCancelled
-    ? 'bg-gray-100 border-gray-200 opacity-60 grayscale'
-    : isExpense
-      ? 'bg-[#DAD1F9]'
-      : 'bg-[#DDF5CD]';
+    ? 'bg-gray-100 border-gray-200 opacity-60 grayscale bg-blue-600/20'
+    : 'bg-blue-600/20';
 
   return (
-    <div className="w-full max-w-[55%] mt-4 mb-2 animate-fade-in-up">
+    <div className="w-full max-w-96 mt-4 mb-2 animate-fade-in-up">
       <div className="flex gap-3 items-start relative ">
         <div className="flex gap-2 h-full shrink-0 ">
           <div
@@ -80,11 +78,10 @@ const DraftCard: React.FC<{
           <div
             className={`p-4 flex items-center justify-between shadow-sm border border-transparent mb-3 relative group rounded-md ${bgClass}`}
           >
-            {/* ปุ่มแก้ไข: โชว์เฉพาะตอน Pending */}
             {shouldShowButtons && (
               <button
                 onClick={onEdit}
-                className="absolute top-[-10px] right-[-10px] bg-white border border-gray-200 hover:bg-gray-50 rounded-full p-2 transition-all cursor-pointer z-10 shadow-sm"
+                className="absolute top-[-10px] right-[-10px] bg-white border border-blue-600/20 rounded-full p-2 cursor-pointer z-10 shadow-sm"
                 title="แก้ไขรายละเอียด"
               >
                 <FaPen size={10} className="text-gray-600" />
@@ -92,16 +89,20 @@ const DraftCard: React.FC<{
             )}
 
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-10 h-10 bg-[#2D2D2D] rounded-full flex items-center justify-center shrink-0 overflow-hidden">
+              <div className="w-11 h-11 bg-[#2D2D2D] rounded-full flex items-center justify-center shrink-0 overflow-hidden">
                 {categoryIconUrl ? (
-                  <Image src={categoryIconUrl} alt="icon" className="w-full h-full object-cover" />
+                  <Image
+                    src={categoryIconUrl}
+                    alt="icon"
+                    className="w-full h-full object-cover border-2 border-black-900/70 rounded-full"
+                  />
                 ) : (
                   <FaUtensils className="text-white text-sm" />
                 )}
               </div>
 
               <div className="flex flex-col min-w-0">
-                <span className="font-bold text-black text-sm">
+                <span className="font-bold text-black text-base">
                   {isExpense ? 'รายจ่าย' : 'รายรับ'}
                 </span>
                 <span className="text-black text-sm leading-tight truncate pr-2 font-normal">
@@ -113,7 +114,6 @@ const DraftCard: React.FC<{
             <div className="font-bold text-xl text-black shrink-0">{data.amount}</div>
           </div>
 
-          {/* ปุ่ม Confirm/Cancel: โชว์เฉพาะตอน Pending */}
           {shouldShowButtons && (
             <div className="animate-fade-in">
               <p className="text-black text-sm mb-3 font-normal">
@@ -123,7 +123,7 @@ const DraftCard: React.FC<{
               <div className="flex gap-3">
                 <button
                   onClick={handleConfirmClick}
-                  className="w-12 h-12 rounded-full bg-[#E9FBC6] hover:bg-[#d8f0b0] flex items-center justify-center transition-colors shadow-sm"
+                  className="p-2 w-12 h-12 rounded-full bg-[#E9FBC6] hover:bg-[#d8f0b0] flex items-center justify-center transition-colors shadow-sm"
                 >
                   <FaCheck className="text-[#5C7C26] text-lg" />
                 </button>

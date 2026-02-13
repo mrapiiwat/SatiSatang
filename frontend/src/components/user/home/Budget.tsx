@@ -10,6 +10,7 @@ import type {
   FrequencyOption,
   CategoryOption,
   BudgetProps,
+  BudgetDraftData,
 } from '../../../interface/home';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
@@ -21,7 +22,12 @@ const frequencies: FrequencyOption[] = [
   { value: 'YEARLY', label: 'รายปี' },
 ];
 
-const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
+interface ExtendedBudgetProps extends BudgetProps {
+  editData?: BudgetDraftData | null;
+  onUpdateDraft?: (data: BudgetDraftData) => void;
+}
+
+const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryOption | null>(null);
   const [selectedFrequency, setSelectedFrequency] = useState<FrequencyOption | null>(null);
@@ -37,12 +43,22 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
           label: cat.name,
         }));
         setCategories(formatted);
+
+        if (editData) {
+          const foundCat = formatted.find((c: CategoryOption) => c.value === editData.categoryId);
+          if (foundCat) setSelectedCategory(foundCat);
+
+          const foundFreq = frequencies.find((f) => f.value === editData.frequency);
+          if (foundFreq) setSelectedFrequency(foundFreq);
+
+          setAmount(editData.amount.toString());
+        }
       } catch (err) {
         console.error('Error fetching categories:', err);
       }
     };
     fetchCategories();
-  }, []);
+  }, [editData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,12 +73,20 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
       return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
     }
 
+    const payload = {
+      categoryId: selectedCategory!.value,
+      frequency: selectedFrequency!.value,
+      amount: Number(amount),
+    };
+
+    if (onUpdateDraft) {
+      onUpdateDraft(payload);
+      onClose();
+      return;
+    }
+
     try {
-      await axios.post('/budget', {
-        categoryId: selectedCategory!.value,
-        frequency: selectedFrequency!.value,
-        amount: Number(amount),
-      });
+      await axios.post('/budget', payload);
 
       showToastAlert('ตั้งงบประมาณสำเร็จ', 'success');
 
@@ -72,12 +96,9 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
       if (isAxiosError(err)) {
         const axiosError = err as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
-
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
-
         const errorMessage =
           customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
-
         showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
@@ -92,7 +113,7 @@ const Budget: React.FC<BudgetProps> = ({ onClose, onSuccess }) => {
     <div className="flex justify-center items-center">
       <div className="bg-white w-full max-w-96 min-h-[420px] rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-5">
-          <h4 className="font-medium">ตั้งงบประมาณ</h4>
+          <h4 className="font-medium">{editData ? 'แก้ไขงบประมาณ' : 'ตั้งงบประมาณ'}</h4>
           <div
             onClick={onClose}
             className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"

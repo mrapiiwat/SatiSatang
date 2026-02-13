@@ -2,6 +2,7 @@ import type { ChatCompletionMessageParam } from "openai/resources/chat/completio
 import { openai } from "@/common/config/openai";
 import * as prompts from "@/common/utils/prompts";
 import { SATI_TOOLS } from "@/common/utils/tools";
+import { BudgetService } from "@/modules/budget/budget.service";
 
 export interface ChatHistoryItem {
   role: "user" | "assistant" | "system" | string;
@@ -28,6 +29,7 @@ export interface User {
   name: string;
 }
 
+const budgetService = new BudgetService();
 const MODEL_NAME = "gpt-4o";
 const EMBEDDING_MODEL = "text-embedding-3-small";
 
@@ -127,6 +129,7 @@ export class OpenAIService {
   }
 
   async handleMessage(
+    userId: number,
     content: string,
     categories: Category[],
     history: ChatHistoryItem[] = []
@@ -205,6 +208,44 @@ export class OpenAIService {
 
       const fnName = toolCall.function.name;
       const args = JSON.parse(toolCall.function.arguments);
+
+      if (fnName === "create_budget") {
+        try {
+          const targetCategory = await budgetService.getTargetCategory(
+            args.categoryId
+          );
+
+          if (targetCategory && targetCategory.type !== "EXPENSE") {
+            return {
+              type: "message",
+              message: `ปกติแล้วเราจะตั้งงบประมาณไว้คุม "รายจ่าย" ครับ รายการ "${targetCategory.name}" เป็นรายรับ ไม่ต้องตั้งงบก็ได้ครับ รวยๆ เฮงๆ ครับ! 🤑`,
+            };
+          }
+
+          const isDuplicate = await budgetService.checkDuplicate(
+            userId,
+            args.categoryId,
+            args.frequency
+          );
+
+          if (isDuplicate) {
+            const freqMap: Record<string, string> = {
+              DAILY: "รายวัน",
+              WEEKLY: "รายสัปดาห์",
+              MONTHLY: "รายเดือน",
+              YEARLY: "รายปี",
+            };
+            const freqTH = freqMap[args.frequency] || args.frequency;
+
+            return {
+              type: "message",
+              message: `ดูเหมือนว่าคุณตั้งงบหมวดนี้ในรอบ "${freqTH}" ไว้เรียบร้อยแล้วครับ ลองเปลี่ยนหมวดหรือรอบเวลาดูไหมครับ? 😊`,
+            };
+          }
+        } catch (err) {
+          console.error("Check duplicate error:", err);
+        }
+      }
 
       return {
         type: fnName,

@@ -4,13 +4,18 @@ import { FaPlus } from 'react-icons/fa6';
 import { GoArrowUp } from 'react-icons/go';
 import AddMenu from './AddMenu';
 import PageWrapper from '../../PageWrapper';
-import type { SatiProps, DraftData } from '../../../interface/home';
+import type { SatiProps, DraftData, BudgetDraftData } from '../../../interface/home';
 import axios from '../../../api/axios';
+import { isAxiosError } from 'axios';
 import type { ChatMessage, DraftStatus } from '../../../interface/home';
 import TypingIndicator from '../satang/TypingIndicator';
 import DraftCard from './DraftCard';
+import BudgetDraftCard from './BudgetDraftCard';
 import Modal from '../../Modal';
 import Manual from './Manual';
+import Budget from './Budget';
+
+type EditingDraftType = DraftData | BudgetDraftData | null;
 
 const Sati: React.FC<SatiProps> = ({
   handleCloseChatModal,
@@ -29,10 +34,10 @@ const Sati: React.FC<SatiProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
-
   const [isManualOpen, setIsManualOpen] = useState(false);
-  const [editingDraft, setEditingDraft] = useState<DraftData | null>(null);
+  const [editingDraft, setEditingDraft] = useState<EditingDraftType>(null);
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const [editType, setEditType] = useState<'TRANSACTION' | 'BUDGET'>('TRANSACTION');
 
   const prevMessagesLengthRef = useRef(messages.length);
   const isUserScrolledRef = useRef(false);
@@ -44,13 +49,20 @@ const Sati: React.FC<SatiProps> = ({
     };
   }, []);
 
+  const getErrorMessage = (error: unknown): string => {
+    if (isAxiosError(error) && error.response?.data) {
+      const data = error.response.data as { message?: string; error?: string };
+
+      if (data.message) return data.message;
+      if (data.error) return data.error;
+    }
+    return 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุครับ';
+  };
+
   const fetchSession = useCallback(async (cursor?: number) => {
     setIsLoading(true);
     try {
-      const res = await axios.get('/sati/session', {
-        params: { cursor, limit: 20 },
-      });
-
+      const res = await axios.get('/sati/session', { params: { cursor, limit: 20 } });
       const data = res.data.data;
       const msgs: ChatMessage[] = data.messages.map((m: ChatMessage) => ({
         id: m.id,
@@ -58,7 +70,6 @@ const Sati: React.FC<SatiProps> = ({
         content: m.content,
         createdAt: m.createdAt,
       }));
-
       if (!cursor) {
         setMessages(msgs);
         setIsFirstLoad(true);
@@ -97,7 +108,6 @@ const Sati: React.FC<SatiProps> = ({
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
     if (isFirstLoad && messages.length > 0) {
       container.scrollTop = container.scrollHeight;
       setIsFirstLoad(false);
@@ -127,25 +137,26 @@ const Sati: React.FC<SatiProps> = ({
     return () => container.removeEventListener('scroll', onScroll);
   }, [hasMore, isLoading, nextCursor, fetchSession]);
 
-  const handleEditDraft = (draft: DraftData, msgId: number) => {
+  const handleEditDraft = (
+    draft: DraftData | BudgetDraftData,
+    msgId: number,
+    type: 'TRANSACTION' | 'BUDGET',
+  ) => {
     setEditingDraft(draft);
     setEditingMessageId(msgId);
+    setEditType(type);
     setIsManualOpen(true);
   };
 
-  const handleSaveEditedDraft = async (newData: DraftData) => {
+  const handleSaveEditedDraft = async (newData: DraftData | BudgetDraftData) => {
     if (editingMessageId) {
       let newContentStr = '';
-
       setMessages((prev) =>
         prev.map((msg) => {
           if (msg.id === editingMessageId) {
             try {
               const parsed = JSON.parse(msg.content);
-              const newContentObj = {
-                ...parsed,
-                data: newData,
-              };
+              const newContentObj = { ...parsed, data: newData };
               newContentStr = JSON.stringify(newContentObj);
               return { ...msg, content: newContentStr };
             } catch {
@@ -155,18 +166,14 @@ const Sati: React.FC<SatiProps> = ({
           return msg;
         }),
       );
-
       if (newContentStr) {
         try {
-          await axios.put(`/sati/message/${editingMessageId}`, {
-            content: newContentStr,
-          });
+          await axios.put(`/sati/message/${editingMessageId}`, { content: newContentStr });
         } catch (error) {
-          console.error('Failed to update draft on server:', error);
+          console.error('Failed to update draft:', error);
         }
       }
     }
-
     setIsManualOpen(false);
     setEditingDraft(null);
     setEditingMessageId(null);
@@ -193,7 +200,8 @@ const Sati: React.FC<SatiProps> = ({
       if (
         lastMsg &&
         lastMsg.role === 'assistant' &&
-        lastMsg.content.includes('"create_transaction"')
+        (lastMsg.content.includes('"create_transaction"') ||
+          lastMsg.content.includes('"create_budget"'))
       ) {
         newMessages.pop();
       }
@@ -226,6 +234,9 @@ const Sati: React.FC<SatiProps> = ({
           createdAt: new Date().toISOString(),
         },
       ]);
+      setTimeout(() => {
+        fetchSession();
+      }, 500);
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -236,47 +247,108 @@ const Sati: React.FC<SatiProps> = ({
   const handleConfirmSave = async (draftData: DraftData) => {
     const userConfirmText = `ตกลง`;
     const botSuccessText = JSON.stringify({ type: 'message', message: 'บันทึกเรียบร้อยครับ!' });
-
-    const userMsg: ChatMessage = {
-      id: Date.now(),
-      role: 'user',
-      content: userConfirmText,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, userMsg]);
-
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        role: 'user',
+        content: userConfirmText,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
     setIsSending(true);
-
     try {
       const formData = new FormData();
       formData.append('type', draftData.type);
       formData.append('amount', draftData.amount.toString());
       formData.append('description', draftData.description);
       formData.append('categoryId', draftData.categoryId.toString());
-
       await axios.post('/transaction', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      if (onRefresh) {
-        onRefresh();
-      }
-
+      if (onRefresh) onRefresh();
       await axios.post('/sati/log', { role: 'user', content: userConfirmText });
       await axios.post('/sati/log', { role: 'assistant', content: botSuccessText });
-
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const botMsg: ChatMessage = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: botSuccessText,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, botMsg]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: botSuccessText,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
     } catch (error) {
-      console.error('Save failed:', error);
-      alert('บันทึกไม่สำเร็จ กรุณาลองใหม่');
+      const errorMsg = getErrorMessage(error);
+      const botErrorText = JSON.stringify({
+        type: 'message',
+        message: `บันทึกรายการไม่สำเร็จครับ: ${errorMsg}`,
+      });
+      await axios.post('/sati/log', { role: 'assistant', content: botErrorText });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: botErrorText,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSaveBudget = async (data: BudgetDraftData) => {
+    const userConfirmText = 'ตกลง';
+    const botSuccessText = JSON.stringify({
+      type: 'message',
+      message: 'ตั้งงบประมาณเรียบร้อยครับ!',
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        role: 'user',
+        content: userConfirmText,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setIsSending(true);
+
+    try {
+      await axios.post('/budget', data);
+      if (onRefresh) onRefresh();
+      await axios.post('/sati/log', { role: 'user', content: userConfirmText });
+      await axios.post('/sati/log', { role: 'assistant', content: botSuccessText });
+      await new Promise((r) => setTimeout(r, 1000));
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: botSuccessText,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    } catch (error) {
+      const errorMsg = getErrorMessage(error);
+      const botErrorText = JSON.stringify({
+        type: 'message',
+        message: `ตั้งงบประมาณไม่สำเร็จครับ: ${errorMsg}`,
+      });
+      await axios.post('/sati/log', { role: 'assistant', content: botErrorText });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: botErrorText,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
     } finally {
       setIsSending(false);
     }
@@ -288,13 +360,10 @@ const Sati: React.FC<SatiProps> = ({
       type: 'message',
       message: 'รับทราบครับ ยกเลิกรายการให้แล้วครับ',
     });
-
     setIsSending(true);
-
     try {
       await axios.post('/sati/log', { role: 'user', content: userCancelText });
       await axios.post('/sati/log', { role: 'assistant', content: botCancelText });
-
       setMessages((prev) => [
         ...prev,
         {
@@ -304,9 +373,7 @@ const Sati: React.FC<SatiProps> = ({
           createdAt: new Date().toISOString(),
         },
       ]);
-
       await new Promise((resolve) => setTimeout(resolve, 800));
-
       setMessages((prev) => [
         ...prev,
         {
@@ -317,7 +384,7 @@ const Sati: React.FC<SatiProps> = ({
         },
       ]);
     } catch (error) {
-      console.error('Cancel failed:', error);
+      console.error(error);
     } finally {
       setIsSending(false);
     }
@@ -325,35 +392,44 @@ const Sati: React.FC<SatiProps> = ({
 
   const renderMessageContent = (msg: ChatMessage, index: number) => {
     if (msg.role === 'user') return msg.content;
-
     try {
       const parsed = JSON.parse(msg.content);
+      const getStatus = (): DraftStatus => {
+        const nextMsg = messages[index + 1];
+        if (nextMsg && nextMsg.role === 'user') {
+          return nextMsg.content === 'ตกลง' ? 'confirmed' : 'cancelled';
+        }
+        return 'pending';
+      };
 
       if (
         (parsed.type === 'create_transaction' || parsed.ui_type === 'CONFIRM_CARD') &&
         parsed.data
       ) {
-        const nextMsg = messages[index + 1];
-        let status: DraftStatus = 'pending';
-        if (nextMsg && nextMsg.role === 'user') {
-          status = nextMsg.content === 'ตกลง' ? 'confirmed' : 'cancelled';
-        }
-
         return (
           <DraftCard
             data={parsed.data}
             onConfirm={() => handleConfirmSave(parsed.data)}
             onCancel={() => handleCancel(msg.id)}
-            onEdit={() => handleEditDraft(parsed.data, msg.id)}
-            status={status}
+            onEdit={() => handleEditDraft(parsed.data, msg.id, 'TRANSACTION')}
+            status={getStatus()}
           />
         );
       }
 
-      if (parsed.type === 'message' && parsed.message) {
-        return parsed.message;
+      if (parsed.type === 'create_budget' && parsed.data) {
+        return (
+          <BudgetDraftCard
+            data={parsed.data}
+            onConfirm={() => handleSaveBudget(parsed.data)}
+            onCancel={() => handleCancel(msg.id)}
+            onEdit={() => handleEditDraft(parsed.data, msg.id, 'BUDGET')}
+            status={getStatus()}
+          />
+        );
       }
 
+      if (parsed.type === 'message' && parsed.message) return parsed.message;
       return parsed.message || JSON.stringify(parsed);
     } catch {
       return msg.content;
@@ -385,21 +461,19 @@ const Sati: React.FC<SatiProps> = ({
                   <RxCross2 size={25} />
                 </div>
               </div>
-
               {hasMore && (
                 <div className="text-center text-gray-400 text-xs py-2 w-full">
                   {isLoading ? 'กำลังโหลด...' : 'เลื่อนขึ้นเพื่อดูข้อความเก่า'}
                 </div>
               )}
-
               <div className="flex flex-col gap-3 px-2">
                 {messages.map((msg, index) => {
                   const isUser = msg.role === 'user';
                   const isCard =
                     !isUser &&
                     msg.content.trim().startsWith('{') &&
-                    msg.content.includes('"create_transaction"');
-
+                    (msg.content.includes('"create_transaction"') ||
+                      msg.content.includes('"create_budget"'));
                   return (
                     <div
                       key={msg.id}
@@ -415,17 +489,14 @@ const Sati: React.FC<SatiProps> = ({
                     </div>
                   );
                 })}
-
                 {isSending && (
                   <div className="self-start w-fit max-w-[85%]">
                     <TypingIndicator />
                   </div>
                 )}
               </div>
-
               <div className="h-2" />
             </div>
-
             <div className="flex flex-row justify-between gap-3 w-full">
               <div
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -438,7 +509,6 @@ const Sati: React.FC<SatiProps> = ({
                   onClose={() => setIsMenuOpen(false)}
                 />
               </div>
-
               <form className="w-full relative" onSubmit={handleSendMessage}>
                 <input
                   className="flex justify-center items-center h-16 text-xl pl-6 px-3 w-full rounded-full border-2 border-gray-200 focus:border-blue-500 outline-none pr-16 transition-all"
@@ -462,16 +532,24 @@ const Sati: React.FC<SatiProps> = ({
         </div>
 
         <Modal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)}>
-          <Manual
-            onClose={() => setIsManualOpen(false)}
-            onSuccess={handleManualSuccess}
-            editData={editingDraft}
-            onUpdateDraft={handleSaveEditedDraft}
-          />
+          {editType === 'BUDGET' ? (
+            <Budget
+              onClose={() => setIsManualOpen(false)}
+              onSuccess={handleManualSuccess}
+              editData={editingDraft as BudgetDraftData}
+              onUpdateDraft={handleSaveEditedDraft}
+            />
+          ) : (
+            <Manual
+              onClose={() => setIsManualOpen(false)}
+              onSuccess={handleManualSuccess}
+              editData={editingDraft as DraftData}
+              onUpdateDraft={handleSaveEditedDraft}
+            />
+          )}
         </Modal>
       </PageWrapper>
     </div>
   );
 };
-
 export default Sati;
