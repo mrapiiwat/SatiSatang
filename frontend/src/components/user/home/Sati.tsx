@@ -4,26 +4,23 @@ import { FaPlus } from 'react-icons/fa6';
 import { GoArrowUp } from 'react-icons/go';
 import AddMenu from './AddMenu';
 import PageWrapper from '../../PageWrapper';
-import type { SatiProps, DraftData, BudgetDraftData } from '../../../interface/home';
+import type { SatiProps, DraftData, BudgetDraftData, GoalDraftData } from '../../../interface/home';
 import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
-import type { ChatMessage, DraftStatus } from '../../../interface/home';
+import type {
+  ChatMessage,
+  DraftStatus,
+  MessageContentData,
+  EditingDraftType,
+} from '../../../interface/home';
 import TypingIndicator from '../satang/TypingIndicator';
 import DraftCard from './DraftCard';
 import BudgetDraftCard from './BudgetDraftCard';
+import GoalDraftCard from './GoalDraftCard';
 import Modal from '../../Modal';
 import Manual from './Manual';
 import Budget from './Budget';
-
-type EditingDraftType = DraftData | BudgetDraftData | null;
-
-interface MessageContentData {
-  data: {
-    status?: DraftStatus;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
+import Goal from './Goal';
 
 const Sati: React.FC<SatiProps> = ({
   handleCloseChatModal,
@@ -46,7 +43,7 @@ const Sati: React.FC<SatiProps> = ({
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [editingDraft, setEditingDraft] = useState<EditingDraftType>(null);
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
-  const [editType, setEditType] = useState<'TRANSACTION' | 'BUDGET'>('TRANSACTION');
+  const [editType, setEditType] = useState<'TRANSACTION' | 'BUDGET' | 'GOAL'>('TRANSACTION');
 
   const prevMessagesLengthRef = useRef(messages.length);
   const isUserScrolledRef = useRef(false);
@@ -148,9 +145,9 @@ const Sati: React.FC<SatiProps> = ({
   }, [hasMore, isLoading, nextCursor, fetchSession]);
 
   const handleEditDraft = (
-    draft: DraftData | BudgetDraftData,
+    draft: EditingDraftType,
     msgId: number,
-    type: 'TRANSACTION' | 'BUDGET',
+    type: 'TRANSACTION' | 'BUDGET' | 'GOAL',
   ) => {
     setEditingDraft(draft);
     setEditingMessageId(msgId);
@@ -158,8 +155,8 @@ const Sati: React.FC<SatiProps> = ({
     setIsManualOpen(true);
   };
 
-  const handleSaveEditedDraft = async (newData: DraftData | BudgetDraftData) => {
-    if (editingMessageId) {
+  const handleSaveEditedDraft = async (newData: EditingDraftType) => {
+    if (editingMessageId && newData) {
       let newContentStr = '';
       setMessages((prev) =>
         prev.map((msg) => {
@@ -210,7 +207,8 @@ const Sati: React.FC<SatiProps> = ({
         lastMsg &&
         lastMsg.role === 'assistant' &&
         (lastMsg.content.includes('"create_transaction"') ||
-          lastMsg.content.includes('"create_budget"'))
+          lastMsg.content.includes('"create_budget"') ||
+          lastMsg.content.includes('"create_goal"'))
       ) {
         newMessages.pop();
       }
@@ -400,6 +398,69 @@ const Sati: React.FC<SatiProps> = ({
     }
   };
 
+  const handleSaveGoal = async (
+    data: GoalDraftData,
+    msgId: number,
+    originalContent: MessageContentData,
+  ) => {
+    const userConfirmText = 'ตกลง';
+    const botSuccessText = JSON.stringify({
+      type: 'message',
+      message: `ตั้งเป้าหมาย "${data.name}" เรียบร้อย! เป็นกำลังใจให้นะครับ ✌️`,
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        role: 'user',
+        content: userConfirmText,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setIsSending(true);
+
+    try {
+      await axios.post('/goal', data);
+
+      if (onRefresh) onRefresh();
+
+      await updateMessageStatus(msgId, originalContent, 'confirmed');
+
+      await axios.post('/sati/log', { role: 'user', content: userConfirmText });
+      await axios.post('/sati/log', { role: 'assistant', content: botSuccessText });
+
+      await new Promise((r) => setTimeout(r, 1000));
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: botSuccessText,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    } catch (error) {
+      const errorMsg = getErrorMessage(error);
+      const botErrorText = JSON.stringify({
+        type: 'message',
+        message: `ตั้งเป้าหมายไม่สำเร็จครับ: ${errorMsg}`,
+      });
+      await axios.post('/sati/log', { role: 'assistant', content: botErrorText });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          role: 'assistant',
+          content: botErrorText,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const handleCancel = async (msgId: number, originalContent: MessageContentData) => {
     const userCancelText = 'ยกเลิก';
     const botCancelText = JSON.stringify({
@@ -473,6 +534,18 @@ const Sati: React.FC<SatiProps> = ({
         );
       }
 
+      if (parsed.type === 'create_goal' && parsed.data) {
+        return (
+          <GoalDraftCard
+            data={parsed.data}
+            status={currentStatus}
+            onConfirm={() => handleSaveGoal(parsed.data, msg.id, parsed)}
+            onCancel={() => handleCancel(msg.id, parsed)}
+            onEdit={() => handleEditDraft(parsed.data, msg.id, 'GOAL')}
+          />
+        );
+      }
+
       if (parsed.type === 'message' && parsed.message) return parsed.message;
       return parsed.message || JSON.stringify(parsed);
     } catch {
@@ -517,7 +590,8 @@ const Sati: React.FC<SatiProps> = ({
                     !isUser &&
                     msg.content.trim().startsWith('{') &&
                     (msg.content.includes('"create_transaction"') ||
-                      msg.content.includes('"create_budget"'));
+                      msg.content.includes('"create_budget"') ||
+                      msg.content.includes('"create_goal"'));
                   return (
                     <div
                       key={msg.id}
@@ -581,6 +655,13 @@ const Sati: React.FC<SatiProps> = ({
               onClose={() => setIsManualOpen(false)}
               onSuccess={handleManualSuccess}
               editData={editingDraft as BudgetDraftData}
+              onUpdateDraft={handleSaveEditedDraft}
+            />
+          ) : editType === 'GOAL' ? (
+            <Goal
+              onClose={() => setIsManualOpen(false)}
+              onSuccess={handleManualSuccess}
+              editData={editingDraft as GoalDraftData}
               onUpdateDraft={handleSaveEditedDraft}
             />
           ) : (

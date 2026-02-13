@@ -1,13 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { RxCross2 } from 'react-icons/rx';
-import Select, { type StylesConfig, type SingleValue } from 'react-select'; // เพิ่ม StylesConfig
-import type { GoalProps, OptionType } from '../../../interface/home';
+import Select, { type StylesConfig, type SingleValue } from 'react-select';
+import type { OptionType, GoalDraftData, GoalProps } from '../../../interface/home';
 import axios from '../../../api/axios';
 import { AxiosError, isAxiosError } from 'axios';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 
-const Goal: React.FC<GoalProps> = ({ onClose }) => {
+const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
   const [goalName, setGoalName] = useState('');
   const [amount, setAmount] = useState('');
 
@@ -17,25 +17,50 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
 
   const currentYear = new Date().getFullYear();
 
-  const yearOptions: OptionType[] = Array.from({ length: 11 }, (_, i) => {
-    const val = currentYear + i;
-    return { value: String(val), label: String(val) };
-  });
+  const yearOptions: OptionType[] = useMemo(() => {
+    return Array.from({ length: 11 }, (_, i) => {
+      const val = currentYear + i;
+      return { value: String(val), label: String(val) };
+    });
+  }, [currentYear]);
 
-  const monthOptions: OptionType[] = [
-    { value: '1', label: 'มกราคม' },
-    { value: '2', label: 'กุมภาพันธ์' },
-    { value: '3', label: 'มีนาคม' },
-    { value: '4', label: 'เมษายน' },
-    { value: '5', label: 'พฤษภาคม' },
-    { value: '6', label: 'มิถุนายน' },
-    { value: '7', label: 'กรกฎาคม' },
-    { value: '8', label: 'สิงหาคม' },
-    { value: '9', label: 'กันยายน' },
-    { value: '10', label: 'ตุลาคม' },
-    { value: '11', label: 'พฤศจิกายน' },
-    { value: '12', label: 'ธันวาคม' },
-  ];
+  const monthOptions: OptionType[] = useMemo(
+    () => [
+      { value: '1', label: 'มกราคม' },
+      { value: '2', label: 'กุมภาพันธ์' },
+      { value: '3', label: 'มีนาคม' },
+      { value: '4', label: 'เมษายน' },
+      { value: '5', label: 'พฤษภาคม' },
+      { value: '6', label: 'มิถุนายน' },
+      { value: '7', label: 'กรกฎาคม' },
+      { value: '8', label: 'สิงหาคม' },
+      { value: '9', label: 'กันยายน' },
+      { value: '10', label: 'ตุลาคม' },
+      { value: '11', label: 'พฤศจิกายน' },
+      { value: '12', label: 'ธันวาคม' },
+    ],
+    [],
+  );
+
+  useEffect(() => {
+    if (editData) {
+      setGoalName(editData.name);
+      setAmount(editData.amount.toString());
+
+      if (editData.deadline) {
+        const date = new Date(editData.deadline);
+        if (!isNaN(date.getTime())) {
+          const yVal = date.getFullYear().toString();
+          const mVal = (date.getMonth() + 1).toString();
+          const dVal = date.getDate().toString();
+
+          setYear(yearOptions.find((o) => o.value === yVal) || null);
+          setMonth(monthOptions.find((o) => o.value === mVal) || null);
+          setDay({ value: dVal, label: dVal });
+        }
+      }
+    }
+  }, [editData, yearOptions, monthOptions]);
 
   const maxDays = useMemo(() => {
     if (!month) return 31;
@@ -61,15 +86,13 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
   }, [maxDays]);
 
   const validateInputs = () => {
-    const newErrors: Record<string, string> = {};
-
     if (!goalName.trim()) {
-      newErrors.goalName = 'กรุณากรอกชื่อเป้าหมาย';
-      showToastAlert(newErrors.goalName, 'error');
+      showToastAlert('กรุณากรอกชื่อเป้าหมาย', 'error');
+      return false;
     }
     if (!amount.trim() || parseFloat(amount) <= 0) {
-      newErrors.amount = 'จำนวนเงินต้องมากกว่า 0';
-      showToastAlert(newErrors.amount, 'error');
+      showToastAlert('จำนวนเงินต้องมากกว่า 0', 'error');
+      return false;
     }
 
     if (year && month && day) {
@@ -78,12 +101,11 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
       today.setHours(0, 0, 0, 0);
 
       if (selectedDate < today) {
-        newErrors.deadline = 'ตั้งเป้าหมายวันในอนาคตกันเถอะ!';
-        showToastAlert(newErrors.deadline, 'error');
+        showToastAlert('ตั้งเป้าหมายวันในอนาคตกันเถอะ!', 'error');
+        return false;
       }
     }
-
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
   const handleYearChange = (option: SingleValue<OptionType>) => {
@@ -142,29 +164,37 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+
     if (!validateInputs()) return;
 
     try {
       const deadline =
         year && month && day
           ? `${year.value}-${month.value.padStart(2, '0')}-${day.value.padStart(2, '0')}`
-          : null;
+          : undefined;
 
-      await axios.post('/goal', {
+      const payload: GoalDraftData = {
         name: goalName,
         amount: Number(amount),
-        deadline,
-      });
+        deadline: deadline,
+      };
 
-      await showToastAlert('บันทึกสำเร็จ', 'success');
+      if (onUpdateDraft) {
+        await onUpdateDraft(payload);
+        return;
+      }
+
+      await axios.post('/goal', payload);
+      showToastAlert('บันทึกสำเร็จ', 'success');
+
+      if (onSuccess) onSuccess();
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         const axiosError = err as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
-
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
-
         const errorMessage =
           customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
 
@@ -202,10 +232,10 @@ const Goal: React.FC<GoalProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
       <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-6">
-          <h4 className="font-semibold">เป้าหมาย</h4>
+          <h4 className="font-semibold">{onUpdateDraft ? 'แก้ไขเป้าหมาย' : 'เป้าหมาย'}</h4>
           <div
             onClick={onClose}
             className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"

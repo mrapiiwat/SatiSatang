@@ -1,7 +1,10 @@
+import { eq } from "drizzle-orm";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { openai } from "@/common/config/openai";
 import * as prompts from "@/common/utils/prompts";
 import { SATI_TOOLS } from "@/common/utils/tools";
+import { db } from "@/db";
+import { goals } from "@/db/schema";
 import { BudgetService } from "@/modules/budget/budget.service";
 
 export interface ChatHistoryItem {
@@ -244,6 +247,52 @@ export class OpenAIService {
           }
         } catch (err) {
           console.error("Check duplicate error:", err);
+        }
+      }
+
+      if (fnName === "create_goal") {
+        if (args.deadline) {
+          const deadlineDate = new Date(args.deadline);
+          const today = new Date();
+
+          today.setHours(0, 0, 0, 0);
+
+          if (deadlineDate < today) {
+            return {
+              type: "message",
+              message: `การตั้งเป้าหมายย้อนหลังทำไม่ได้นะครับ (ผมย้อนเวลาไม่ได้ 😅) รบกวนระบุเป็น "วันนี้" หรือ "วันในอนาคต" แทนนะครับ`,
+            };
+          }
+        }
+        try {
+          const existingGoals = await db.query.goals.findMany({
+            where: eq(goals.userId, userId),
+          });
+
+          const targetName = args.name.trim().toLowerCase();
+          const duplicate = existingGoals.find(
+            (g) => g.name.trim().toLowerCase() === targetName
+          );
+
+          const userConfirmKeywords = [
+            "ยืนยัน",
+            "สร้างเลย",
+            "เอาเลย",
+            "confirm",
+            "สร้างซ้ำ",
+          ];
+          const isUserConfirming = userConfirmKeywords.some((keyword) =>
+            content.toLowerCase().includes(keyword)
+          );
+
+          if (duplicate && !isUserConfirming) {
+            return {
+              type: "message",
+              message: `คุณมีเป้าหมายชื่อ "${duplicate.name}" อยู่แล้วนะครับ 🧐 \nถ้าต้องการสร้างซ้ำให้พิมพ์ว่า "ยืนยัน" หรือเปลี่ยนชื่อหน่อยมั้ยครับ?`,
+            };
+          }
+        } catch (err) {
+          console.error("Check goal duplicate error:", err);
         }
       }
 

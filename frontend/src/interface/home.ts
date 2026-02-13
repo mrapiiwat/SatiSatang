@@ -17,10 +17,6 @@ export interface BudgetProps {
   onSuccess?: () => void;
 }
 
-export interface GoalProps {
-  onClose: () => void;
-}
-
 export interface AddMenuProps {
   isOpen: boolean;
   onSelect: (type: string) => void;
@@ -236,3 +232,27 @@ export interface BudgetDraftData {
   categoryId: number;
   frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 }
+
+export interface GoalDraftData {
+  name: string;
+  amount: number;
+  deadline?: string;
+  status?: DraftStatus;
+}
+
+export interface GoalProps {
+  onClose: () => void;
+  onSuccess?: () => void;
+  editData?: GoalDraftData;
+  onUpdateDraft?: (data: GoalDraftData) => Promise<void>;
+}
+
+export interface MessageContentData {
+  data: {
+    status?: DraftStatus;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export type EditingDraftType = DraftData | BudgetDraftData | GoalDraftData | null;
