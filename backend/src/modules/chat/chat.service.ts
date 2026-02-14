@@ -164,17 +164,6 @@ export class ChatService {
       history
     );
 
-    if (result.type === "create_transaction") {
-      const amount = Number(result.data.amount);
-
-      if (!amount || amount === 0 || Number.isNaN(amount)) {
-        result = {
-          type: "message",
-          message: `รายการ "${result.data.description || "นี้"}" ราคาเท่าไหร่ครับ?`,
-        };
-      }
-    }
-
     await db.insert(chatMessage).values({
       sessionId,
       userId,

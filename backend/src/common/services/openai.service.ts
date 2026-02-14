@@ -305,6 +305,14 @@ export class OpenAIService {
       }
 
       if (fnName === "create_transaction") {
+        const amount = Number(args.amount);
+        if (!amount || amount === 0 || Number.isNaN(amount)) {
+          return {
+            type: "message",
+            message: `รายการ "${args.description || "นี้"}" ราคาเท่าไหร่ครับ?`,
+          };
+        }
+
         const isGoalId = goalCategories.some(
           (g) => String(g.id) === String(args.categoryId)
         );
