@@ -3,7 +3,10 @@ import { Elysia } from "elysia";
 import { errorMiddleware } from "@/common/middlewares/error.middleware";
 import { logger } from "@/common/plugins/logger";
 import modules from "@/modules";
+import {RAGService} from "@/common/services/rag.service";
 
+const ragService = new RAGService();
+await ragService.ensureCollections();
 const PORT = Bun.env.PORT ? parseInt(Bun.env.PORT, 10) : 8080;
 const app = new Elysia()
   .use(errorMiddleware)

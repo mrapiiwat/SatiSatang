@@ -197,13 +197,24 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
             />
           </div>
 
-          <div className="flex justify-center items-center mt-3">
+          <div className="flex flex-col justify-center items-center mt-4 gap-3">
             <button
               type="submit"
-              className="bg-blue-600 px-6 py-3 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
+              className="bg-blue-600 w-full py-3 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
             >
               บันทึก
             </button>
+
+            {/* โชว์ปุ่ม "ลบ" เฉพาะตอนที่มี editData (ตอนแก้ไข) */}
+            {editData && (
+              <button
+                type="button" // สำคัญ: ต้องเป็น type="button" ไม่งั้นมันจะไปกด submit form
+                // onClick={} // ตรงนี้เว้นว่างไว้รอเพื่อนมาใส่ฟังก์ชันลบ
+                className="text-gray-400 text-sm underline cursor-pointer hover:text-gray-600 transition"
+              >
+                ลบ
+              </button>
+            )}
           </div>
         </form>
       </div>

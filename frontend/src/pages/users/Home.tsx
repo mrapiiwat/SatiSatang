@@ -16,8 +16,7 @@ import Budget from '../../components/user/home/Budget';
 import Goal from '../../components/user/home/Goal';
 import Sati from '../../components/user/home/Sati';
 import DeadlineDisplay from '../../components/user/home/DeadlineDisplay';
-import { AnimatePresence, motion } from 'framer-motion';
-
+import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 const Home = () => {
   const today = new Date();
   const navigate = useNavigate();
@@ -47,7 +46,7 @@ const Home = () => {
   const [now, setNow] = useState(new Date());
   const [showFrequency, setShowFrequency] = useState(true);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [editData, setEditData] = useState<Transaction | null>(null);
+  const [editData, setEditData] = useState<any | null>(null);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -308,17 +307,53 @@ const Home = () => {
         ) : (
           <>
             <div className="flex flex-col md:max-w-[80%] md:flex-col lg:flex-row lg:justify-center lg:gap-4 mb-6 w-full lg:w-4/5 mx-auto">
+            {/* --- เริ่มส่วนการ์ดงบประมาณ (แก้ไขใหม่ให้ลากได้) --- */}
               {budgets.length > 0 && budgetIndex < budgets.length && (
-                <div
-                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col"
+                <motion.div
+                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
+                  
+                  // 1. ตั้งค่าให้ลากได้เฉพาะแกน X (แนวนอน)
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }} // ลากแล้วเด้งกลับที่เดิม
+                  dragElastic={0.2} // แรงดึงกลับ (ยิ่งน้อยยิ่งตึง)
+                  
+                  // 2. ฟังก์ชันคำนวณเมื่อปล่อยมือ (Swipe Logic)
+                  onDragEnd={(_e, info: PanInfo) => {
+                    const swipeThreshold = 50; // ต้องลากเกิน 50px ถึงจะเปลี่ยนหน้า
+                    if (info.offset.x < -swipeThreshold) {
+                      // ลากไปทางซ้าย -> ถัดไป
+                      setBudgetIndex((prev) => (prev + 1) % budgets.length);
+                    } else if (info.offset.x > swipeThreshold) {
+                      // ลากไปทางขวา -> ย้อนกลับ
+                      setBudgetIndex((prev) => (prev - 1 + budgets.length) % budgets.length);
+                    }
+                  }}
+
+                  // 3. คลิกเพื่อเปิด Popup (Logic เดิม)
+                  onClick={() => {
+                    if (budgets[budgetIndex]) {
+                      setEditData({
+                        id: budgets[budgetIndex].id,
+                        categoryId: budgets[budgetIndex].category.id,
+                        frequency: budgets[budgetIndex].frequency,
+                        amount: budgets[budgetIndex].amount,
+                      });
+                      setActivePopup('budget');
+                    }
+                  }}
+                  
+                  // หยุด Auto Play เมื่อเอาเมาส์ชี้
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold text-base">งบที่ตั้งไว้</h4>
+                  <div className="flex justify-between items-center mb-2 pointer-events-none"> {/* pointer-events-none เพื่อไม่ให้ข้อความกวนการลาก */}
+                    <h4 className="font-semibold text-base pointer-events-auto">งบที่ตั้งไว้</h4>
                     <p
-                      className="text-xs text-black-500 cursor-pointer"
-                      onClick={() => setShowFrequency(!showFrequency)}
+                      className="text-xs text-black-500 cursor-pointer pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation(); // กันไม่ให้กดแล้วไปเปิด Popup
+                        setShowFrequency(!showFrequency);
+                      }}
                     >
                       <AnimatePresence mode="wait">
                         {showFrequency ? (
@@ -354,11 +389,11 @@ const Home = () => {
                     </p>
                   </div>
 
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-sm text-black">
+                  <div className="flex justify-between items-start mb-1 pointer-events-none">
+                    <span className="text-sm text-black pointer-events-auto">
                       {budgets[budgetIndex]?.category?.name || 'ไม่ระบุหมวดหมู่'}
                     </span>
-                    <div className="text-xs text-gray-700">
+                    <div className="text-xs text-gray-700 pointer-events-auto">
                       <span className="text-purple-300 font-semibold">
                         ฿ {budgets[budgetIndex]?.currentAmount?.toLocaleString() || 0}
                       </span>
@@ -369,7 +404,7 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1">
+                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1 pointer-events-none">
                     <div
                       className="bg-purple-300 h-1.5 rounded-full transition-all"
                       style={{
@@ -383,7 +418,10 @@ const Home = () => {
                     />
                   </div>
 
-                  <div className="flex justify-center gap-1 mt-3">
+                  {/* ส่วนจุด Pagination */}
+                  <div className="flex justify-center gap-1 mt-3" 
+                       onClick={(e) => e.stopPropagation()} /* 🔥 สำคัญ: กันไม่ให้กดพื้นที่แถวนี้แล้ว Popup เด้ง */
+                  >
                     {budgets.length > 1 &&
                       budgets
                         .slice(
@@ -399,7 +437,10 @@ const Home = () => {
                           return (
                             <span
                               key={realIndex}
-                              onClick={() => setBudgetIndex(realIndex)}
+                              onClick={(e) => {
+                                e.stopPropagation(); // 🔥 สำคัญ: กดจุดแล้วไม่เปิด Popup
+                                setBudgetIndex(realIndex);
+                              }}
                               className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
                                 budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
                               }`}
@@ -407,8 +448,9 @@ const Home = () => {
                           );
                         })}
                   </div>
-                </div>
+                </motion.div>
               )}
+              {/* --- จบส่วนการ์ดงบประมาณ --- */}
 
               {goals.length > 0 && (
                 <div
@@ -591,7 +633,13 @@ const Home = () => {
               editData={editData}
             />
           )}
-          {activePopup === 'budget' && <Budget onClose={handleClosePopupAndRefetch} />}
+          {activePopup === 'budget' && (
+            <Budget
+              onClose={handleClosePopupAndRefetch}
+              onSuccess={handleRefreshAll} // สั่งให้รีเฟรชหน้าจอเมื่อบันทึก/ลบเสร็จ
+              editData={editData}
+            />
+          )}
           {activePopup === 'goal' && <Goal onClose={handleClosePopupAndRefetch} />}
         </div>
       </Modal>
