@@ -168,11 +168,11 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
     if (!dataWithId || !dataWithId.id) return;
 
     try {
-      await axios.delete(`/goal/${dataWithId.id}`); 
+      await axios.delete(`/goal/${dataWithId.id}`);
       showToastAlert('ลบเป้าหมายสำเร็จ', 'success');
-      if (onSuccess) onSuccess(); 
-      onClose(); 
-    } catch (err) {
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch {
       showToastAlert('เกิดข้อผิดพลาดในการลบ', 'error');
     }
   };
@@ -338,8 +338,9 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
             </div>
           </div>
 
-          <div className="flex justify-center mt-2 gap-3"> {/* เพิ่ม gap-3 เพื่อให้ปุ่มห่างกัน */}
-            
+          <div className="flex justify-center mt-2 gap-3">
+            {' '}
+            {/* เพิ่ม gap-3 เพื่อให้ปุ่มห่างกัน */}
             {/* 1. ปุ่มลบ: จะโชว์เฉพาะเวลาที่เรากดเข้ามา "แก้ไข" (มี editData) เท่านั้น */}
             {editData && (
               <button
@@ -350,7 +351,6 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                 ลบ
               </button>
             )}
-
             {/* 2. ปุ่มบันทึก: ปรับความกว้างให้ยืดหยุ่นถ้ามีปุ่มลบมาแชร์พื้นที่ */}
             <button
               onClick={handleSubmit}
