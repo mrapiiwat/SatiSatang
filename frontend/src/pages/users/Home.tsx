@@ -452,70 +452,113 @@ const Home = () => {
               )}
               {/* --- จบส่วนการ์ดงบประมาณ --- */}
 
-              {goals.length > 0 && (
-                <div
-                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg flex flex-col"
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold text-base">เป้าหมาย</h4>
-                    <p className="text-xs text-black-500">
-                      <DeadlineDisplay deadline={goals[goalIndex]?.deadline} now={now} />
-                    </p>
-                  </div>
+{/* --- เริ่มส่วนการ์ดเป้าหมาย (Goal) --- */}
+          {goals.length > 0 && goalIndex < goals.length && (
+            <motion.div
+              className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
+              
+              // 1. ฟีเจอร์ลาก (Swipe) เหมือน Budget
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_e, info: PanInfo) => {
+                const swipeThreshold = 50;
+                if (info.offset.x < -swipeThreshold) {
+                  // ลากซ้าย -> ไปตัวถัดไป
+                  setGoalIndex((prev) => (prev + 1) % goals.length);
+                } else if (info.offset.x > swipeThreshold) {
+                  // ลากขวา -> ย้อนกลับ
+                  setGoalIndex((prev) => (prev - 1 + goals.length) % goals.length);
+                }
+              }}
 
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-sm text-black">{goals[goalIndex].name}</span>
-                    <div className="text-xs text-gray-700">
-                      <span className="text-green-600 font-semibold">
-                        ฿ {goals[goalIndex].totalAmount.toLocaleString()}
-                      </span>
-                      <span className="text-gray-500">
-                        {' '}
-                        / ฿ {goals[goalIndex].amount.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
+              // 2. คลิกเพื่อแก้ไข (เปิด Popup Goal)
+              onClick={() => {
+                // ตรงนี้ต้องส่ง editData ไปด้วยถ้า Goal Component รองรับการแก้ไข
+                 if (goals[goalIndex]) {
+                  setEditData({
+                    id: goals[goalIndex].id,
+                    name: goals[goalIndex].name,
+                    amount: goals[goalIndex].amount,
+                    deadline: goals[goalIndex].deadline
+                    // เพิ่ม field อื่นๆ ที่ Goal interface ต้องการ
+                  });
+                  setActivePopup('goal');
+                }
+              }}
 
-                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1">
-                    <div
-                      className="bg-green-600 h-1.5 rounded-full transition-all"
-                      style={{
-                        width: `${Math.min(
-                          (goals[goalIndex].totalAmount / goals[goalIndex].amount) * 100,
-                          100,
-                        )}%`,
-                      }}
-                    />
-                  </div>
+              // หยุด Auto Play เมื่อเอาเมาส์ชี้
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              <div className="flex justify-between items-center mb-2 pointer-events-none">
+                <h4 className="font-semibold text-base pointer-events-auto">เป้าหมาย</h4>
+                <p className="text-xs text-black-500 pointer-events-auto">
+                  <DeadlineDisplay deadline={goals[goalIndex]?.deadline} now={now} />
+                </p>
+              </div>
 
-                  <div className="flex justify-center gap-1 mt-3">
-                    {goals.length > 1 &&
-                      goals
-                        .slice(
-                          Math.min(Math.max(goalIndex - 2, 0), Math.max(goals.length - 5, 0)),
-                          Math.min(Math.max(goalIndex - 2, 0) + 5, goals.length),
-                        )
-                        .map((_, idx) => {
-                          const startIndex = Math.min(
-                            Math.max(goalIndex - 2, 0),
-                            Math.max(goals.length - 5, 0),
-                          );
-                          const realIndex = startIndex + idx;
-                          return (
-                            <span
-                              key={realIndex}
-                              onClick={() => setGoalIndex(realIndex)}
-                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
-                                goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
-                              }`}
-                            />
-                          );
-                        })}
-                  </div>
+              <div className="flex justify-between items-start mb-1 pointer-events-none">
+                <span className="text-sm text-black pointer-events-auto">
+                  {goals[goalIndex]?.name}
+                </span>
+                <div className="text-xs text-gray-700 pointer-events-auto">
+                  <span className="text-green-600 font-semibold">
+                    ฿ {goals[goalIndex]?.totalAmount?.toLocaleString() || 0}
+                  </span>
+                  <span className="text-gray-500">
+                    {' '}
+                    / ฿ {goals[goalIndex]?.amount?.toLocaleString() || 0}
+                  </span>
                 </div>
-              )}
+              </div>
+
+              <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1 pointer-events-none">
+                <div
+                  className="bg-green-600 h-1.5 rounded-full transition-all"
+                  style={{
+                    width: `${Math.min(
+                      ((goals[goalIndex]?.totalAmount || 0) / (goals[goalIndex]?.amount || 1)) * 100,
+                      100,
+                    )}%`,
+                  }}
+                />
+              </div>
+
+              {/* ส่วนจุด Pagination */}
+              <div 
+                className="flex justify-center gap-1 mt-3"
+                onClick={(e) => e.stopPropagation()} // กันไม่ให้กดพื้นที่แถวนี้แล้ว Popup เด้ง
+              >
+                {goals.length > 1 &&
+                  goals
+                    .slice(
+                      Math.min(Math.max(goalIndex - 2, 0), Math.max(goals.length - 5, 0)),
+                      Math.min(Math.max(goalIndex - 2, 0) + 5, goals.length),
+                    )
+                    .map((_, idx) => {
+                      const startIndex = Math.min(
+                        Math.max(goalIndex - 2, 0),
+                        Math.max(goals.length - 5, 0),
+                      );
+                      const realIndex = startIndex + idx;
+                      return (
+                        <span
+                          key={realIndex}
+                          onClick={(e) => {
+                            e.stopPropagation(); // สำคัญ: กดจุดแล้วไม่เปิด Popup
+                            setGoalIndex(realIndex);
+                          }}
+                          className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
+                            goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
+                          }`}
+                        />
+                      );
+                    })}
+              </div>
+            </motion.div>
+          )}
+          {/* --- จบส่วนการ์ดเป้าหมาย --- */}
             </div>
 
             <div className="flex flex-row md:flex md:justify-center">

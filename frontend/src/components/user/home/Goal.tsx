@@ -162,6 +162,21 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
     }
   };
 
+  // ฟังก์ชันสำหรับส่งคำสั่งลบไปยัง Backend
+  const handleDelete = async () => {
+    const dataWithId = editData as GoalDraftData & { id?: string | number };
+    if (!dataWithId || !dataWithId.id) return;
+
+    try {
+      await axios.delete(`/goal/${dataWithId.id}`); 
+      showToastAlert('ลบเป้าหมายสำเร็จ', 'success');
+      if (onSuccess) onSuccess(); 
+      onClose(); 
+    } catch (err) {
+      showToastAlert('เกิดข้อผิดพลาดในการลบ', 'error');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -323,10 +338,23 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
             </div>
           </div>
 
-          <div className="flex justify-center mt-2">
+          <div className="flex justify-center mt-2 gap-3"> {/* เพิ่ม gap-3 เพื่อให้ปุ่มห่างกัน */}
+            
+            {/* 1. ปุ่มลบ: จะโชว์เฉพาะเวลาที่เรากดเข้ามา "แก้ไข" (มี editData) เท่านั้น */}
+            {editData && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all"
+              >
+                ลบ
+              </button>
+            )}
+
+            {/* 2. ปุ่มบันทึก: ปรับความกว้างให้ยืดหยุ่นถ้ามีปุ่มลบมาแชร์พื้นที่ */}
             <button
               onClick={handleSubmit}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all"
+              className={`${editData ? 'bg-blue-600' : 'bg-blue-600 w-full'} hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all`}
             >
               บันทึก
             </button>
