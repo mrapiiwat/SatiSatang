@@ -62,7 +62,7 @@ export const getHandleMessagePrompt = (
       1. รายการหมวดหมู่ทั่วไป (General Categories):
       ${categoryListText}
 
-      2. รายการเป้าหมายของผู้ใช้ที่มีอยู่แล้ว (Existing Goals):
+      2. รายการเป้าหมายของผู้ใช้ที่มีอยู่แล้ว  (Existing Goals):
       ${goalListText}
 
       [เวลาปัจจุบัน (Current Time)]

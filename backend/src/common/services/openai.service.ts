@@ -279,7 +279,7 @@ export class OpenAIService {
             message: `คุณยังไม่ได้ระบุจำนวนเงินครับ รบกวนระบุจำนวนเงินที่ต้องการตั้งเป้าหมายด้วยนะครับ`,
           };
         }
-        
+
         try {
           const existingGoals = await db.query.goals.findMany({
             where: eq(goals.userId, userId),
