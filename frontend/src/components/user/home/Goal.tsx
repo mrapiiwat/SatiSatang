@@ -178,7 +178,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
       onClose();
     } catch (err) {
       console.log(err);
-      
+
       showToastAlert('เกิดข้อผิดพลาดในการลบ', 'error');
     }
   };
