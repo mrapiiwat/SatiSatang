@@ -176,7 +176,9 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
       showToastAlert('ลบเป้าหมายสำเร็จ', 'success');
       if (onSuccess) onSuccess();
       onClose();
-    } catch {
+    } catch (err) {
+      console.log(err);
+      
       showToastAlert('เกิดข้อผิดพลาดในการลบ', 'error');
     }
   };

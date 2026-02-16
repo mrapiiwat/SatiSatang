@@ -49,7 +49,8 @@ export class GoalService {
       where: and(
         eq(goals.userId, userId),
         lte(goals.createdAt, endDate),
-        or(gte(goals.deadline, startDate), isNull(goals.deadline))
+        or(gte(goals.deadline, startDate), isNull(goals.deadline)),
+        isNull(goals.deletedAt)
       ),
       with: {
         goalTransactions: true,
@@ -149,7 +150,7 @@ export class GoalService {
 
     return updatedGoal;
   }
-  async deleteGoal(userId: number, goalId: number) {
+  async deleteGoal(goalId: number, userId: number) {
     const existingGoal = await db.query.goals.findFirst({
       where: and(eq(goals.id, goalId), eq(goals.userId, userId)),
     });
@@ -158,7 +159,16 @@ export class GoalService {
       throw new NotFoundError("Goal not found");
     }
 
-    await db.delete(goals).where(eq(goals.id, goalId));
+    await db
+      .update(goals)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(
+          eq(goals.id, goalId),
+          eq(goals.userId, userId),
+          isNull(goals.deletedAt)
+        )
+      );
 
     return { message: "Goal deleted successfully" };
   }
