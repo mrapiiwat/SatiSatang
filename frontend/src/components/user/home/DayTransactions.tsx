@@ -4,9 +4,10 @@ import type { CategoriesType, Transaction } from '../../../interface/category';
 import Image from '../../Image';
 import axios from '../../../api/axios';
 import Modal from '../../Modal';
-import { MdArrowUpward, MdArrowDownward, MdEdit, MdDelete } from 'react-icons/md';
+import { MdArrowUpward, MdArrowDownward } from 'react-icons/md';
 import { RxCross2 } from 'react-icons/rx';
 import { showToastAlert } from '../../../store/toastStore';
+import { MdSubject } from 'react-icons/md';
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({
   groupedByDate,
@@ -113,7 +114,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                         {transaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
                       </p>
                       {transaction.description && (
-                        <p className="text-sm text-gray-700 line-clamp-1 break-all">
+                        <p className="text-sm text-gray-700 line-clamp-1 break-all w-32 md:w-48">
                           {transaction.description}
                         </p>
                       )}
@@ -133,24 +134,20 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
       })}
       <Modal isOpen={!!selectedTransaction} onClose={() => setSelectedTransaction(null)}>
         {selectedTransaction && (
-          <div className="bg-white rounded-2xl py-2 w-full max-w-96 mx-auto p-0 overflow-hidden shadow-2xl relative flex flex-col">
-            <div className="absolute top-4 right-4 z-10">
-              <button
-                onClick={() => setSelectedTransaction(null)}
-                className="flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-100 cursor-pointer"
-              >
-                <RxCross2 size={25} />
-              </button>
-            </div>
+          <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
+              <div className="flex justify-between items-center mb-6">
+                <h4 className="font-semibold text-lg">รายละเอียด</h4>
+                <div
+                  onClick={() => setSelectedTransaction(null)}
+                  className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+                >
+                  <RxCross2 size={20} />
+                </div>
+              </div>
 
-            <div className="pt-10 pb-6 px-6 flex flex-col items-center">
-              <div
-                className={`
-          mb-4 p-1.5 rounded-full h-24 w-24 flex items-center justify-center 
-          ${selectedTransaction.type === 'INCOME' ? 'bg-green-50' : 'bg-red-50'}
-        `}
-              >
-                <div className="w-full h-full rounded-full overflow-hidden shadow-sm border-4 border-white">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-100">
                   {categoryMap[selectedTransaction.categoryId] ? (
                     <Image
                       src={categoryMap[selectedTransaction.categoryId]}
@@ -159,73 +156,67 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                     />
                   ) : (
                     <div
-                      className={`w-full h-full flex items-center justify-center ${selectedTransaction.type === 'INCOME' ? 'text-green-500' : 'text-red-500'}`}
+                      className={`w-full h-full flex items-center justify-center ${
+                        selectedTransaction.type === 'INCOME'
+                          ? 'text-green-500 bg-green-50'
+                          : 'text-red-500 bg-red-50'
+                      }`}
                     >
                       {selectedTransaction.type === 'INCOME' ? (
-                        <MdArrowUpward size={32} />
+                        <MdArrowUpward size={28} />
                       ) : (
-                        <MdArrowDownward size={32} />
+                        <MdArrowDownward size={28} />
                       )}
                     </div>
                   )}
                 </div>
+
+                <div className="text-center mb-2">
+                  <div
+                    className={`text-sm font-bold mb-1 ${selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    {selectedTransaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
+                  </div>
+                  <h2
+                    className={`text-3xl font-bold ${selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    {selectedTransaction.type === 'INCOME' ? '+' : '-'}
+                    {selectedTransaction.amount.toLocaleString()}
+                  </h2>
+                </div>
+
+                <div className="w-full mt-2">
+                  {selectedTransaction.description ? (
+                    <div className="flex gap-3 items-start bg-gray-50 rounded-2xl p-4">
+                      <div className="text-gray-400 mt-0.5 flex-shrink-0">
+                        <MdSubject size={18} />
+                      </div>
+                      <p className="text-gray-700 text-sm leading-relaxed break-words text-left">
+                        {selectedTransaction.description}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
-              <span
-                className={`
-          px-4 py-1 rounded-full text-xs font-bold mb-2
-          ${selectedTransaction.type === 'INCOME' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}
-        `}
-              >
-                {selectedTransaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
-              </span>
-
-              <h2 className="text-4xl font-black text-gray-800 mb-4 tracking-tight">
-                <span
-                  className={
-                    selectedTransaction.type === 'INCOME'
-                      ? 'text-green-500 mr-1'
-                      : 'text-red-500 mr-1'
-                  }
+              <div className="flex flex-row-reverse items-center gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition"
                 >
-                  {selectedTransaction.type === 'INCOME' ? '+' : '-'}
-                </span>
-                {selectedTransaction.amount.toLocaleString()}
-              </h2>
+                  {isDeleting ? 'กำลังลบ...' : 'ลบ'}
+                </button>
 
-              {selectedTransaction.description ? (
-                <div className="w-full rounded-xl p-3">
-                  <p className="text-gray-500 text-lg text-center leading-relaxed break-all line-clamp-3 overflow-hidden">
-                    {selectedTransaction.description}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-gray-300 text-xs italic">ไม่มีบันทึก</p>
-              )}
-            </div>
-
-            <div className="px-6 pb-6 flex gap-3">
-              <button
-                onClick={() => handleEdit()}
-                className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold text-base flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
-              >
-                <MdEdit size={16} />
-                แก้ไข
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold text-base flex items-center justify-center gap-2 shadow-md hover:bg-red-600 active:scale-95 transition-all"
-              >
-                {isDeleting ? (
-                  'กำลังลบ...'
-                ) : (
-                  <>
-                    <MdDelete size={16} />
-                    ลบ
-                  </>
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => handleEdit()}
+                  className="flex-1 bg-blue-600 py-3 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
+                >
+                  แก้ไข
+                </button>
+              </div>
             </div>
           </div>
         )}

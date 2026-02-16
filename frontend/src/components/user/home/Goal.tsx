@@ -11,6 +11,8 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
   const [goalName, setGoalName] = useState('');
   const [amount, setAmount] = useState('');
 
+  const [hasDeadline, setHasDeadline] = useState(false);
+
   const [year, setYear] = useState<SingleValue<OptionType>>(null);
   const [month, setMonth] = useState<SingleValue<OptionType>>(null);
   const [day, setDay] = useState<SingleValue<OptionType>>(null);
@@ -48,6 +50,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
       setAmount(editData.amount.toString());
 
       if (editData.deadline) {
+        setHasDeadline(true);
         const date = new Date(editData.deadline);
         if (!isNaN(date.getTime())) {
           const yVal = date.getFullYear().toString();
@@ -58,6 +61,8 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
           setMonth(monthOptions.find((o) => o.value === mVal) || null);
           setDay({ value: dVal, label: dVal });
         }
+      } else {
+        setHasDeadline(false);
       }
     }
   }, [editData, yearOptions, monthOptions]);
@@ -95,7 +100,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
       return false;
     }
 
-    if (year && month && day) {
+    if (hasDeadline && year && month && day) {
       const selectedDate = new Date(Number(year.value), Number(month.value) - 1, Number(day.value));
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -162,7 +167,6 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
     }
   };
 
-  // ฟังก์ชันสำหรับส่งคำสั่งลบไปยัง Backend
   const handleDelete = async () => {
     const dataWithId = editData as GoalDraftData & { id?: string | number };
     if (!dataWithId || !dataWithId.id) return;
@@ -185,7 +189,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
 
     try {
       const deadline =
-        year && month && day
+        hasDeadline && year && month && day
           ? `${year.value}-${month.value.padStart(2, '0')}-${day.value.padStart(2, '0')}`
           : undefined;
 
@@ -281,80 +285,93 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">ระยะเวลา</label>
-            <div className="flex gap-2">
-              <div className="flex flex-col flex-1 min-w-0">
-                <Select<OptionType, false>
-                  options={yearOptions}
-                  value={year}
-                  onChange={handleYearChange}
-                  placeholder="ปี"
-                  isClearable
-                  isSearchable={false}
-                  styles={selectStyles}
-                />
-              </div>
-
-              <div className="flex flex-col flex-1 min-w-0">
-                <Select<OptionType, false>
-                  options={monthOptions}
-                  value={month}
-                  onChange={handleMonthChange}
-                  placeholder="เดือน"
-                  isClearable
-                  isSearchable={false}
-                  isOptionDisabled={(option) => {
-                    if (!year) return false;
-                    const currentY = new Date().getFullYear();
-                    const currentM = new Date().getMonth() + 1;
-                    return Number(year.value) === currentY && Number(option.value) < currentM;
-                  }}
-                  styles={selectStyles}
-                />
-              </div>
-
-              <div className="flex flex-col flex-1 min-w-0">
-                <Select<OptionType, false>
-                  options={dayOptions}
-                  value={day}
-                  onChange={(option) => setDay(option)}
-                  placeholder="วัน"
-                  isClearable
-                  isSearchable={false}
-                  isOptionDisabled={(option) => {
-                    if (!year || !month) return false;
-                    const currentY = new Date().getFullYear();
-                    const currentM = new Date().getMonth() + 1;
-                    const currentD = new Date().getDate();
-
-                    if (Number(year.value) === currentY && Number(month.value) === currentM) {
-                      return Number(option.value) < currentD;
-                    }
-                    return false;
-                  }}
-                  styles={selectStyles}
-                />
-              </div>
+            <div className="flex justify-between items-center h-8">
+              <label
+                htmlFor="hasDeadline"
+                className="text-sm font-medium cursor-pointer select-none text-black-900"
+              >
+                กำหนดวันสิ้นสุด (Deadline)
+              </label>
+              <input
+                type="checkbox"
+                id="hasDeadline"
+                checked={hasDeadline}
+                onChange={(e) => setHasDeadline(e.target.checked)}
+                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+              />
             </div>
+
+            {hasDeadline && (
+              <div className="flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1">
+                <div className="flex flex-col flex-1 min-w-0">
+                  <Select<OptionType, false>
+                    options={yearOptions}
+                    value={year}
+                    onChange={handleYearChange}
+                    placeholder="ปี"
+                    isClearable
+                    isSearchable={false}
+                    styles={selectStyles}
+                  />
+                </div>
+
+                <div className="flex flex-col flex-1 min-w-0">
+                  <Select<OptionType, false>
+                    options={monthOptions}
+                    value={month}
+                    onChange={handleMonthChange}
+                    placeholder="เดือน"
+                    isClearable
+                    isSearchable={false}
+                    isOptionDisabled={(option) => {
+                      if (!year) return false;
+                      const currentY = new Date().getFullYear();
+                      const currentM = new Date().getMonth() + 1;
+                      return Number(year.value) === currentY && Number(option.value) < currentM;
+                    }}
+                    styles={selectStyles}
+                  />
+                </div>
+
+                <div className="flex flex-col flex-1 min-w-0">
+                  <Select<OptionType, false>
+                    options={dayOptions}
+                    value={day}
+                    onChange={(option) => setDay(option)}
+                    placeholder="วัน"
+                    isClearable
+                    isSearchable={false}
+                    isOptionDisabled={(option) => {
+                      if (!year || !month) return false;
+                      const currentY = new Date().getFullYear();
+                      const currentM = new Date().getMonth() + 1;
+                      const currentD = new Date().getDate();
+
+                      if (Number(year.value) === currentY && Number(month.value) === currentM) {
+                        return Number(option.value) < currentD;
+                      }
+                      return false;
+                    }}
+                    styles={selectStyles}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="flex justify-center mt-2 gap-3">
-            {' '}
-            {/* เพิ่ม gap-3 เพื่อให้ปุ่มห่างกัน */}
-            {/* 1. ปุ่มลบ: จะโชว์เฉพาะเวลาที่เรากดเข้ามา "แก้ไข" (มี editData) เท่านั้น */}
+          <div className="flex flex-row-reverse items-center gap-3">
             {editData && (
               <button
                 type="button"
                 onClick={handleDelete}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all"
+                className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition"
               >
                 ลบ
               </button>
             )}
-            {/* 2. ปุ่มบันทึก: ปรับความกว้างให้ยืดหยุ่นถ้ามีปุ่มลบมาแชร์พื้นที่ */}
             <button
               onClick={handleSubmit}
-              className={`${editData ? 'bg-blue-600' : 'bg-blue-600 w-full'} hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all`}
+              className="flex-1 bg-blue-600 py-3 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
             >
               บันทึก
             </button>

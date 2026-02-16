@@ -307,47 +307,39 @@ const Home = () => {
         ) : (
           <>
             <div className="flex flex-col md:max-w-[80%] md:flex-col lg:flex-row lg:justify-center lg:gap-4 mb-6 w-full lg:w-4/5 mx-auto">
-              {/* --- เริ่มส่วนการ์ดงบประมาณ (แก้ไขใหม่ให้ลากได้) --- */}
               {budgets.length > 0 && budgetIndex < budgets.length && (
                 <motion.div
                   className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
-                  // 1. ตั้งค่าให้ลากได้เฉพาะแกน X (แนวนอน)
                   drag="x"
-                  dragConstraints={{ left: 0, right: 0 }} // ลากแล้วเด้งกลับที่เดิม
-                  dragElastic={0.2} // แรงดึงกลับ (ยิ่งน้อยยิ่งตึง)
-                  // 2. ฟังก์ชันคำนวณเมื่อปล่อยมือ (Swipe Logic)
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
                   onDragEnd={(_e, info: PanInfo) => {
-                    const swipeThreshold = 50; // ต้องลากเกิน 50px ถึงจะเปลี่ยนหน้า
+                    const swipeThreshold = 50;
                     if (info.offset.x < -swipeThreshold) {
-                      // ลากไปทางซ้าย -> ถัดไป
                       setBudgetIndex((prev) => (prev + 1) % budgets.length);
                     } else if (info.offset.x > swipeThreshold) {
-                      // ลากไปทางขวา -> ย้อนกลับ
                       setBudgetIndex((prev) => (prev - 1 + budgets.length) % budgets.length);
                     }
                   }}
-                  // 3. คลิกเพื่อเปิด Popup (Logic เดิม)
                   onClick={() => {
                     if (budgets[budgetIndex]) {
-                      // ✅ ส่งข้อมูลที่มีอยู่แล้วไปทั้งก้อน
                       setEditData({
                         ...budgets[budgetIndex],
-                        categoryId: budgets[budgetIndex].category.id, // ดึงไอดีออกมาวางข้างนอกให้ตรงตามที่มันต้องการ
-                      } as unknown as MyBudget); // ใช้ "Double Cast" เพื่อให้ TypeScript ยอมให้เราเก็บค่านี้ลงในสถานะเดิม                      setActivePopup('budget');
+                        categoryId: budgets[budgetIndex].category.id,
+                      } as unknown as MyBudget);
+                      setActivePopup('budget');
                     }
                   }}
-                  // หยุด Auto Play เมื่อเอาเมาส์ชี้
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                 >
                   <div className="flex justify-between items-center mb-2 pointer-events-none">
                     {' '}
-                    {/* pointer-events-none เพื่อไม่ให้ข้อความกวนการลาก */}
                     <h4 className="font-semibold text-base pointer-events-auto">งบที่ตั้งไว้</h4>
                     <p
                       className="text-xs text-black-500 cursor-pointer pointer-events-auto"
                       onClick={(e) => {
-                        e.stopPropagation(); // กันไม่ให้กดแล้วไปเปิด Popup
+                        e.stopPropagation();
                         setShowFrequency(!showFrequency);
                       }}
                     >
@@ -414,12 +406,9 @@ const Home = () => {
                     />
                   </div>
 
-                  {/* ส่วนจุด Pagination */}
                   <div
                     className="flex justify-center gap-1 mt-3"
-                    onClick={(e) =>
-                      e.stopPropagation()
-                    } /* 🔥 สำคัญ: กันไม่ให้กดพื้นที่แถวนี้แล้ว Popup เด้ง */
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {budgets.length > 1 &&
                       budgets
@@ -437,7 +426,7 @@ const Home = () => {
                             <span
                               key={realIndex}
                               onClick={(e) => {
-                                e.stopPropagation(); // 🔥 สำคัญ: กดจุดแล้วไม่เปิด Popup
+                                e.stopPropagation();
                                 setBudgetIndex(realIndex);
                               }}
                               className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
@@ -449,36 +438,27 @@ const Home = () => {
                   </div>
                 </motion.div>
               )}
-              {/* --- จบส่วนการ์ดงบประมาณ --- */}
 
-              {/* --- เริ่มส่วนการ์ดเป้าหมาย (Goal) --- */}
               {goals.length > 0 && goalIndex < goals.length && (
                 <motion.div
                   className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
-                  // 1. ฟีเจอร์ลาก (Swipe) เหมือน Budget
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0.2}
                   onDragEnd={(_e, info: PanInfo) => {
                     const swipeThreshold = 50;
                     if (info.offset.x < -swipeThreshold) {
-                      // ลากซ้าย -> ไปตัวถัดไป
                       setGoalIndex((prev) => (prev + 1) % goals.length);
                     } else if (info.offset.x > swipeThreshold) {
-                      // ลากขวา -> ย้อนกลับ
                       setGoalIndex((prev) => (prev - 1 + goals.length) % goals.length);
                     }
                   }}
-                  // 2. คลิกเพื่อแก้ไข (เปิด Popup Goal)
                   onClick={() => {
-                    // ตรงนี้ต้องส่ง editData ไปด้วยถ้า Goal Component รองรับการแก้ไข
                     if (goals[goalIndex]) {
-                      // ✅ ส่งข้อมูลที่มีอยู่แล้วไปทั้งก้อน
                       setEditData(goals[goalIndex]);
                       setActivePopup('goal');
                     }
                   }}
-                  // หยุด Auto Play เมื่อเอาเมาส์ชี้
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                 >
@@ -517,10 +497,9 @@ const Home = () => {
                     />
                   </div>
 
-                  {/* ส่วนจุด Pagination */}
                   <div
                     className="flex justify-center gap-1 mt-3"
-                    onClick={(e) => e.stopPropagation()} // กันไม่ให้กดพื้นที่แถวนี้แล้ว Popup เด้ง
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {goals.length > 1 &&
                       goals
@@ -538,7 +517,7 @@ const Home = () => {
                             <span
                               key={realIndex}
                               onClick={(e) => {
-                                e.stopPropagation(); // สำคัญ: กดจุดแล้วไม่เปิด Popup
+                                e.stopPropagation();
                                 setGoalIndex(realIndex);
                               }}
                               className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
@@ -550,7 +529,6 @@ const Home = () => {
                   </div>
                 </motion.div>
               )}
-              {/* --- จบส่วนการ์ดเป้าหมาย --- */}
             </div>
 
             <div className="flex flex-row md:flex md:justify-center">
@@ -665,7 +643,7 @@ const Home = () => {
             <Manual
               onClose={handleClosePopupAndRefetch}
               onSuccess={fetchTransactions}
-              editData={editData as Transaction} // ✅ ใส่ 'as Transaction' เพื่อยืนยัน
+              editData={editData as Transaction}
             />
           )}
           {activePopup === 'budget' && (
@@ -679,8 +657,8 @@ const Home = () => {
           {activePopup === 'goal' && (
             <Goal
               onClose={handleClosePopupAndRefetch}
-              onSuccess={handleRefreshAll} // เพิ่มเพื่อให้มันโหลดข้อมูลใหม่หลังบันทึก
-              editData={editData as MyGoal} // ✅ ใส่ 'as MyGoal' และส่งข้อมูลให้ Goal ด้วย
+              onSuccess={handleRefreshAll}
+              editData={editData as MyGoal}
             />
           )}
         </div>
