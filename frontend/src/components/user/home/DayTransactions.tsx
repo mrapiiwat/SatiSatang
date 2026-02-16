@@ -147,7 +147,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
               </div>
 
               <div className="flex flex-col items-center gap-4">
-                <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-100">
+                <div className="w-28 h-28 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
                   {categoryMap[selectedTransaction.categoryId] ? (
                     <Image
                       src={categoryMap[selectedTransaction.categoryId]}
@@ -199,7 +199,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                 </div>
               </div>
 
-              <div className="flex flex-row-reverse items-center gap-3 mt-6">
+              <div className="flex items-center gap-3 mt-6">
                 <button
                   type="button"
                   onClick={handleDelete}
