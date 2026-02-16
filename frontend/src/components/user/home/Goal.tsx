@@ -359,7 +359,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
             )}
           </div>
 
-          <div className="flex flex-row-reverse items-center gap-3">
+          <div className="flex items-center gap-3">
             {editData && (
               <button
                 type="button"

@@ -86,9 +86,13 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
     }
 
     try {
-      await axios.post('/budget', payload);
-
-      showToastAlert('ตั้งงบประมาณสำเร็จ', 'success');
+      if (editData) {
+        await axios.put(`/budget/${editData.id}`, payload);
+        showToastAlert('แก้ไขงบประมาณสำเร็จ', 'success');
+      } else {
+        await axios.post('/budget', payload);
+        showToastAlert('ตั้งงบประมาณสำเร็จ', 'success');
+      }
 
       onSuccess?.();
       onClose();
@@ -99,6 +103,31 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
         const errorMessage =
           customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
+        showToastAlert(errorMessage, 'error');
+      } else if (err instanceof Error) {
+        showToastAlert(`${err.message}`, 'error');
+      } else {
+        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+      }
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!editData) return;
+
+    try {
+      await axios.delete(`/budget/${editData.id}`);
+
+      showToastAlert('ลบงบประมาณสำเร็จ', 'success');
+
+      onSuccess?.();
+      onClose();
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        const axiosError = err as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+        const errorMessage = data?.message || 'เกิดข้อผิดพลาด';
         showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
@@ -197,10 +226,11 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
             />
           </div>
 
-          <div className="flex flex-row-reverse items-center gap-3 mt-4">
+          <div className="flex items-center gap-3 mt-4">
             {editData && (
               <button
                 type="button"
+                onClick={handleDelete}
                 className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition"
               >
                 ลบ

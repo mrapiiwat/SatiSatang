@@ -115,7 +115,8 @@ export class BudgetService {
       where: and(
         eq(budgets.userId, userId),
         lte(budgets.createdAt, endDate),
-        or(gte(budgets.deadline, startDate), isNull(budgets.deadline))
+        or(gte(budgets.deadline, startDate), isNull(budgets.deadline)),
+        isNull(budgets.deletedAt)
       ),
       with: {
         category: true,
@@ -135,7 +136,8 @@ export class BudgetService {
               eq(transaction.categoryId, budget.categoryId),
               eq(transaction.type, "EXPENSE"),
               gte(transaction.createdAt, startDate),
-              lte(transaction.createdAt, endDate)
+              lte(transaction.createdAt, endDate),
+              isNull(transaction.deletedAt)
             )
           );
 
@@ -146,7 +148,7 @@ export class BudgetService {
           .set({
             currentAmount: currentAmount,
           })
-          .where(eq(budgets.id, budget.id));
+          .where(and(eq(budgets.id, budget.id), isNull(budgets.deletedAt)));
 
         return {
           id: budget.id,
@@ -169,5 +171,64 @@ export class BudgetService {
     );
 
     return filteredBudgets;
+  }
+
+  async deleteBudget(userId: number, budgetId: number) {
+    const budget = await db.query.budgets.findFirst({
+      where: and(
+        eq(budgets.id, budgetId),
+        eq(budgets.userId, userId),
+        isNull(budgets.deletedAt)
+      ),
+    });
+
+    if (!budget) {
+      throw new BadRequestError("Budget not found");
+    }
+
+    await db
+      .update(budgets)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(
+          eq(budgets.id, budgetId),
+          eq(budgets.userId, userId),
+          isNull(budgets.deletedAt)
+        )
+      );
+  }
+
+  async updateBudget(
+    userId: number,
+    budgetId: number,
+    data: budgetSchema.updateBudget
+  ) {
+    const existingBudget = await db.query.budgets.findFirst({
+      where: and(
+        eq(budgets.id, budgetId),
+        eq(budgets.userId, userId),
+        isNull(budgets.deletedAt)
+      ),
+    });
+
+    if (!existingBudget) {
+      throw new BadRequestError("Budget not found");
+    }
+
+    const [updatedBudget] = await db
+      .update(budgets)
+      .set({
+        ...data,
+      })
+      .where(
+        and(
+          eq(budgets.id, budgetId),
+          eq(budgets.userId, userId),
+          isNull(budgets.deletedAt)
+        )
+      )
+      .returning();
+
+    return updatedBudget;
   }
 }

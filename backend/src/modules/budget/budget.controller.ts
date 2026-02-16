@@ -39,4 +39,36 @@ export const budgetController = new Elysia({ prefix: "/budget" })
     {
       query: budgetSchema.getBudgetsQuery,
     }
+  )
+
+  .put(
+    "/:id",
+    async ({ body, params, user, set }) => {
+      const userId = Number(user.id);
+      const result = await budgetService.updateBudget(userId, params.id, body);
+
+      set.status = StatusCodes.OK;
+      return {
+        message: "Budget updated successfully",
+        data: result,
+      };
+    },
+    {
+      body: budgetSchema.updateBudget,
+      params: budgetSchema.paramsId,
+    }
+  )
+
+  .delete(
+    "/:id",
+    async ({ params, user, set }) => {
+      const userId = Number(user.id);
+      await budgetService.deleteBudget(userId, params.id);
+
+      set.status = StatusCodes.NO_CONTENT;
+      return {
+        message: "Budget deleted successfully",
+      };
+    },
+    { params: budgetSchema.paramsId }
   );

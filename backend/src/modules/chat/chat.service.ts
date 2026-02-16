@@ -157,7 +157,7 @@ export class ChatService {
 
     const history = rawHistory.reverse();
 
-    let result = await openAIService.handleMessage(
+    const result = await openAIService.handleMessage(
       userId,
       content,
       allCategoriesForAI,
