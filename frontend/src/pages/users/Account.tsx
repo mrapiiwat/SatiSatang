@@ -22,7 +22,8 @@ const Account: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteEmail, setDeleteEmail] = useState<string>('');
+  const [deleteEmail, setDeleteEmail] = useState<string>(''); // กลับมาใช้ชื่อเดิม
+  const [deleteStep, setDeleteStep] = useState<number>(1); // อันนี้เก็บไว้ (สำคัญสำหรับ Popup 2 หน้า)
   const [deleteError, setDeleteError] = useState<string>('');
 
   useEffect(() => {
@@ -111,35 +112,33 @@ const Account: React.FC = () => {
   };
 
   const handleDeleteUser = async () => {
+    // เช็คว่า Email ที่กรอก ตรงกับ Email ของ user จริงๆ หรือไม่
     if (deleteEmail !== user.email) {
       setDeleteError('Email ไม่ตรงกับบัญชีผู้ใช้');
       return;
     }
     try {
       await axios.delete(`/delete-account/${user.id}`, {
-        data: { confirm: deleteEmail },
+        data: { confirm: deleteEmail }, // ส่ง Email ไปยืนยันเหมือนเดิม
       });
 
       actionClearAuth();
-
       showToastAlert('ลบบัญชีเรียบร้อย', 'success');
       navigate('/');
     } catch (error: unknown) {
+      // ... (ส่วนจัดการ Error เหมือนเดิมเป๊ะ ไม่ต้องแก้) ...
       let msg = 'เกิดข้อผิดพลาด';
-
       if (isAxiosError(error)) {
         const axiosError = error as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
-
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
-
         msg = customError || data?.errors?.[0]?.summary || data?.message || msg;
       }
-
       showToastAlert(msg, 'error');
     } finally {
       setIsDeleteModalOpen(false);
-      setDeleteEmail('');
+      setDeleteEmail(''); // เคลียร์ช่องกรอก
+      setDeleteStep(1); // รีเซ็ตให้กลับไปหน้าแรก (หน้าถาม ใช่/ไม่) เสมอ
       setDeleteError('');
     }
   };
@@ -213,80 +212,98 @@ const Account: React.FC = () => {
         )}
 
         <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
-          <div className="relative bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-10 w-full max-w-md border border-gray-100">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-full blur-3xl opacity-30 -z-10"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gray-100 rounded-full blur-2xl opacity-40 -z-10"></div>
-            <div className="flex justify-center mb-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 rounded-full blur-lg opacity-30 animate-pulse"></div>
-                <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center border border-red-200 shadow-lg">
+          {/* Wrapper หลัก: จัดกึ่งกลางและกำหนดขนาด */}
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm mx-auto shadow-xl relative overflow-hidden">
+            {/* --- ส่วนที่ 1: หน้าถามยืนยัน (แสดงเมื่อ deleteStep === 1) --- */}
+            {deleteStep === 1 && (
+              <div className="flex flex-col items-center text-center animate-fade-in">
+                {/* ไอคอนถังขยะ */}
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-4">
                   <svg
-                    className="w-10 h-10 text-red-600"
+                    className="w-10 h-10 text-red-500"
                     fill="none"
-                    stroke="currentColor"
                     viewBox="0 0 24 24"
+                    stroke="currentColor"
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
                 </div>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-2">ต้องการลบบัญชีใช่หรือไม่?</h3>
+                <p className="text-gray-500 text-sm mb-6">การดำเนินการนี้จะไม่สามารถกู้คืนได้</p>
+
+                {/* ปุ่มกด */}
+                <div className="flex flex-col w-full gap-3">
+                  <button
+                    onClick={() => setDeleteStep(2)} // กดแล้วไป Step 2
+                    className="w-full bg-[#FF5F57] hover:bg-red-600 text-white font-semibold py-3 rounded-xl transition-colors shadow-md shadow-red-200"
+                  >
+                    ใช่ ลบเลย
+                  </button>
+                  <button
+                    onClick={() => setIsDeleteModalOpen(false)} // กดแล้วปิด
+                    className="w-full text-gray-500 font-medium py-2 hover:text-gray-700 underline decoration-gray-300 decoration-1 underline-offset-4"
+                  >
+                    ยังไม่ลบตอนนี้
+                  </button>
+                </div>
               </div>
-            </div>
-            <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-3">
-              ยืนยันการลบบัญชี
-            </h2>
-            <p className="text-center text-gray-500 mb-8 text-sm font-medium tracking-wide">
-              การดำเนินการนี้ไม่สามารถย้อนกลับได้
-            </p>
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                กรุณากรอก email ของคุณเพื่อยืนยัน
-              </label>
-              <div className="relative">
+            )}
+
+            {/* --- ส่วนที่ 2: หน้ากรอก Email (แสดงเมื่อ deleteStep === 2) --- */}
+            {deleteStep === 2 && (
+              <div className="flex flex-col animate-fade-in">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">
+                  ยืนยันการลบบัญชี
+                </h3>
+
+                <label className="text-sm font-semibold text-gray-700 mb-2">
+                  กรุณากรอก Email ของคุณเพื่อยืนยัน
+                </label>
+
                 <input
                   type="email"
                   value={deleteEmail}
                   onChange={(e) => setDeleteEmail(e.target.value)}
-                  className="w-full border-2 border-gray-200 rounded-xl px-5 py-4 bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all outline-none shadow-sm hover:border-gray-300 font-medium text-gray-900 placeholder:text-gray-400"
-                  placeholder="example@email.com"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 mb-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                  placeholder={user?.email || 'example@email.com'}
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/5 to-transparent pointer-events-none"></div>
-              </div>
-              {deleteError && (
-                <div className="flex items-center gap-2 mt-3 p-3 bg-red-50 rounded-lg border border-red-100">
-                  <div className="flex-shrink-0">
-                    <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+
+                {/* แสดง Error ถ้ามี */}
+                {deleteError && (
+                  <p className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded border border-red-100 flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
                         clipRule="evenodd"
                       />
                     </svg>
-                  </div>
-                  <p className="text-red-700 text-sm font-semibold">{deleteError}</p>
-                </div>
-              )}
-            </div>
+                    {deleteError}
+                  </p>
+                )}
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="flex-1 px-6 py-4 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 shadow-sm"
-              >
-                ยกเลิก
-              </button>
-              <button
-                onClick={handleDeleteUser}
-                className="relative flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold hover:from-red-700 hover:to-red-800 active:scale-95 transition-all duration-200 shadow-lg hover:shadow-xl overflow-hidden group"
-              >
-                <span className="relative z-10">ลบบัญชี</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-red-700 to-red-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-              </button>
-            </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => setDeleteStep(1)} // ย้อนกลับไป Step 1
+                    className="flex-1 py-3 border border-gray-200 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    ย้อนกลับ
+                  </button>
+                  <button
+                    onClick={handleDeleteUser} // ลบจริง!
+                    className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold shadow-lg shadow-red-200 transition-all active:scale-95"
+                  >
+                    ตกลง
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </Modal>
       </div>
