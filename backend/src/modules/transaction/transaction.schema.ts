@@ -10,12 +10,13 @@ export const getTransactionsQuery = t.Object({
 
 export type getTransactionsQuery = Static<typeof getTransactionsQuery>;
 
-export const getTotalExpenseQuery = t.Object({
+export const getTotalAmountQuery = t.Object({
   month: t.Optional(t.Numeric()),
   year: t.Optional(t.Numeric()),
+  type: t.Optional(t.Union([t.Literal("INCOME"), t.Literal("EXPENSE")])),
 });
 
-export type getTotalExpenseQuery = Static<typeof getTotalExpenseQuery>;
+export type getTotalAmountQuery = Static<typeof getTotalAmountQuery>;
 
 export enum TransactionType {
   INCOME = "INCOME",

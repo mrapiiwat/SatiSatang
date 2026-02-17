@@ -27,20 +27,20 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
   )
 
   .get(
-    "/total-expense",
+    "/total-amount",
     async ({ query, user, set }) => {
       const userId = Number(user.id);
 
-      const result = await transactionService.getTotalExpense(userId, query);
+      const result = await transactionService.getTotalAmount(userId, query);
 
       set.status = StatusCodes.OK;
       return {
-        message: "Total expense calculated successfully",
+        message: "Total amount calculated successfully",
         ...result,
       };
     },
     {
-      query: transactionSchema.getTotalExpenseQuery,
+      query: transactionSchema.getTotalAmountQuery,
     }
   )
 

@@ -47,6 +47,7 @@ const Home = () => {
   const [showFrequency, setShowFrequency] = useState(true);
   const [totalExpense, setTotalExpense] = useState(0);
   const [editData, setEditData] = useState<Transaction | MyBudget | MyGoal | null>(null);
+  const [isExpense, setIsExpense] = useState(false);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -102,13 +103,14 @@ const Home = () => {
   const fetchTotalExpense = useCallback(async () => {
     try {
       const res = await axios.get(
-        `/transaction/total-expense?month=${selectedMonth}&year=${selectedYear}`,
+        `/transaction/total-amount?month=${selectedMonth}&year=${selectedYear}&type=${isExpense ? 'EXPENSE' : 'INCOME'}`,
       );
-      setTotalExpense(res.data.totalExpense || 0);
+
+      setTotalExpense(res.data.totalAmount || 0);
     } catch (err) {
       console.error(err);
     }
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, isExpense]);
 
   const handleOpenEdit = (transaction: Transaction) => {
     setEditData(transaction);
@@ -285,15 +287,45 @@ const Home = () => {
           onMonthChange={handleMonthChange}
         />
         <div className="text-center mb-6">
-          <p className="text-sm mb-4">ยอดใช้จ่าย</p>
-          <h1
-            className={`${getFontSize(totalExpense)} mb-2 font-semibold leading-none transition-all`}
+          {/* ส่วน "ยอดใช้จ่าย / รายรับ" */}
+          <div className="h-[20px] mb-4 overflow-hidden">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.p
+                key={isExpense ? 'exp' : 'inc'}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-sm"
+              >
+                {isExpense ? 'ยอดใช้จ่าย' : 'รายรับ'}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+
+          <motion.h1
+            layout
+            onClick={() => setIsExpense(!isExpense)}
+            className={`${getFontSize(totalExpense)} mb-2 font-semibold cursor-pointer leading-none select-none text-black`}
+            transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.5 }}
           >
-            {totalExpense.toLocaleString()}
-          </h1>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={isExpense ? 'exp-val' : 'inc-val'}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.15 }}
+                className="inline-block"
+              >
+                {totalExpense.toLocaleString()}
+              </motion.span>
+            </AnimatePresence>
+          </motion.h1>
+
           <button
             onClick={handleGoToSummary}
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-black-50 font-semibold text-[14px] rounded-[100px] w-[121px] h-[40px] transform transition-transform duration-200 ease-in-out hover:scale-105 mx-auto"
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[14px] rounded-[100px] w-[121px] h-[40px] transform transition-transform duration-200 ease-in-out hover:scale-105 mx-auto"
           >
             <PiChartPieSliceLight size={20} />
             ดูสรุป

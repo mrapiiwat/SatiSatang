@@ -102,16 +102,16 @@ export class TransactionService {
     };
   }
 
-  async getTotalExpense(
+  async getTotalAmount(
     userId: number,
-    query: transactionSchema.getTotalExpenseQuery
+    query: transactionSchema.getTotalAmountQuery
   ) {
-    const { month, year } = query;
+    const { month, year, type } = query;
 
     const conditions: SQL[] = [
       eq(transaction.userId, userId),
-      eq(transaction.type, "EXPENSE"),
-    ];
+      type ? eq(transaction.type, type) : undefined,
+    ].filter(Boolean) as SQL[];
 
     if (month && year) {
       const startDate = new Date(year, month - 1, 1);
@@ -127,7 +127,7 @@ export class TransactionService {
       .where(and(...conditions, isNull(transaction.deletedAt)));
 
     return {
-      totalExpense: Number(result?.totalAmount ?? 0),
+      totalAmount: Number(result?.totalAmount ?? 0),
     };
   }
 
