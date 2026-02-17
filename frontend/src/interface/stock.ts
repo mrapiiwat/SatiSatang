@@ -26,6 +26,7 @@ export interface StockDetailType {
   lastUpdated?: string;
   createdAt?: string;
   updatedAt?: string;
+  description?: string;
 }
 
 export interface StockProps {
