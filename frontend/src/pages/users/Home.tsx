@@ -47,7 +47,7 @@ const Home = () => {
   const [showFrequency, setShowFrequency] = useState(true);
   const [totalExpense, setTotalExpense] = useState(0);
   const [editData, setEditData] = useState<Transaction | MyBudget | MyGoal | null>(null);
-  const [isExpense, setIsExpense] = useState(false);
+  const [isExpense, setIsExpense] = useState(true);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
