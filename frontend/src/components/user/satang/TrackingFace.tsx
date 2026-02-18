@@ -95,7 +95,7 @@ const TrackingFace: React.FC = () => {
         ref={containerRef}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setIsHovered(false)}
-        className="relative flex justify-center items-center min-w-16 min-h-16 bg-blue-600 rounded-full shadow-lg cursor-help transition-transform active:scale-95"
+        className="relative flex justify-center items-center min-w-16 min-h-16 bg-blue-600 rounded-full shadow-lg cursor-pointer transition-transform active:scale-95"
       >
         <motion.div
           animate={isDizzy ? { rotate: 360 } : { rotate: 0 }}

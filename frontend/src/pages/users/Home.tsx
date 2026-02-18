@@ -17,6 +17,7 @@ import Goal from '../../components/user/home/Goal';
 import Sati from '../../components/user/home/Sati';
 import DeadlineDisplay from '../../components/user/home/DeadlineDisplay';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
+
 const Home = () => {
   const today = new Date();
   const navigate = useNavigate();
