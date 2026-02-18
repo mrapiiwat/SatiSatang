@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { openai } from "@/common/config/openai";
 import * as prompts from "@/common/utils/prompts";
@@ -282,7 +282,7 @@ export class OpenAIService {
 
         try {
           const existingGoals = await db.query.goals.findMany({
-            where: eq(goals.userId, userId),
+            where: and(eq(goals.userId, userId), isNull(goals.deletedAt)),
           });
 
           const targetName = args.name.trim().toLowerCase();

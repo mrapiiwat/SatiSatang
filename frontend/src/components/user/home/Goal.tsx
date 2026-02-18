@@ -206,8 +206,15 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
         return;
       }
 
-      await axios.post('/goal', payload);
-      showToastAlert('บันทึกสำเร็จ', 'success');
+      const dataWithId = editData as GoalDraftData & { id?: string | number };
+
+      if (dataWithId?.id) {
+        await axios.put(`/goal/${dataWithId.id}`, payload);
+        showToastAlert('อัปเดตเป้าหมายสำเร็จ', 'success');
+      } else {
+        await axios.post('/goal', payload);
+        showToastAlert('บันทึกเป้าหมายใหม่สำเร็จ', 'success');
+      }
 
       if (onSuccess) onSuccess();
       onClose();

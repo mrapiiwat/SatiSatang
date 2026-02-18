@@ -121,7 +121,7 @@ export class ChatService {
     });
 
     const categories = await db.query.category.findMany({
-      where: eq(category.userId, userId),
+      where: and(eq(category.userId, userId), isNull(category.deletedAt)),
     });
 
     const today = new Date();
@@ -131,6 +131,7 @@ export class ChatService {
       where: and(
         eq(goals.userId, userId),
         eq(goals.finished, false),
+        isNull(goals.deletedAt),
         or(gte(goals.deadline, today), isNull(goals.deadline))
       ),
     });
