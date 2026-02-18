@@ -250,7 +250,7 @@ export class TransactionService {
         type: category.type,
       })
       .from(category)
-      .where(eq(category.id, predictedId));
+      .where(and(eq(category.id, predictedId), isNull(category.deletedAt)));
 
     return {
       type: catInfo.type,
