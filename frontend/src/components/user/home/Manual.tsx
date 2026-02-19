@@ -137,6 +137,18 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
     return () => clearTimeout(timeoutId);
   }, [detail, editData]);
 
+  const isModified = () => {
+    if (!editData || !('id' in editData)) return true;
+
+    const isTypeChanged = selectedType?.value !== editData.type;
+    const isCategoryChanged = selectedCategory?.value !== editData.categoryId;
+    const isDetailChanged = detail !== (editData.description || '');
+    const isAmountChanged = Number(amount) !== Number(editData.amount);
+    return isTypeChanged || isCategoryChanged || isDetailChanged || isAmountChanged;
+  };
+
+  const canSubmit = isModified();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -276,7 +288,12 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           </div>
 
           <div className="flex justify-center items-center mt-3">
-            <button className="bg-blue-600 px-6 py-3 rounded-xl text-white text-sm font-semibold">
+            <button
+              disabled={!canSubmit}
+              className={`${
+                canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+              } w-full px-6 py-3 rounded-xl text-white text-sm font-semibold transition-colors`}
+            >
               บันทึก
             </button>
           </div>

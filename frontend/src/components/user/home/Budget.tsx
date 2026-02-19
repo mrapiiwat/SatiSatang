@@ -60,6 +60,21 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
     fetchCategories();
   }, [editData]);
 
+  const isModified = () => {
+    if (!editData) return true;
+
+    const currentAmount = amount === '' ? 0 : Number(amount);
+    const originalAmount = Number(editData.amount);
+
+    const isCategoryChanged = selectedCategory?.value !== editData.categoryId;
+    const isFrequencyChanged = selectedFrequency?.value !== editData.frequency;
+    const isAmountChanged = currentAmount !== originalAmount;
+
+    return isCategoryChanged || isFrequencyChanged || isAmountChanged;
+  };
+
+  const canSubmit = isModified();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -239,7 +254,10 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
 
             <button
               type="submit"
-              className="flex-1 bg-blue-600 py-3 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
+              disabled={!canSubmit}
+              className={`flex-1 py-3 rounded-xl text-white text-sm font-semibold transition ${
+                canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+              }`}
             >
               บันทึก
             </button>

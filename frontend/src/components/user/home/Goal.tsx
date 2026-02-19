@@ -90,6 +90,49 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
     }));
   }, [maxDays]);
 
+  const isModified = () => {
+    if (!editData) return true;
+
+    const isNameChanged = goalName !== editData.name;
+    const isAmountChanged = Number(amount) !== Number(editData.amount);
+
+    if (isNameChanged || isAmountChanged) return true;
+
+    const originalDate = editData.deadline ? new Date(editData.deadline) : null;
+    const originalHasDeadline = !!originalDate;
+
+    if (hasDeadline !== originalHasDeadline) return true;
+
+    if (hasDeadline && originalDate) {
+      const orgY = originalDate.getFullYear().toString();
+      const orgM = (originalDate.getMonth() + 1).toString();
+      const orgD = originalDate.getDate().toString();
+
+      const currentY = year?.value;
+      const currentM = month?.value;
+      const currentD = day?.value;
+
+      if (currentY !== orgY || currentM !== orgM || currentD !== orgD) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const isFormValid = () => {
+    if (!goalName.trim()) return false;
+    if (!amount || Number(amount) <= 0) return false;
+
+    if (hasDeadline) {
+      if (!year || !month || !day) return false;
+    }
+
+    return true;
+  };
+
+  const canSubmit = isModified() && isFormValid();
+
   const validateInputs = () => {
     if (!goalName.trim()) {
       showToastAlert('กรุณากรอกชื่อเป้าหมาย', 'error');
@@ -380,7 +423,10 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
             )}
             <button
               onClick={handleSubmit}
-              className="flex-1 bg-blue-600 py-3 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
+              disabled={!canSubmit}
+              className={`flex-1 py-3 rounded-xl text-white text-sm font-semibold transition ${
+                canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+              }`}
             >
               บันทึก
             </button>
