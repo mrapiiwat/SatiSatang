@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useLayoutEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useLayoutEffect, useCallback, useMemo } from 'react';
 import { RxCross2 } from 'react-icons/rx';
 import { FaPlus } from 'react-icons/fa6';
 import { GoArrowUp } from 'react-icons/go';
@@ -47,6 +47,30 @@ const Sati: React.FC<SatiProps> = ({
 
   const prevMessagesLengthRef = useRef(messages.length);
   const isUserScrolledRef = useRef(false);
+
+  const isPendingAction = useMemo(() => {
+    if (messages.length === 0) return false;
+    const lastMsg = messages[messages.length - 1];
+
+    if (lastMsg.role === 'user') return false;
+
+    try {
+      const parsed = JSON.parse(lastMsg.content);
+      const isCard =
+        parsed.type === 'create_transaction' ||
+        parsed.type === 'create_budget' ||
+        parsed.type === 'create_goal' ||
+        parsed.ui_type === 'CONFIRM_CARD';
+
+      if (isCard) {
+        const currentStatus = parsed.data?.status || 'pending';
+        return currentStatus === 'pending';
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }, [messages]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -194,7 +218,7 @@ const Sati: React.FC<SatiProps> = ({
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!inputValue.trim() || isSending) return;
+    if (!inputValue.trim() || isSending || isPendingAction) return;
 
     const userText = inputValue;
     setInputValue('');
@@ -618,29 +642,47 @@ const Sati: React.FC<SatiProps> = ({
             </div>
             <div className="flex flex-row justify-between gap-3 w-full">
               <div
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="flex justify-center items-center min-w-16 min-h-16 bg-blue-600 rounded-full relative cursor-pointer hover:bg-blue-700 transition-colors"
+                onClick={() => {
+                  if (!isPendingAction) {
+                    setIsMenuOpen(!isMenuOpen);
+                  }
+                }}
+                className={`flex justify-center items-center min-w-16 min-h-16 rounded-full relative transition-colors ${
+                  isPendingAction
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-blue-600 cursor-pointer hover:bg-blue-700'
+                }`}
               >
                 <FaPlus size={25} color="white" />
-                <AddMenu
-                  isOpen={isMenuOpen}
-                  onSelect={handleMenuSelect}
-                  onClose={() => setIsMenuOpen(false)}
-                />
+                {!isPendingAction && (
+                  <AddMenu
+                    isOpen={isMenuOpen}
+                    onSelect={handleMenuSelect}
+                    onClose={() => setIsMenuOpen(false)}
+                  />
+                )}
               </div>
               <form className="w-full relative" onSubmit={handleSendMessage}>
                 <input
-                  className="flex justify-center items-center h-16 text-xl pl-6 px-3 w-full rounded-full border-2 border-gray-200 focus:border-blue-500 outline-none pr-16 transition-all"
-                  placeholder="ให้น้องสติช่วยจดนะ"
+                  className={`flex justify-center items-center h-16 text-xl pl-6 px-3 w-full rounded-full border-2 outline-none pr-16 transition-all ${
+                    isPendingAction
+                      ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white border-gray-200 focus:border-blue-500'
+                  }`}
+                  placeholder={
+                    isPendingAction ? 'กรุณากด ยืนยัน หรือ ยกเลิก' : 'ให้น้องสติช่วยจดนะ'
+                  }
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  disabled={isSending}
+                  disabled={isSending || isPendingAction}
                 />
                 <button
                   type="submit"
-                  disabled={isSending}
+                  disabled={isSending || isPendingAction}
                   className={`absolute translate-y-[-50%] right-2 top-1/2 w-12 h-12 rounded-full flex justify-center items-center transition-colors ${
-                    isSending ? 'bg-gray-400' : 'bg-black-900 hover:bg-black-800'
+                    isSending || isPendingAction
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-black-900 hover:bg-black-800'
                   }`}
                 >
                   <GoArrowUp size={24} color="white" />
