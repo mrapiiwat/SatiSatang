@@ -175,7 +175,7 @@ const Summary: React.FC = () => {
                 ) : (
                   incomes.map((i) => (
                     <div key={i.id} className="flex justify-between text-sm mb-1">
-                      <span className="line-clamp-1 break-all">{i.description}</span>
+                      <span className="line-clamp-1 break-all w-3/5 max-w-1/2">{i.description}</span>
                       <span className="text-blue-600">฿{i.amount.toLocaleString()}</span>
                     </div>
                   ))

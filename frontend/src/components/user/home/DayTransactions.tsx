@@ -68,7 +68,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
 
   return (
     <div className="w-5/6 md:w-[70%]">
-      {sortedDates.map((date) => {
+      {sortedDates.map((date, index) => {
         const dayTransactions = groupedByDate[date];
         const dayIncome = dayTransactions
           .filter((t) => t.type === 'INCOME')
@@ -77,9 +77,14 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
           .filter((t) => t.type === 'EXPENSE')
           .reduce((sum, t) => sum + t.amount, 0);
 
+        const isLastDate = index === sortedDates.length - 1;
+
         return (
           <div key={date} className="box-border">
-            <div className="bg-blue-50 px-4 py-3 flex justify-between items-center h-16 relative">
+            <div
+              className={`bg-blue-50 px-4 py-3 flex justify-between items-center h-16 relative 
+          ${index === 0 ? 'rounded-t-md' : ''}`}
+            >
               <div className="flex flex-col justify-start items-start">
                 <span className="text-base font-semibold text-black">รายรับ</span>
                 <span className="text-black text-base">{dayIncome.toLocaleString()}</span>
@@ -90,44 +95,50 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
               </div>
             </div>
 
-            <div className="bg-blue-100">
-              {dayTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between px-4 h-16 cursor-pointer"
-                  onClick={() => setSelectedTransaction(transaction)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                      {categoryMap[transaction.categoryId] ? (
-                        <Image
-                          src={categoryMap[transaction.categoryId]}
-                          alt={transaction.description || 'category icon'}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 animate-pulse" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-black text-base">
-                        {transaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
-                      </p>
-                      {transaction.description && (
-                        <p className="text-sm text-gray-700 line-clamp-1 break-all w-32 md:w-48">
-                          {transaction.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+            <div className={`bg-blue-100 ${isLastDate ? 'rounded-b-md' : ''}`}>
+              {dayTransactions.map((transaction, tIndex) => {
+                const isLastTransaction = tIndex === dayTransactions.length - 1;
+                const shouldRoundBottom = isLastDate && isLastTransaction;
 
-                  <div className="text-right">
-                    <p className="font-semibold text-blue-600 text-base">
-                      {transaction.amount.toLocaleString()}
-                    </p>
+                return (
+                  <div
+                    key={transaction.id}
+                    className={`flex items-center justify-between px-4 h-16 cursor-pointer 
+                ${shouldRoundBottom ? 'rounded-b-md' : ''}`}
+                    onClick={() => setSelectedTransaction(transaction)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                        {categoryMap[transaction.categoryId] ? (
+                          <Image
+                            src={categoryMap[transaction.categoryId]}
+                            alt={transaction.description || 'category icon'}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 animate-pulse" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-black text-base">
+                          {transaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
+                        </p>
+                        {transaction.description && (
+                          <p className="text-sm text-gray-700 line-clamp-1 break-all w-32 md:w-48">
+                            {transaction.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="font-semibold text-blue-600 text-base">
+                        {transaction.amount.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         );
