@@ -21,6 +21,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isUser, setIsUser] = useState<string>('Guest');
@@ -48,6 +49,7 @@ const Login: React.FC = () => {
       if (isUser !== 'Guest') {
         setIsUser('Guest');
         setPassword('');
+        setConfirmPassword('');
         setName('');
         setError('');
       }
@@ -57,6 +59,10 @@ const Login: React.FC = () => {
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+  }, []);
+
+  const handleConfirmPasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value);
   }, []);
 
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,6 +98,12 @@ const Login: React.FC = () => {
       if (isUser === 'Register') {
         if (isLoading) return;
         setIsLoading(true);
+
+        if (password !== confirmPassword) {
+          setError('รหัสผ่านไม่ตรงกัน');
+          setIsLoading(false);
+          return;
+        }
 
         try {
           const res = await axios.post(`${API_URL}/api/register`, {
@@ -276,6 +288,18 @@ const Login: React.FC = () => {
 
               <div className="relative w-full">
                 <InputField
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  label="ยืนยันรหัสผ่าน"
+                  autoComplete="new-password"
+                  minLength={6}
+                />
+              </div>
+
+              <div className="relative w-full">
+                <InputField
                   id="name"
                   type="text"
                   value={name}
@@ -296,7 +320,7 @@ const Login: React.FC = () => {
             </div>
           ) : null}
           {error && (
-            <div className="text-red-500 text-sm text-center mb-2" role="alert" aria-live="polite">
+            <div className="text-red-500 text-sm text-center" role="alert" aria-live="polite">
               {error}
             </div>
           )}

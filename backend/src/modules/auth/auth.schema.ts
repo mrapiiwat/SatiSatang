@@ -28,7 +28,7 @@ export const registerSchema = t.Object({
   name: t.String({
     minLength: 2,
     maxLength: 30,
-    error: "Name must be between 2 and 30 characters long",
+    error: "ชื่อผู้ใช้ต้องมีความยาวระหว่าง 2 ถึง 30 ตัวอักษร",
   }),
   password: t.Intersect(
     [
