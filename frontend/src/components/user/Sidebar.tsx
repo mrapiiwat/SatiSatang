@@ -28,7 +28,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <Link
               to="/user/satang"
               onClick={onClose}
-              className="bg-blue-600 rounded-2xl h-16 flex items-center justify-center mb-7 cursor-pointer"
+              className="bg-blue-600 rounded-2xl h-16 flex items-center hover:bg-blue-600/95 active:scale-105 justify-center mb-7 cursor-pointer"
             >
               <h1 className="text-white text-2xl font-medium">แชทกับพี่สตางค์</h1>
             </Link>
@@ -60,6 +60,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 className="py-2 font-semibold text-lg cursor-pointer"
               >
                 ราคาตลาด
+              </Link>
+              <Link
+                to="/user/feedback"
+                onClick={onClose}
+                className="py-2 font-semibold text-lg cursor-pointer"
+              >
+                รายงานปัญหา
               </Link>
               <Link
                 to="/user/account"

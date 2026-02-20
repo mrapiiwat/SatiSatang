@@ -17,6 +17,7 @@ import Summary from '../pages/users/Summary';
 import Stock, { StockDetail } from '../pages/users/Stock';
 import ResetPassword from '../pages/auth/ResetPassword';
 import Recovery from '../pages/auth/Recovery';
+import Feedback from '../pages/users/Feedback';
 
 const router = createBrowserRouter([
   {
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
       { path: 'summary', element: <Summary /> },
       { path: 'stock', element: <Stock /> },
       { path: 'stock-detail', element: <StockDetail /> },
+      { path: 'feedback', element: <Feedback /> },
       { path: '*', element: <NotFound /> },
     ],
   },
