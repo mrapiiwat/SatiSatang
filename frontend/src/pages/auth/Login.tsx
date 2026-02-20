@@ -210,6 +210,7 @@ const Login: React.FC = () => {
     [
       email,
       password,
+      confirmPassword,
       name,
       isUser,
       validateEmail,
