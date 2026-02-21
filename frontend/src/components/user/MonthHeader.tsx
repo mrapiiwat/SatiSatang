@@ -71,7 +71,7 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
 
         <button
           onClick={() => setShowPicker(!showPicker)}
-          className="border border-black-900 rounded-[8px] px-4 py-1 text-sm font-semibold text-black-900"
+          className="border border-black-900 rounded-[8px] w-36 px-4 py-1 text-sm font-semibold text-black-900"
         >
           {monthsThai[selectedMonth - 1]} {selectedYear + 543}
         </button>

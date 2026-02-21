@@ -4,10 +4,10 @@ import type { CategoriesType, Transaction } from '../../../interface/category';
 import Image from '../../Image';
 import axios from '../../../api/axios';
 import Modal from '../../Modal';
-import { MdArrowUpward, MdArrowDownward } from 'react-icons/md';
 import { RxCross2 } from 'react-icons/rx';
 import { showToastAlert } from '../../../store/toastStore';
 import { MdSubject } from 'react-icons/md';
+import { MdOutlineNotInterested } from 'react-icons/md';
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({
   groupedByDate,
@@ -116,12 +116,19 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-200 animate-pulse" />
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">
+                            <MdOutlineNotInterested size={20} />
+                          </div>
                         )}
                       </div>
                       <div>
-                        <p className="font-semibold text-black text-base">
+                        <p className="font-semibold text-black text-base flex items-center gap-1">
                           {transaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
+                          {!categoryMap[transaction.categoryId] && (
+                            <span className="text-xs text-gray-500 font-normal">
+                              (ไม่มีหมวดหมู่)
+                            </span>
+                          )}
                         </p>
                         {transaction.description && (
                           <p className="text-sm text-gray-700 line-clamp-1 break-all w-32 md:w-48">
@@ -158,7 +165,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
               </div>
 
               <div className="flex flex-col items-center gap-4">
-                <div className="w-28 h-28 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
+                <div className="w-28 h-28 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden">
                   {categoryMap[selectedTransaction.categoryId] ? (
                     <Image
                       src={categoryMap[selectedTransaction.categoryId]}
@@ -166,27 +173,22 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div
-                      className={`w-full h-full flex items-center justify-center ${
-                        selectedTransaction.type === 'INCOME'
-                          ? 'text-green-500 bg-green-50'
-                          : 'text-red-500 bg-red-50'
-                      }`}
-                    >
-                      {selectedTransaction.type === 'INCOME' ? (
-                        <MdArrowUpward size={28} />
-                      ) : (
-                        <MdArrowDownward size={28} />
-                      )}
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+                      <MdOutlineNotInterested size={40} />
                     </div>
                   )}
                 </div>
 
                 <div className="text-center mb-2">
                   <div
-                    className={`text-sm font-bold mb-1 ${selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-xl font-bold mb-1 flex items-center justify-center gap-1 ${
+                      selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'
+                    }`}
                   >
                     {selectedTransaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
+                    {!categoryMap[selectedTransaction.categoryId] && (
+                      <span className="text-base font-normal text-gray-400">(ไม่มีหมวดหมู่)</span>
+                    )}
                   </div>
                   <h2
                     className={`text-3xl font-bold ${selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}
@@ -215,7 +217,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                   type="button"
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="flex-1 py-3 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition"
+                  className="flex-1 py-3 rounded-xl bg-[#FF2D55] text-white text-sm font-semibold hover:bg-[#f91e46] transition"
                 >
                   {isDeleting ? 'กำลังลบ...' : 'ลบ'}
                 </button>

@@ -16,7 +16,9 @@ export type CategoriesType = {
   id: number;
   name: string;
   type: 'INCOME' | 'EXPENSE';
+  iconId: number;
   icon: string;
+  deletedAt: string | null;
 };
 
 export interface CategoryListProps {

@@ -8,6 +8,7 @@ import { AxiosError, isAxiosError } from 'axios';
 import type { CategoriesType, CategoryListProps } from '../../../interface/category';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
+import { RxCross2 } from 'react-icons/rx';
 
 const CategoryList: React.FC<CategoryListProps> = ({
   categories,
@@ -19,8 +20,8 @@ const CategoryList: React.FC<CategoryListProps> = ({
   const [loading, setLoading] = useState(false);
   const [editData, setEditData] = useState({ name: '', iconId: '' });
 
-  const handleCategoryClick = (category: CategoriesType) => {
-    const iconId = category.icon.split('/').pop() || '';
+  const handleCategoryClick = (category: CategoriesType & { iconId?: number }) => {
+    const iconId = String(category.iconId || '');
     setEditData({ name: category.name, iconId });
     setEditingCategory(category);
   };
@@ -29,6 +30,38 @@ const CategoryList: React.FC<CategoryListProps> = ({
     if (!loading) {
       setEditingCategory(null);
       setEditData({ name: '', iconId: '' });
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!editingCategory) return;
+
+    try {
+      setLoading(true);
+      await axios.delete(`/category/${editingCategory.id}`);
+      showToastAlert('ลบหมวดหมู่สำเร็จ', 'success');
+
+      if (refresh) {
+        refresh();
+      } else {
+        setCategories((prev) => prev.filter((cat) => cat.id !== editingCategory.id));
+      }
+
+      handleCloseModal();
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        const axiosError = err as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+        const errorMessage = data?.message || 'ไม่สามารถลบหมวดหมู่ได้';
+
+        showToastAlert(errorMessage, 'error');
+      } else if (err instanceof Error) {
+        showToastAlert(`${err.message}`, 'error');
+      } else {
+        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,7 +91,12 @@ const CategoryList: React.FC<CategoryListProps> = ({
         setCategories((prev) =>
           prev.map((cat) =>
             cat.id === editingCategory.id
-              ? { ...cat, name: res.data.data.name, icon: res.data.data.icon }
+              ? {
+                  ...cat,
+                  name: res.data.data.name,
+                  icon: res.data.data.icon,
+                  iconId: res.data.data.iconId || Number(editData.iconId),
+                }
               : cat,
           ),
         );
@@ -90,6 +128,15 @@ const CategoryList: React.FC<CategoryListProps> = ({
     }
   };
 
+  const isSaveDisabled = Boolean(
+    loading ||
+      !editData.name.trim() ||
+      !editData.iconId ||
+      (editingCategory &&
+        editData.name === editingCategory.name &&
+        String(editData.iconId) === String(editingCategory.iconId)),
+  );
+
   return (
     <>
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-y-6 gap-x-4 justify-items-center transition-opacity duration-300">
@@ -118,10 +165,26 @@ const CategoryList: React.FC<CategoryListProps> = ({
         <Modal isOpen={!!editingCategory} onClose={handleCloseModal}>
           <div className="flex justify-center">
             <div className="p-6 flex flex-col gap-4 bg-white rounded-2xl min-w-[382px] max-w-md">
-              <h2 className="text-xl font-semibold text-center mb-2">แก้ไขหมวดหมู่</h2>
-
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-center mb-2">แก้ไขหมวดหมู่</h2>
+                <div
+                  onClick={handleCloseModal}
+                  className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+                >
+                  <RxCross2 size={25} />
+                </div>
+              </div>
               <div className="flex flex-col gap-2">
-                <label htmlFor="category-name" className="text-sm font-medium text-gray-700">
+                <div className="my-6">
+                  <div className={loading ? 'opacity-50 pointer-events-none' : ''}>
+                    <IconSelector
+                      selectedIconId={editData.iconId}
+                      selectedIconUrl={editingCategory.icon}
+                      onSelect={(id) => setEditData({ ...editData, iconId: String(id) })}
+                    />
+                  </div>
+                </div>
+                <label htmlFor="category-name" className="text-base font-medium text-gray-700">
                   ชื่อหมวดหมู่
                 </label>
                 <input
@@ -133,47 +196,25 @@ const CategoryList: React.FC<CategoryListProps> = ({
                   onKeyPress={handleKeyPress}
                   disabled={loading}
                   maxLength={50}
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition"
+                  className="border border-gray-300 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition"
                 />
-                <span className="text-xs text-gray-500">{editData.name.length}/50 ตัวอักษร</span>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-gray-700">เลือกไอคอน</label>
-                <div className={loading ? 'opacity-50 pointer-events-none' : ''}>
-                  <IconSelector
-                    selectedIconId={editData.iconId}
-                    selectedIconUrl={editingCategory.icon}
-                    onSelect={(id) => setEditData({ ...editData, iconId: id })}
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-2">
+              <div className="flex gap-3 mt-1">
                 <button
-                  onClick={handleCloseModal}
+                  onClick={handleDeleteCategory}
                   disabled={loading}
-                  className="flex-1 bg-gray-200 text-gray-700 py-2.5 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="flex-1 bg-[#FF2D55] text-white py-2.5 rounded-lg hover:bg-[#f91e46] transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
-                  ยกเลิก
+                  ลบ
                 </button>
                 <button
                   onClick={handleUpdateCategory}
-                  disabled={
-                    loading ||
-                    !editData.name.trim() ||
-                    !editData.iconId ||
-                    (editData.name === editingCategory?.name &&
-                      editData.iconId === editingCategory?.icon.split('/').pop())
-                  }
+                  disabled={isSaveDisabled}
                   className={`flex-1 py-2.5 rounded-lg font-medium transition ${
-                    loading ||
-                    !editData.name.trim() ||
-                    !editData.iconId ||
-                    (editData.name === editingCategory?.name &&
-                      editData.iconId === editingCategory?.icon.split('/').pop())
-                      ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                    isSaveDisabled
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
                   {loading ? 'กำลังบันทึก...' : 'บันทึก'}

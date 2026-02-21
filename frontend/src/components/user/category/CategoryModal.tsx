@@ -7,6 +7,7 @@ import IconSelector from '../account/IconSelector';
 import type { CategoryModalProps } from '../../../interface/category';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
+import { RxCross2 } from 'react-icons/rx';
 
 const CategoryModal: React.FC<CategoryModalProps> = ({
   isOpen,
@@ -34,7 +35,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
         type: selectedType,
       });
 
-      await showToastAlert('เพิ่มหมวดหมู่สำเร็จ', 'success');
+      showToastAlert('เพิ่มหมวดหมู่สำเร็จ', 'success');
       setNewCategory({ name: '', iconId: '' });
       await refresh();
       onClose();
@@ -76,10 +77,28 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
     <Modal isOpen={isOpen} onClose={handleClose}>
       <div className="flex justify-center">
         <div className="p-6 flex flex-col gap-4 bg-white rounded-2xl min-w-[382px] max-w-md">
-          <h2 className="text-xl font-semibold text-center mb-2">เพิ่มหมวดหมู่ใหม่</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-center mb-2">
+              เพิ่มหมวดหมู่{selectedType === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
+            </h2>
+            <div
+              onClick={onClose}
+              className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+            >
+              <RxCross2 size={25} />
+            </div>
+          </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="category-name" className="text-sm font-medium text-gray-700">
+            <div className="my-6">
+              <div className={loading ? 'opacity-50 pointer-events-none' : ''}>
+                <IconSelector
+                  selectedIconId={newCategory.iconId}
+                  onSelect={(id) => setNewCategory({ ...newCategory, iconId: id })}
+                />
+              </div>
+            </div>
+            <label htmlFor="category-name" className="text-base font-medium text-gray-700">
               ชื่อหมวดหมู่
             </label>
             <input
@@ -91,22 +110,11 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
               onKeyPress={handleKeyPress}
               disabled={loading}
               maxLength={50}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition"
+              className="border border-gray-300 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition"
             />
-            <span className="text-xs text-gray-500">{newCategory.name.length}/50 ตัวอักษร</span>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">เลือกไอคอน</label>
-            <div className={loading ? 'opacity-50 pointer-events-none' : ''}>
-              <IconSelector
-                selectedIconId={newCategory.iconId}
-                onSelect={(id) => setNewCategory({ ...newCategory, iconId: id })}
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-3 mt-2">
+          <div className="flex gap-3 mt-1">
             <button
               onClick={handleClose}
               disabled={loading}
