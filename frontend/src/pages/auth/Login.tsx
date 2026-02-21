@@ -14,6 +14,8 @@ import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
 import type { LoginForm } from '../../interface/auth';
 import type { ElysiaResponse } from '../../interface/error';
+import SATISATANG1 from '../../assets/SATISATANG1.png';
+import SATISATANG from '../../assets/SATISATANG.svg';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -221,6 +223,7 @@ const Login: React.FC = () => {
       facebookLogin,
     ],
   );
+
   const handleResetPassword = async () => {
     if (!email) {
       showToastAlert('กรุณากรอกอีเมล', 'error');
@@ -241,103 +244,118 @@ const Login: React.FC = () => {
 
   return (
     <PageWrapper animation="scale-fade">
-      <div className="p-6">
-        <Link to="/" className="cursor-pointer">
-          <Logo />
-        </Link>
-
-        <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
-          <h1 className="text-xl font-medium text-center mb-2">สมัครเข้าใช้งานหรือเข้าสู่ระบบ</h1>
-
-          <div className="relative w-full">
-            <InputField
-              id="email"
-              type="email"
-              value={email}
-              onChange={handleEmailChange}
-              label="อีเมล"
-              autoComplete="email"
-            />
-          </div>
-
-          {isUser === 'Login' && (
-            <div className="relative w-full">
-              <InputField
-                id="password"
-                type="password"
-                value={password}
-                onChange={handlePasswordChange}
-                label="รหัสผ่าน"
-                autoComplete="current-password"
-              />
-            </div>
-          )}
-
-          {isUser === 'Register' && (
-            <div className="flex flex-col gap-5">
-              <div className="relative w-full">
-                <InputField
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                  label="รหัสผ่าน"
-                  autoComplete="new-password"
-                  minLength={6}
-                />
-              </div>
-
-              <div className="relative w-full">
-                <InputField
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={handleConfirmPasswordChange}
-                  label="ยืนยันรหัสผ่าน"
-                  autoComplete="new-password"
-                  minLength={6}
-                />
-              </div>
-
-              <div className="relative w-full">
-                <InputField
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={handleNameChange}
-                  label="ชื่อ"
-                  autoComplete="name"
-                />
-              </div>
-            </div>
-          )}
-
-          {isUser === 'Login' ? (
-            <div className="text-sky-700 text-sm text-center ">
-              ลืมรหัสผ่าน?{' '}
-              <a onClick={handleResetPassword} className="underline cursor-pointer">
-                คลิกที่นี่
-              </a>
-            </div>
-          ) : null}
-          {error && (
-            <div className="text-red-500 text-sm text-center" role="alert" aria-live="polite">
-              {error}
-            </div>
-          )}
-
-          <SubmitButton isLoading={isLoading} text="ดำเนินการต่อ" />
-        </form>
-
-        <div className="relative my-7 flex items-center">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-4 text-gray-500">หรือ</span>
-          <div className="flex-grow border-t border-gray-300"></div>
+      <div className="flex min-h-screen w-full">
+        <div className="hidden lg:flex lg:flex-col lg:w-1/2 bg-gray-50 items-center justify-center">
+          <img src={SATISATANG} alt="Logo SatiSatang" className="h-56 object-contain" />
+          <img src={SATISATANG1} alt="Logo SatiSatang" className="h-36 object-contain" />
         </div>
 
-        <div className="flex flex-col gap-5">
-          <OAuthButton onClick={googleLogin} label="ดำเนินการต่อด้วย Google" logo={Google} />
-          <OAuthButton onClick={facebookLogin} label="ดำเนินการต่อด้วย Facebook" logo={Facebook} />
+        <div className="w-full lg:w-1/2 flex flex-col justify-center">
+          <div className="p-6 w-full max-w-md mx-auto">
+            <Link to="/" className="cursor-pointer">
+              <Logo />
+            </Link>
+
+            <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
+              <h1 className="text-xl font-medium text-center mb-2">
+                สมัครเข้าใช้งานหรือเข้าสู่ระบบ
+              </h1>
+
+              <div className="relative w-full">
+                <InputField
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  label="อีเมล"
+                  autoComplete="email"
+                />
+              </div>
+
+              {isUser === 'Login' && (
+                <div className="relative w-full">
+                  <InputField
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    label="รหัสผ่าน"
+                    autoComplete="current-password"
+                  />
+                </div>
+              )}
+
+              {isUser === 'Register' && (
+                <div className="flex flex-col gap-5">
+                  <div className="relative w-full">
+                    <InputField
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      label="รหัสผ่าน"
+                      autoComplete="new-password"
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="relative w-full">
+                    <InputField
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                      label="ยืนยันรหัสผ่าน"
+                      autoComplete="new-password"
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="relative w-full">
+                    <InputField
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={handleNameChange}
+                      label="ชื่อ"
+                      autoComplete="name"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {isUser === 'Login' ? (
+                <div className="text-sky-700 text-sm text-center ">
+                  ลืมรหัสผ่าน?{' '}
+                  <a onClick={handleResetPassword} className="underline cursor-pointer">
+                    คลิกที่นี่
+                  </a>
+                </div>
+              ) : null}
+              {error && (
+                <div className="text-red-500 text-sm text-center" role="alert" aria-live="polite">
+                  {error}
+                </div>
+              )}
+
+              <SubmitButton isLoading={isLoading} text="ดำเนินการต่อ" />
+            </form>
+
+            <div className="relative my-7 flex items-center">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="mx-4 text-gray-500">หรือ</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <div className="flex flex-col gap-5">
+              <OAuthButton onClick={googleLogin} label="ดำเนินการต่อด้วย Google" logo={Google} />
+              <OAuthButton
+                onClick={facebookLogin}
+                label="ดำเนินการต่อด้วย Facebook"
+                logo={Facebook}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </PageWrapper>
