@@ -67,7 +67,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
     );
 
   return (
-    <div className="w-5/6 md:w-[70%]">
+    <div className="w-5/6 md:min-w-[550px] md:w-[50%]">
       {sortedDates.map((date, index) => {
         const dayTransactions = groupedByDate[date];
         const dayIncome = dayTransactions

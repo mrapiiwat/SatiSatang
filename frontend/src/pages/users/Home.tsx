@@ -288,7 +288,6 @@ const Home = () => {
           onMonthChange={handleMonthChange}
         />
         <div className="text-center mb-6">
-          {/* ส่วน "ยอดใช้จ่าย / รายรับ" */}
           <div className="h-[20px] mb-4 overflow-hidden">
             <AnimatePresence mode="wait" initial={false}>
               <motion.p
@@ -339,7 +338,7 @@ const Home = () => {
           </div>
         ) : (
           <>
-            <div className="flex flex-col md:max-w-[80%] md:flex-col lg:flex-row lg:justify-center lg:gap-4 mb-6 w-full lg:w-4/5 mx-auto">
+            <div className="flex flex-col md:max-w-[80%] md:flex-col lg:flex-row lg:min-w-[700px] lg:justify-center lg:gap-4 mb-6 w-full lg:w-7/12 mx-auto">
               {budgets.length > 0 && budgetIndex < budgets.length && (
                 <motion.div
                   className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
