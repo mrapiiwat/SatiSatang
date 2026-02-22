@@ -55,13 +55,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 จัดการหมวดหมู่
               </Link>
               <Link
-                to="/user/stock"
-                onClick={onClose}
-                className="py-2 font-semibold text-lg cursor-pointer"
-              >
-                ราคาตลาด
-              </Link>
-              <Link
                 to="/user/feedback"
                 onClick={onClose}
                 className="py-2 font-semibold text-lg cursor-pointer"
