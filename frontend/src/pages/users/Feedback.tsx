@@ -84,13 +84,10 @@ const Feedback: React.FC = () => {
   };
 
   return (
-    <div className="bg-white px-5 flex flex-col items-center">
+    <div className="bg-white flex flex-col items-center">
       <div className="w-full max-w-2xl flex flex-col flex-grow">
-        <div className="mb-6">
-          <BackButton />
-        </div>
-
-        <div className="flex flex-col items-center text-center flex-grow">
+        <BackButton />
+        <div className="flex flex-col items-center text-center flex-grow px-5">
           <div className="flex flex-col items-center gap-2">
             <img src={SATISATANG} alt="โลโก้สติสตางค์" className="w-44 h-48 object-contain" />
             <img src={SATISATANG1} alt="ชื่อสติสตางค์" className="w-40 h-auto object-contain" />

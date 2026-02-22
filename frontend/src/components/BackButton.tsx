@@ -6,10 +6,12 @@ const BackButton: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <button onClick={() => navigate(-1)} className="flex items-center gap-1 cursor-pointer">
-      <IoChevronBackOutline />
-      <span className="font-medium">ย้อนกลับ</span>
-    </button>
+    <div className="px-6 py-2">
+      <button onClick={() => navigate(-1)} className="flex items-center gap-1 cursor-pointer">
+        <IoChevronBackOutline />
+        <span className="font-light">ย้อนกลับ</span>
+      </button>
+    </div>
   );
 };
 

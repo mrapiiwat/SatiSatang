@@ -7,6 +7,7 @@ import type { StockDetailType } from '../../interface/stock';
 import { GrSearch } from 'react-icons/gr';
 import { MdClear } from 'react-icons/md';
 import { motion } from 'framer-motion';
+import BackButton from '../../components/BackButton';
 
 export default function Stock() {
   const [stocks, setStocks] = useState<StockProps[]>([]);
@@ -62,6 +63,7 @@ export default function Stock() {
 
   return (
     <div className="min-h-screen">
+      <BackButton />
       <div className="max-w-5xl mx-auto px-6 py-5">
         <div className="mb-8">
           <motion.h1
@@ -277,6 +279,7 @@ export const StockDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen">
+      <BackButton />
       <div className="max-w-4xl mx-auto px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -8,6 +8,7 @@ import { showToastAlert } from '../../store/toastStore';
 import Modal from '../../components/Modal';
 import { useNavigate } from 'react-router-dom';
 import type { ElysiaResponse } from '../../interface/error';
+import BackButton from '../../components/BackButton';
 
 const Account: React.FC = () => {
   const navigate = useNavigate();
@@ -151,7 +152,8 @@ const Account: React.FC = () => {
 
   return (
     <PageWrapper animation="fade">
-      <div className="relative px-6 py-8 font-ibm text-black-900 min-h-screen">
+      <BackButton />
+      <div className="relative px-6 py-8 font-ibm text-black-900">
         <h1 className="text-center font-semibold mb-8">บัญชีผู้ใช้</h1>
 
         <div className="mb-6 max-w-md mx-auto">
