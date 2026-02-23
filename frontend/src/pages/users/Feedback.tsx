@@ -4,6 +4,7 @@ import SATISATANG from '../../assets/SATISATANG.svg';
 import SATISATANG1 from '../../assets/SATISATANG1.png';
 import { IoAttachOutline, IoCloseOutline } from 'react-icons/io5';
 import useAuthStore from '../../store/authStore';
+import { showToastAlert } from '../../store/toastStore';
 
 const Feedback: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -37,7 +38,7 @@ const Feedback: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!feedbackText.trim() && !selectedImage) {
-      alert('กรุณาพิมพ์ข้อความหรือแนบรูปภาพก่อนส่งครับ');
+      showToastAlert('กรุณาพิมพ์ข้อความ', 'warning');
       return;
     }
 
@@ -69,31 +70,34 @@ const Feedback: React.FC = () => {
       const result = await response.json();
 
       if (result.status === 'success') {
-        alert('ส่งความคิดเห็นสำเร็จ ขอบคุณครับ!');
+        showToastAlert('ส่งความคิดเห็นสำเร็จ ขอบคุณครับ!', 'success');
         setFeedbackText('');
         setSelectedImage(null);
       } else {
-        alert('เกิดข้อผิดพลาด: ' + result.message);
+        showToastAlert('เกิดข้อผิดพลาด: ' + result.message, 'error');
       }
     } catch (error) {
       console.error('Error saving feedback:', error);
-      alert('ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
+      showToastAlert('ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-white flex flex-col items-center">
-      <div className="w-full max-w-2xl flex flex-col flex-grow">
-        <BackButton />
-        <div className="flex flex-col items-center text-center flex-grow px-5">
-          <div className="flex flex-col items-center gap-2">
-            <img src={SATISATANG} alt="โลโก้สติสตางค์" className="w-44 h-48 object-contain" />
-            <img src={SATISATANG1} alt="ชื่อสติสตางค์" className="w-40 h-auto object-contain" />
+    <div className="w-full bg-white flex flex-col items-center min-h-[calc(100dvh-80px)] overflow-y-auto">
+      <div className="w-full max-w-2xl flex flex-col flex-grow pb-8">
+        <div className="w-full p-4">
+          <BackButton />
+        </div>
+
+        <div className="flex flex-col items-center justify-center text-center flex-grow px-6">
+          <div className="flex flex-col items-center gap-3 sm:gap-4">
+            <img src={SATISATANG} alt="โลโก้สติสตางค์" className="w-48 object-contain" />
+            <img src={SATISATANG1} alt="ชื่อสติสตางค์" className="w-48 object-contain" />
           </div>
 
-          <p className="text-gray-700 text-lg leading-relaxed mb-8 px-4 mt-2">
+          <p className="text-gray-700 text-lg leading-relaxed mb-6 sm:mb-8 mt-4">
             ความคิดเห็นของคุณมีความหมายกับเราเสมอ
             <br />
             มาร่วมแบ่งปันประสบการณ์หลังการใช้งาน
@@ -103,24 +107,24 @@ const Feedback: React.FC = () => {
             เพื่อให้เรานำทุกคำแนะนำไปปรับปรุงและพัฒนา
           </p>
 
-          <h2 className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-700 via-purple-300 to-green-600 text-transparent bg-clip-text">
+          <h2 className="text-4xl sm:text-4xl font-bold mb-6 sm:mb-8 bg-gradient-to-r from-blue-700 via-purple-300 to-green-600 text-transparent bg-clip-text">
             Your Voice Matters
           </h2>
 
           <div className="w-full mb-6">
             <div
-              className={`w-full min-h-[12rem] flex flex-col border rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent bg-white overflow-hidden p-2 transition-all ${isLoading ? 'opacity-70 pointer-events-none' : 'border-gray-300'}`}
+              className={`w-full min-h-[10rem] sm:min-h-[12rem] flex flex-col border rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent bg-white overflow-hidden p-3 transition-all ${isLoading ? 'opacity-70 pointer-events-none' : 'border-gray-300'}`}
             >
               <textarea
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
-                className="w-full flex-grow outline-none resize-none bg-transparent p-2 text-gray-700 placeholder-gray-400 min-h-[6rem]"
+                className="w-full flex-grow outline-none resize-none bg-transparent p-1 text-gray-700 placeholder-gray-400 min-h-[6rem] text-base"
                 placeholder="พิมพ์ความคิดเห็นได้ที่นี่"
               />
 
               {selectedImage && (
-                <div className="px-2 pb-2">
-                  <div className="relative w-16 h-16 rounded-lg border border-gray-200 overflow-hidden group shadow-sm">
+                <div className="px-2 pb-2 mt-2">
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-gray-200 overflow-hidden group shadow-sm">
                     <img
                       src={URL.createObjectURL(selectedImage)}
                       alt="preview"
@@ -128,7 +132,7 @@ const Feedback: React.FC = () => {
                     />
                     <button
                       onClick={handleRemoveImage}
-                      className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
                       type="button"
                     >
                       <IoCloseOutline className="text-sm" />
@@ -137,7 +141,7 @@ const Feedback: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex items-center px-1 pt-1">
+              <div className="flex items-center px-1 pt-2">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -145,7 +149,7 @@ const Feedback: React.FC = () => {
                   className={`p-2 rounded-full transition-colors flex items-center justify-center ${selectedImage ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 hover:text-indigo-600'}`}
                   title="แนบรูปภาพ"
                 >
-                  <IoAttachOutline className="text-2xl transform -rotate-45" />
+                  <IoAttachOutline className="text-2xl sm:text-3xl transform -rotate-45" />
                 </button>
                 <input
                   type="file"
@@ -154,7 +158,7 @@ const Feedback: React.FC = () => {
                   className="hidden"
                   onChange={handleFileChange}
                 />
-                {selectedImage && <span className="text-xs text-gray-400 ml-1">แนบแล้ว 1 รูป</span>}
+                {selectedImage && <span className="text-sm text-gray-400 ml-2">แนบแล้ว 1 รูป</span>}
               </div>
             </div>
           </div>
@@ -163,7 +167,7 @@ const Feedback: React.FC = () => {
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className={`text-white px-8 py-2.5 rounded-full font-medium transition-colors shadow-md ${isLoading ? 'bg-indigo-400 cursor-wait' : 'bg-indigo-700 hover:bg-indigo-800'}`}
+              className={`text-white px-8 py-3 rounded-full text-base font-medium transition-colors shadow-md ${isLoading ? 'bg-indigo-400 cursor-wait' : 'bg-indigo-700 hover:bg-indigo-800'}`}
             >
               {isLoading ? 'กำลังส่งข้อมูล...' : 'ส่งความคิดเห็น'}
             </button>

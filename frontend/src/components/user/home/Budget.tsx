@@ -14,6 +14,7 @@ import type {
 } from '../../../interface/home';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
+import Tooltip from '../../Tooltip';
 
 const frequencies: FrequencyOption[] = [
   { value: 'DAILY', label: 'รายวัน' },
@@ -157,7 +158,13 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
     <div className="flex justify-center items-center">
       <div className="bg-white w-full max-w-96 min-h-[420px] rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-5">
-          <h4 className="font-medium">{editData ? 'แก้ไขงบประมาณ' : 'ตั้งงบประมาณ'}</h4>
+          <div className="flex gap-3 items-center">
+            <h4 className="font-medium">{editData ? 'แก้ไขงบประมาณ' : 'ตั้งงบประมาณ'}</h4>
+            <Tooltip
+              text="ตั้งงบประมาณสำหรับหมวดหมู่ที่คุณต้องการจัดการการใช้จ่าย"
+              position="right"
+            />
+          </div>
           <div
             onClick={onClose}
             className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"

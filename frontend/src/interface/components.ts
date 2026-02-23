@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 
 export interface ImageProps {
   src: string;
@@ -49,4 +49,11 @@ export interface AlertProps {
   title?: string;
   icon?: 'success' | 'error' | 'warning' | 'info' | 'question';
   confirmText?: string;
+}
+
+export interface TooltipProps {
+  text: string | ReactNode;
+  children?: ReactNode;
+  position?: 'top' | 'bottom' | 'left' | 'right';
+  type?: 'info' | 'help';
 }

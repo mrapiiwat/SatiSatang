@@ -6,6 +6,7 @@ import axios from '../../../api/axios';
 import { AxiosError, isAxiosError } from 'axios';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
+import Tooltip from '../../Tooltip';
 
 const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
   const [goalName, setGoalName] = useState('');
@@ -306,7 +307,14 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
     <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
       <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
         <div className="flex justify-between items-center mb-6">
-          <h4 className="font-semibold">{onUpdateDraft ? 'แก้ไขเป้าหมาย' : 'เป้าหมาย'}</h4>
+          <div className="flex gap-3 items-center">
+            <h4 className="font-semibold">{onUpdateDraft ? 'แก้ไขเป้าหมาย' : 'เป้าหมาย'}</h4>
+            <Tooltip
+              text="ตั้งเป้าหมายการออม สำหรับสิ่งของที่คุณอยากได้ หรือ จำนวนเงินที่คุณอยากออม"
+              position="right"
+            />
+          </div>
+
           <div
             onClick={onClose}
             className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
@@ -342,7 +350,10 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                 htmlFor="hasDeadline"
                 className="text-sm font-medium cursor-pointer select-none text-black-900"
               >
-                กำหนดวันสิ้นสุด (Deadline)
+                <div className="flex items-center gap-3">
+                  ระยะเวลา{' '}
+                  <Tooltip text="กำหนดวันสิ้นสุดของเป้าหมาย" position="right" type="help" />
+                </div>
               </label>
               <input
                 type="checkbox"
