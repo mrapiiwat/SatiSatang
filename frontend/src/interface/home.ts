@@ -162,6 +162,7 @@ export interface SatiProps {
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleMenuSelect: (type: string) => void;
   onRefresh?: () => void;
+  onSwitchToSatang?: () => void;
 }
 
 export interface GoalTransaction {

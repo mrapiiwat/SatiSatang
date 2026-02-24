@@ -205,9 +205,34 @@ export class OpenAIService {
       const choice = response.choices[0].message;
 
       if (!choice.tool_calls || choice.tool_calls.length === 0) {
+        const textContent = choice.content || "ไม่เข้าใจคำสั่งครับ";
+
+        try {
+          let jsonStringToParse = textContent;
+
+          const markdownMatch = textContent.match(
+            /```(?:json)?\s*(\{[\s\S]*?\})\s*```/i
+          );
+          if (markdownMatch?.[1]) {
+            jsonStringToParse = markdownMatch[1];
+          } else {
+            const startIdx = textContent.indexOf("{");
+            const endIdx = textContent.lastIndexOf("}");
+            if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+              jsonStringToParse = textContent.substring(startIdx, endIdx + 1);
+            }
+          }
+
+          const parsedContent = JSON.parse(jsonStringToParse);
+
+          if (parsedContent?.type) {
+            return parsedContent;
+          }
+        } catch {}
+
         return {
           type: "message",
-          message: choice.content || "ไม่เข้าใจคำสั่งครับ",
+          message: textContent,
         };
       }
 

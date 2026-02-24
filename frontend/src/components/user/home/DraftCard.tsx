@@ -104,7 +104,7 @@ const DraftCard: React.FC<{
 
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-black text-base">
-                  {isExpense ? 'รายจ่าย' : 'รายรับ'}
+                  {data.isGoal ? 'เป้าหมาย' : isExpense ? 'รายจ่าย' : 'รายรับ'}
                 </span>
                 <span className="text-black text-sm leading-tight truncate pr-2 font-normal">
                   {data.description || 'ไม่ระบุรายการ'}

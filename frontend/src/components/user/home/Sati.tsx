@@ -7,6 +7,7 @@ import PageWrapper from '../../PageWrapper';
 import type { SatiProps, DraftData, BudgetDraftData, GoalDraftData } from '../../../interface/home';
 import axios from '../../../api/axios';
 import { isAxiosError } from 'axios';
+import { useNavigate } from 'react-router-dom';
 import type {
   ChatMessage,
   DraftStatus,
@@ -28,10 +29,11 @@ const Sati: React.FC<SatiProps> = ({
   setIsMenuOpen,
   handleMenuSelect,
   onRefresh,
+  onSwitchToSatang,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [nextCursor, setNextCursor] = useState<number | null>(null);
@@ -525,13 +527,20 @@ const Sati: React.FC<SatiProps> = ({
     }
   };
 
-  const renderMessageContent = (msg: ChatMessage) => {
+  const renderMessageContent = (msg: ChatMessage, isLastMessage: boolean) => {
     if (msg.role === 'user') return msg.content;
+
     try {
-      const parsed = JSON.parse(msg.content);
+      let cleanContent = msg.content.trim();
+      if (cleanContent.startsWith('```')) {
+        cleanContent = cleanContent
+          .replace(/^```(json)?\n?/, '')
+          .replace(/\n?```$/, '')
+          .trim();
+      }
 
+      const parsed = JSON.parse(cleanContent);
       const currentStatus: DraftStatus = parsed.data?.status || 'pending';
-
       if (
         (parsed.type === 'create_transaction' || parsed.ui_type === 'CONFIRM_CARD') &&
         parsed.data
@@ -568,6 +577,45 @@ const Sati: React.FC<SatiProps> = ({
             onCancel={() => handleCancel(msg.id, parsed)}
             onEdit={() => handleEditDraft(parsed.data, msg.id, 'GOAL')}
           />
+        );
+      }
+
+      if (parsed.type === 'message_with_action') {
+        return (
+          <div className="flex flex-col gap-1">
+            <span className="text-gray-800 leading-relaxed">{parsed.message}</span>
+
+            {isLastMessage && parsed.action && (
+              <button
+                onClick={() => {
+                  if (parsed.action.action_type === 'switch_to_satang') {
+                    handleCloseChatModal();
+                    navigate('/user/satang');
+                    if (onSwitchToSatang) onSwitchToSatang();
+                  }
+                }}
+                className="mt-1 w-fit flex items-center gap-1 text-blue-300 hover:text-blue-300/50 text-sm font-medium transition-colors group"
+              >
+                <span className="underline decoration-blue-300 underline-offset-4">
+                  {parsed.action.label}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
         );
       }
 
@@ -609,8 +657,9 @@ const Sati: React.FC<SatiProps> = ({
                 </div>
               )}
               <div className="flex flex-col gap-3 px-2">
-                {messages.map((msg) => {
+                {messages.map((msg, index) => {
                   const isUser = msg.role === 'user';
+                  const isLastMessage = index === messages.length - 1;
                   const isCard =
                     !isUser &&
                     msg.content.trim().startsWith('{') &&
@@ -628,7 +677,7 @@ const Sati: React.FC<SatiProps> = ({
                             : 'bg-gray-100 text-black p-3 rounded-2xl rounded-tl-none self-start w-fit max-w-[85%]'
                       }`}
                     >
-                      {renderMessageContent(msg)}
+                      {renderMessageContent(msg, isLastMessage)}
                     </div>
                   );
                 })}
