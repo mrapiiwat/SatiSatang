@@ -11,12 +11,14 @@ export const userController = new Elysia()
   .use(authenticateJWT)
   .get("/me", async ({ user, set }) => {
     const userId = Number(user.id);
+    const provider = user.provider;
 
-    const result = await userService.me(userId);
+    const result = await userService.me(userId, provider);
 
     set.status = StatusCodes.OK;
     return result;
   })
+
   .put(
     "/change-password",
     async ({ body, set, user }) => {
@@ -82,4 +84,11 @@ export const userController = new Elysia()
     {
       query: userSchema.getSummaryQuery,
     }
-  );
+  )
+  .get("/balance", async ({ user, set }) => {
+    const userId = Number(user.id);
+    set.status = StatusCodes.OK;
+    const result = await userService.getBalance(userId);
+
+    return result;
+  });

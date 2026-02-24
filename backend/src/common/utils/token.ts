@@ -11,7 +11,10 @@ export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export const createRefreshToken = async (userId: number) => {
+export const createRefreshToken = async (
+  userId: number,
+  provider: "local" | "google" | "facebook" = "local"
+) => {
   const raw = randomBytes(48).toString("hex");
   const tokenHash = hashToken(raw);
 
@@ -22,6 +25,7 @@ export const createRefreshToken = async (userId: number) => {
     tokenHash,
     userId,
     expiresAt,
+    provider,
   });
 
   return raw;
@@ -47,9 +51,13 @@ export const revokeRefreshTokenByRaw = async (raw: string) => {
     .where(eq(refreshToken.tokenHash, tokenHash));
 };
 
-export const rotateRefreshToken = async (oldRaw: string, userId: number) => {
+export const rotateRefreshToken = async (
+  oldRaw: string,
+  userId: number,
+  provider: "local" | "google" | "facebook" = "local"
+) => {
   await revokeRefreshTokenByRaw(oldRaw);
-  return createRefreshToken(userId);
+  return createRefreshToken(userId, provider);
 };
 
 export function generateResetToken(bytes = 32) {

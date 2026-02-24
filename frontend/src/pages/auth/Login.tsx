@@ -87,7 +87,7 @@ const Login: React.FC = () => {
 
       if (isUser === 'Login') {
         try {
-          actionLogin(LoginForm!);
+          await actionLogin(LoginForm!);
           showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
           navigate('/user');
         } catch (error) {

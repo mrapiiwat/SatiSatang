@@ -160,10 +160,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
         <div className="flex justify-between items-center mb-5">
           <div className="flex gap-3 items-center">
             <h4 className="font-medium">{editData ? 'แก้ไขงบประมาณ' : 'ตั้งงบประมาณ'}</h4>
-            <Tooltip
-              text="ตั้งงบประมาณสำหรับหมวดหมู่ที่คุณต้องการจัดการการใช้จ่าย"
-              position="right"
-            />
+            <Tooltip text="กําหนดงบประมาณเพื่อควบคุมและจำกัดค่าใช้จ่าย" position="right" />
           </div>
           <div
             onClick={onClose}

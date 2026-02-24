@@ -15,6 +15,7 @@ import {
   lte,
   or,
   type SQL,
+  sql,
   sum,
 } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
@@ -167,75 +168,93 @@ export class TransactionService {
     data: transactionSchema.createTransaction,
     userId: number
   ) {
-    if (data.isGoal) {
-      const [newGoalTxn] = await db
-        .insert(goalTransaction)
+    return await db.transaction(async (tx) => {
+      if (data.isGoal) {
+        const [newGoalTxn] = await tx
+          .insert(goalTransaction)
+          .values({
+            goalId: data.categoryId,
+            userId: userId,
+            amount: data.amount,
+          })
+          .returning();
+
+        return { type: "goal", data: newGoalTxn };
+      }
+
+      let filename: string | null = null;
+      let s3Key: string | null = null;
+      if (data.receipt) {
+        const file = data.receipt;
+        const ext = file.name.split(".").pop();
+        filename = `${uuidv4()}.${ext}`;
+        s3Key = `receipts/${filename}`;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+
+        await s3Client.send(
+          new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: s3Key,
+            Body: buffer,
+            ContentType: file.type,
+          })
+        );
+      }
+
+      const [newTransaction] = await tx
+        .insert(transaction)
         .values({
-          goalId: data.categoryId,
-          userId: userId,
+          type: data.type,
+          description: data.description,
           amount: data.amount,
+          categoryId: data.categoryId,
+          receipt: s3Key,
+          userId: userId,
+          toAccount: data.toAccount,
+          fromAccount: data.fromAccount,
         })
         .returning();
 
-      return { type: "goal", data: newGoalTxn };
-    }
+      if (data.type === "INCOME") {
+        await tx
+          .update(user)
+          .set({
+            balance: sql`${user.balance} + ${data.amount}`,
+          })
+          .where(eq(user.id, userId));
+      } else if (data.type === "EXPENSE") {
+        await tx
+          .update(user)
+          .set({
+            balance: sql`${user.balance} - ${data.amount}`,
+          })
+          .where(eq(user.id, userId));
+      }
 
-    let filename: string | null = null;
-    let s3Key: string | null = null;
-    if (data.receipt) {
-      const file = data.receipt;
-      const ext = file.name.split(".").pop();
-      filename = `${uuidv4()}.${ext}`;
-      s3Key = `receipts/${filename}`;
-
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = new Uint8Array(arrayBuffer);
-
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: s3Key,
-          Body: buffer,
-          ContentType: file.type,
+      ragService
+        .addTransactionIndex({
+          id: newTransaction.id,
+          type: newTransaction.type || "EXPENSE",
+          amount: newTransaction.amount,
+          description: newTransaction.description,
+          userId: newTransaction.userId,
+          createdAt: new Date(newTransaction.createdAt).getTime(),
         })
-      );
-    }
+        .catch((err) => {
+          console.error(
+            `[RAG] Failed to index transaction ${newTransaction.id}:`,
+            err
+          );
+        });
 
-    const [newTransaction] = await db
-      .insert(transaction)
-      .values({
-        type: data.type,
-        description: data.description,
-        amount: data.amount,
-        categoryId: data.categoryId,
-        receipt: s3Key,
-        userId: userId,
-        toAccount: data.toAccount,
-        fromAccount: data.fromAccount,
-      })
-      .returning();
-
-    ragService
-      .addTransactionIndex({
-        id: newTransaction.id,
-        type: newTransaction.type || "EXPENSE",
-        amount: newTransaction.amount,
-        description: newTransaction.description,
-        userId: newTransaction.userId,
-        createdAt: new Date(newTransaction.createdAt).getTime(),
-      })
-      .catch((err) => {
-        console.error(
-          `[RAG] Failed to index transaction ${newTransaction.id}:`,
-          err
-        );
+      this.categorizer.trainModel(userId).catch((err) => {
+        console.error(`Background training failed for user ${userId}:`, err);
       });
 
-    this.categorizer.trainModel(userId).catch((err) => {
-      console.error(`Background training failed for user ${userId}:`, err);
+      return { type: "transaction", data: newTransaction };
     });
-
-    return { type: "transaction", data: newTransaction };
   }
 
   async predictCategory(description: string, userId: number) {

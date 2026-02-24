@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import BackButton from '../../components/BackButton';
 import SATISATANG from '../../assets/SATISATANG.svg';
 import SATISATANG1 from '../../assets/SATISATANG1.png';
 import { IoAttachOutline, IoCloseOutline } from 'react-icons/io5';
@@ -86,11 +85,7 @@ const Feedback: React.FC = () => {
 
   return (
     <div className="w-full bg-white flex flex-col items-center min-h-[calc(100dvh-80px)] overflow-y-auto">
-      <div className="w-full max-w-2xl flex flex-col flex-grow pb-8">
-        <div className="w-full p-4">
-          <BackButton />
-        </div>
-
+      <div className="w-full max-w-2xl flex flex-col flex-grow pb-5">
         <div className="flex flex-col items-center justify-center text-center flex-grow px-6">
           <div className="flex flex-col items-center gap-3 sm:gap-4">
             <img src={SATISATANG} alt="โลโก้สติสตางค์" className="w-48 object-contain" />

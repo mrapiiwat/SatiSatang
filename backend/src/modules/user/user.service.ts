@@ -18,7 +18,7 @@ import { category, goals, oauthAccount, transaction, user } from "@/db/schema";
 import type * as userSchema from "./user.schema";
 
 export class UserService {
-  async me(userId: number) {
+  async me(userId: number, provider: string) {
     const userRecord = await db.query.user.findFirst({
       where: and(eq(user.id, userId), isNull(user.deletedAt)),
       with: {
@@ -34,6 +34,7 @@ export class UserService {
       name: userRecord.name,
       balance: userRecord.balance,
       oauthAccounts: userRecord.oauthAccounts,
+      currentLogin: provider,
     };
 
     return responseData;
@@ -225,6 +226,23 @@ export class UserService {
       },
       transactions: formattedTransactions,
       goals: goalsWithCurrentAmount,
+    };
+  }
+
+  async getBalance(userId: number) {
+    const userRecord = await db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: {
+        balance: true,
+      },
+    });
+
+    if (!userRecord) {
+      throw new NotFoundError("User not found");
+    }
+
+    return {
+      balance: userRecord.balance || 0,
     };
   }
 }

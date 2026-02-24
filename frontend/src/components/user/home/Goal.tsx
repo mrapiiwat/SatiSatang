@@ -309,10 +309,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
         <div className="flex justify-between items-center mb-6">
           <div className="flex gap-3 items-center">
             <h4 className="font-semibold">{onUpdateDraft ? 'แก้ไขเป้าหมาย' : 'เป้าหมาย'}</h4>
-            <Tooltip
-              text="ตั้งเป้าหมายการออม สำหรับสิ่งของที่คุณอยากได้ หรือ จำนวนเงินที่คุณอยากออม"
-              position="right"
-            />
+            <Tooltip text="ตั้งเป้าหมายเงินออมเพื่อเก็บเงินให้ได้ตามเป้าหมาย" position="right" />
           </div>
 
           <div

@@ -13,6 +13,7 @@ export interface userSchema {
   name: string;
   balance: string;
   oauthAccounts?: OAuthAccount[];
+  currentLogin: string;
 }
 
 export interface formLogin {

@@ -47,7 +47,10 @@ export const authController = new Elysia()
     "/login",
     async ({ body, set, jwt, cookie: { refreshToken } }) => {
       const result = await authService.login(body);
-      const accessToken = await jwt.sign({ id: result.userId });
+      const accessToken = await jwt.sign({
+        id: result.userId,
+        provider: "local",
+      });
       const refreshRaw = await createRefreshToken(result.userId);
       refreshToken.set({
         value: refreshRaw,
@@ -72,7 +75,10 @@ export const authController = new Elysia()
     "/verify-email",
     async ({ body, set, jwt, cookie: { refreshToken } }) => {
       const result = await authService.verifyEmail(body);
-      const accessToken = await jwt.sign({ id: result.userId });
+      const accessToken = await jwt.sign({
+        id: result.userId,
+        provider: "local",
+      });
       const refreshRaw = await createRefreshToken(result.userId);
 
       refreshToken.set({
@@ -102,11 +108,10 @@ export const authController = new Elysia()
       return { error: "No refresh token" };
     }
 
-    const { userId, newRefreshToken } = await authService.refreshToken(
-      raw as string
-    );
+    const { userId, newRefreshToken, provider } =
+      await authService.refreshToken(raw as string);
 
-    const accessToken = await jwt.sign({ id: userId });
+    const accessToken = await jwt.sign({ id: userId, provider: provider });
 
     refreshToken.set({
       value: newRefreshToken,
@@ -261,8 +266,8 @@ export const authController = new Elysia()
         expiresAt: accessTokenExpiresAt,
       });
 
-      const newAccessToken = await jwt.sign({ id: userId });
-      const refreshRaw = await createRefreshToken(userId);
+      const newAccessToken = await jwt.sign({ id: userId, provider: "google" });
+      const refreshRaw = await createRefreshToken(userId, "google");
 
       cookie.refreshToken.set({
         value: refreshRaw,
@@ -354,8 +359,11 @@ export const authController = new Elysia()
         refreshToken: null,
       });
 
-      const newAccessToken = await jwt.sign({ id: userId });
-      const refreshRaw = await createRefreshToken(userId);
+      const newAccessToken = await jwt.sign({
+        id: userId,
+        provider: "facebook",
+      });
+      const refreshRaw = await createRefreshToken(userId, "facebook");
 
       cookie.refreshToken.set({
         value: refreshRaw,

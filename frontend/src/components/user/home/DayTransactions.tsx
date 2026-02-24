@@ -103,7 +103,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                 return (
                   <div
                     key={transaction.id}
-                    className={`flex items-center justify-between px-4 h-16 cursor-pointer 
+                    className={`flex items-center justify-between px-4 hover:bg-blue-200/50 h-16 cursor-pointer 
                 ${shouldRoundBottom ? 'rounded-b-md' : ''}`}
                     onClick={() => setSelectedTransaction(transaction)}
                   >

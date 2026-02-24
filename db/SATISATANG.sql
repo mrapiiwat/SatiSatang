@@ -2,6 +2,8 @@ CREATE TYPE public.frequency_enum AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY
 
 CREATE TYPE public.transaction_type_enum AS ENUM ('INCOME', 'EXPENSE');
 
+CREATE TYPE public.provider_enum AS ENUM ('local', 'google', 'facebook');
+
 CREATE
 OR REPLACE FUNCTION update_updated_at_column () RETURNS TRIGGER AS $$
 BEGIN
@@ -52,6 +54,7 @@ CREATE TABLE
     id SERIAL PRIMARY KEY,
     token_hash TEXT NOT NULL UNIQUE,
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    provider public.provider_enum NOT NULL DEFAULT 'local',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL,
     user_id INT NOT NULL,

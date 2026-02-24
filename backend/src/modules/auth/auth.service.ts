@@ -173,11 +173,16 @@ export class AuthService {
       throw new UnauthorizedError("Invalid refresh token");
     }
 
-    const newRaw = await rotateRefreshToken(rawToken, tokenInDb.userId);
+    const newRaw = await rotateRefreshToken(
+      rawToken,
+      tokenInDb.userId,
+      tokenInDb.provider as "local" | "google" | "facebook"
+    );
 
     return {
       userId: tokenInDb.userId,
       newRefreshToken: newRaw,
+      provider: tokenInDb.provider,
     };
   }
 

@@ -23,6 +23,11 @@ export const transactionType = pgEnum("transaction_type_enum", [
   "INCOME",
   "EXPENSE",
 ]);
+export const providerEnum = pgEnum("provider_enum", [
+  "local",
+  "google",
+  "facebook",
+]);
 
 export const stock = pgTable(
   "stocks",
@@ -166,6 +171,7 @@ export const refreshToken = pgTable(
     id: serial("id").primaryKey().notNull(),
     tokenHash: text("token_hash").notNull(),
     revoked: boolean("revoked").default(false).notNull(),
+    provider: providerEnum("provider").notNull().default("local"),
     createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
