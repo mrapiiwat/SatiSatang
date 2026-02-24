@@ -88,7 +88,7 @@ const Summary: React.FC = () => {
 
   return (
     <PageWrapper animation="scale-fade">
-      <div className="px-6 py-4 font-ibm text-black-900">
+      <div className="max-w-5xl mx-auto px-6 py-4 font-ibm text-black-900">
         <MonthHeader
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
