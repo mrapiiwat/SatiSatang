@@ -26,7 +26,13 @@ import { OCRService } from "@/common/services/ocr.service";
 import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { db } from "@/db";
-import { category, goalTransaction, transaction, user } from "@/db/schema";
+import {
+  category,
+  goals,
+  goalTransaction,
+  transaction,
+  user,
+} from "@/db/schema";
 import type * as transactionSchema from "./transaction.schema";
 
 const ocrService = new OCRService();
@@ -178,6 +184,18 @@ export class TransactionService {
             amount: data.amount,
           })
           .returning();
+
+        await tx
+          .update(user)
+          .set({
+            balance: sql`${user.balance} - ${data.amount}`,
+          })
+          .where(eq(user.id, userId));
+
+        await tx
+          .update(goals)
+          .set({ amount: sql`${goals.amount} + ${data.amount}` })
+          .where(eq(goals.id, data.categoryId));
 
         return { type: "goal", data: newGoalTxn };
       }
@@ -344,36 +362,133 @@ export class TransactionService {
     data: transactionSchema.updateTransaction,
     userId: number
   ) {
-    const existingTxn = await db.query.transaction.findFirst({
-      where: and(
-        eq(transaction.id, id),
-        eq(transaction.userId, userId),
-        isNull(transaction.deletedAt)
-      ),
-    });
+    return await db.transaction(async (tx) => {
+      const existingTxn = await tx.query.transaction.findFirst({
+        where: and(
+          eq(transaction.id, id),
+          eq(transaction.userId, userId),
+          isNull(transaction.deletedAt)
+        ),
+      });
 
-    if (!existingTxn) {
-      throw new NotFoundError("Transaction not found");
-    }
+      if (!existingTxn) {
+        throw new NotFoundError("Transaction not found");
+      }
 
-    let finalReceiptPath = existingTxn.receipt;
+      if (existingTxn.type === "INCOME") {
+        await tx
+          .update(user)
+          .set({ balance: sql`${user.balance} - ${existingTxn.amount}` })
+          .where(eq(user.id, userId));
+      } else {
+        await tx
+          .update(user)
+          .set({ balance: sql`${user.balance} + ${existingTxn.amount}` })
+          .where(eq(user.id, userId));
+      }
 
-    if (data.receipt) {
-      const file = data.receipt;
-      const ext = file.name.split(".").pop();
-      const newFilename = `${uuidv4()}.${ext}`;
-      const newS3Key = `receipts/${newFilename}`;
+      const newAmount = data.amount ?? existingTxn.amount;
+      const newType = data.type ?? existingTxn.type;
 
-      const buffer = new Uint8Array(await file.arrayBuffer());
+      if (newType === "INCOME") {
+        await tx
+          .update(user)
+          .set({ balance: sql`${user.balance} + ${newAmount}` })
+          .where(eq(user.id, userId));
+      } else {
+        await tx
+          .update(user)
+          .set({ balance: sql`${user.balance} - ${newAmount}` })
+          .where(eq(user.id, userId));
+      }
 
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: newS3Key,
-          Body: buffer,
-          ContentType: file.type,
+      let finalReceiptPath = existingTxn.receipt;
+      if (data.receipt) {
+        const file = data.receipt;
+        const ext = file.name.split(".").pop();
+        const newFilename = `${uuidv4()}.${ext}`;
+        const newS3Key = `receipts/${newFilename}`;
+
+        const buffer = new Uint8Array(await file.arrayBuffer());
+        await s3Client.send(
+          new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: newS3Key,
+            Body: buffer,
+            ContentType: file.type,
+          })
+        );
+
+        if (existingTxn.receipt) {
+          try {
+            await s3Client.send(
+              new DeleteObjectCommand({
+                Bucket: BUCKET_NAME,
+                Key: existingTxn.receipt,
+              })
+            );
+          } catch (e) {
+            console.warn("Failed to delete old receipt:", e);
+          }
+        }
+        finalReceiptPath = newS3Key;
+      }
+
+      const [updatedTxn] = await tx
+        .update(transaction)
+        .set({
+          type: newType,
+          description: data.description ?? existingTxn.description,
+          amount: newAmount,
+          categoryId: data.categoryId ?? existingTxn.categoryId,
+          receipt: finalReceiptPath,
+          toAccount: data.toAccount ?? existingTxn.toAccount,
+          fromAccount: data.fromAccount ?? existingTxn.fromAccount,
+          updatedAt: new Date(),
         })
-      );
+        .where(eq(transaction.id, id))
+        .returning();
+
+      ragService
+        .addTransactionIndex({
+          id: updatedTxn.id,
+          type: updatedTxn.type || "EXPENSE",
+          amount: updatedTxn.amount,
+          description: updatedTxn.description,
+          userId: updatedTxn.userId,
+          createdAt: new Date(updatedTxn.createdAt).getTime(),
+        })
+        .catch(console.error);
+
+      return updatedTxn;
+    });
+  }
+
+  async deleteTransaction(id: number, userId: number) {
+    return await db.transaction(async (tx) => {
+      const existingTxn = await tx.query.transaction.findFirst({
+        where: and(
+          eq(transaction.id, id),
+          eq(transaction.userId, userId),
+          isNull(transaction.deletedAt)
+        ),
+      });
+
+      if (!existingTxn) {
+        throw new NotFoundError("Transaction not found");
+      }
+
+      if (existingTxn.type === "INCOME") {
+        await tx
+          .update(user)
+          .set({ balance: sql`${user.balance} - ${existingTxn.amount}` })
+          .where(eq(user.id, userId));
+      } else if (existingTxn.type === "EXPENSE") {
+        await tx
+          .update(user)
+          .set({ balance: sql`${user.balance} + ${existingTxn.amount}` })
+          .where(eq(user.id, userId));
+      }
 
       if (existingTxn.receipt) {
         try {
@@ -384,81 +499,24 @@ export class TransactionService {
             })
           );
         } catch (e) {
-          console.warn("Failed to delete old receipt:", e);
+          console.warn("Failed to delete receipt from S3:", e);
         }
       }
 
-      finalReceiptPath = newS3Key;
-    }
-
-    const [updatedTxn] = await db
-      .update(transaction)
-      .set({
-        type: data.type ?? existingTxn.type,
-        description: data.description ?? existingTxn.description,
-        amount: data.amount ? data.amount : existingTxn.amount,
-        categoryId: data.categoryId ?? existingTxn.categoryId,
-        receipt: finalReceiptPath,
-        toAccount: data.toAccount ?? existingTxn.toAccount,
-        fromAccount: data.fromAccount ?? existingTxn.fromAccount,
-        updatedAt: new Date(),
-      })
-      .where(eq(transaction.id, id))
-      .returning();
-
-    ragService
-      .addTransactionIndex({
-        id: updatedTxn.id,
-        type: updatedTxn.type || "EXPENSE",
-        amount: updatedTxn.amount,
-        description: updatedTxn.description,
-        userId: updatedTxn.userId,
-        createdAt: new Date(updatedTxn.createdAt).getTime(),
-      })
-      .catch(console.error);
-
-    return updatedTxn;
-  }
-
-  async deleteTransaction(id: number, userId: number) {
-    const existingTxn = await db.query.transaction.findFirst({
-      where: and(
-        eq(transaction.id, id),
-        eq(transaction.userId, userId),
-        isNull(transaction.deletedAt)
-      ),
-    });
-
-    if (!existingTxn) {
-      throw new NotFoundError("Transaction not found");
-    }
-
-    if (existingTxn.receipt) {
-      try {
-        await s3Client.send(
-          new DeleteObjectCommand({
-            Bucket: BUCKET_NAME,
-            Key: existingTxn.receipt,
-          })
+      await tx
+        .update(transaction)
+        .set({ deletedAt: new Date() })
+        .where(
+          and(
+            eq(transaction.id, id),
+            eq(transaction.userId, userId),
+            isNull(transaction.deletedAt)
+          )
         );
-      } catch (e) {
-        console.warn("Failed to delete receipt from S3:", e);
-      }
-    }
 
-    await db
-      .update(transaction)
-      .set({ deletedAt: new Date() })
-      .where(
-        and(
-          eq(transaction.id, id),
-          eq(transaction.userId, userId),
-          isNull(transaction.deletedAt)
-        )
-      );
+      ragService.deleteTransactionIndex(id).catch(console.error);
 
-    ragService.deleteTransactionIndex(id).catch(console.error);
-
-    return { message: "Transaction deleted successfully" };
+      return { message: "Transaction deleted successfully" };
+    });
   }
 }
