@@ -162,7 +162,8 @@ export class FinancialService {
     userId: number,
     limit: number = 5,
     startDate?: string,
-    endDate?: string
+    endDate?: string,
+    categoryName?: string
   ) {
     const conditions = [
       eq(transaction.userId, userId),
@@ -177,25 +178,85 @@ export class FinancialService {
       conditions.push(lte(transaction.createdAt, end));
     }
 
-    const result = await db
+    const query = db
       .select({
         description: transaction.description,
         amount: transaction.amount,
         date: transaction.createdAt,
+        categoryName: category.name,
       })
       .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id));
+
+    if (categoryName) {
+      conditions.push(ilike(category.name, `%${categoryName}%`));
+    }
+
+    const result = await query
       .where(and(...conditions))
       .orderBy(desc(transaction.amount))
       .limit(limit);
 
-    if (result.length === 0) return "ไม่พบรายการรายจ่ายครับ";
+    if (result.length === 0)
+      return `ไม่พบรายการรายจ่าย${categoryName ? `ในหมวด ${categoryName}` : ""}ครับ`;
 
     return (
-      `รายการที่จ่ายแพงที่สุด:\n` +
+      `รายการที่จ่ายแพงที่สุด${categoryName ? `ในหมวด ${categoryName}` : ""}:\n` +
       result
         .map(
           (r, i) =>
-            `${i + 1}. ${r.description} - ${r.amount} บาท (${r.date.toISOString().split("T")[0]})`
+            `${i + 1}. ${r.description} (${r.categoryName}) - ${r.amount} บาท (${r.date.toISOString().split("T")[0]})`
+        )
+        .join("\n")
+    );
+  }
+
+  async getDetailedTransactions(
+    userId: number,
+    limit: number = 15,
+    startDate?: string,
+    endDate?: string,
+    categoryName?: string
+  ) {
+    const conditions = [eq(transaction.userId, userId)];
+
+    if (startDate)
+      conditions.push(gte(transaction.createdAt, new Date(startDate)));
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      conditions.push(lte(transaction.createdAt, end));
+    }
+
+    const query = db
+      .select({
+        description: transaction.description,
+        amount: transaction.amount,
+        type: transaction.type,
+        date: transaction.createdAt,
+        categoryName: category.name,
+      })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id));
+
+    if (categoryName) {
+      conditions.push(ilike(category.name, `%${categoryName}%`));
+    }
+
+    const result = await query
+      .where(and(...conditions))
+      .orderBy(desc(transaction.createdAt))
+      .limit(limit);
+
+    if (result.length === 0)
+      return `ไม่พบรายการ${categoryName ? `ในหมวด ${categoryName}` : ""}ครับ`;
+
+    return (
+      `ลิสต์รายการล่าสุด${categoryName ? ` (หมวด ${categoryName})` : ""}:\n` +
+      result
+        .map(
+          (r) =>
+            `- [${r.date.toISOString().split("T")[0]}] ${r.description} (${r.categoryName}): ${r.amount} บาท`
         )
         .join("\n")
     );

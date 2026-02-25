@@ -93,11 +93,32 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "get_top_expenses",
-      description: "ค้นหารายการที่ใช้จ่ายแพงที่สุด",
+      description: "ค้นหารายการที่ใช้จ่ายแพงที่สุด สามารถระบุเจาะจงหมวดหมู่ได้",
       parameters: {
         type: "object",
         properties: {
           limit: { type: "number", description: "จำนวนรายการ (default 5)" },
+          categoryName: {
+            type: "string",
+            description: "ชื่อหมวดหมู่ (Optional) เช่น อาหาร, ช้อปปิ้ง",
+          },
+          startDate: { type: "string" },
+          endDate: { type: "string" },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_detailed_transactions",
+      description:
+        "ดึงรายการประวัติการใช้จ่ายแบบเรียบเรียงเป็นข้อๆ (ใช้เมื่อผู้ใช้ถามว่า 'มีรายการอะไรบ้าง', 'ขอดูหน่อย')",
+      parameters: {
+        type: "object",
+        properties: {
+          limit: { type: "number" },
+          categoryName: { type: "string", description: "ชื่อหมวดหมู่ (Optional)" },
           startDate: { type: "string" },
           endDate: { type: "string" },
         },

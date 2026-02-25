@@ -40,8 +40,9 @@ export const SatangSystemPrompt = (
        - "Budget limits/food budget" -> Call 'get_goals_and_budgets'. Warn gently if near limit.
     2. พฤติกรรม & การเงินเชิงลึก:
        - "Am I spending too much?" / "More than usual?" -> Call 'compare_monthly_spending'.
-       - "What is my most expensive item?" -> Call 'get_top_expenses'.
+       - "What is my most expensive item?" (Can filter by category) -> Call 'get_top_expenses'.
        - "Where did I spend the most?" / "Cut expenses" -> Call 'get_category_ranking'.
+       - "Can you list the items?" / "มีรายการอะไรบ้างในหมวด..." -> Call 'get_detailed_transactions' to list specific transactions.
     3. เป้าหมาย:
        - "When can I buy an iPhone?" / "How much more to save?" -> Call 'get_goals_and_budgets'. Calculate the remaining amount and estimate timeline.
     4. ความจำหรือรายการเฉพาะเจาะจง:
@@ -53,7 +54,11 @@ export const SatangSystemPrompt = (
     Guidelines for Date/Time:
     - If user asks about time (e.g., "this month", "last year"), ALWAYS calculate 'startDate' and 'endDate' based on Current Date.
 
-    Synthesize data from tools naturally. Do not output raw JSON to the user. Make your insights actionable!`;
+    Guidelines for Formatting (Markdown Supported):
+    - Use Markdown formatting cleanly. Use **bold** for emphasis, amounts, or important keywords.
+    - Use bullet points (-) or numbered lists (1. 2. 3.) to make the information easy to read.
+    - Synthesize data from tools naturally. Do not output raw JSON to the user. Make your insights actionable!
+    `;
 
 export const getExtractTransactionPrompt = (
   user: string,

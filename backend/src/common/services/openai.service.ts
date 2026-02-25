@@ -221,7 +221,16 @@ export class OpenAIService {
             userId,
             args.limit,
             args.startDate,
-            args.endDate
+            args.endDate,
+            args.categoryName
+          );
+        } else if (fnName === "get_detailed_transactions") {
+          result = await financialService.getDetailedTransactions(
+            userId,
+            args.limit,
+            args.startDate,
+            args.endDate,
+            args.categoryName
           );
         } else if (fnName === "compare_monthly_spending") {
           result = await financialService.compareMonthlySpending(userId);
