@@ -9,6 +9,7 @@ import type { CategoriesType, CategoryListProps } from '../../../interface/categ
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 import { RxCross2 } from 'react-icons/rx';
+import DeleteModal from '../../DeleteModal';
 
 const CategoryList: React.FC<CategoryListProps> = ({
   categories,
@@ -19,6 +20,7 @@ const CategoryList: React.FC<CategoryListProps> = ({
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);
   const [loading, setLoading] = useState(false);
   const [editData, setEditData] = useState({ name: '', iconId: '' });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleCategoryClick = (category: CategoriesType & { iconId?: number }) => {
     const iconId = String(category.iconId || '');
@@ -27,10 +29,10 @@ const CategoryList: React.FC<CategoryListProps> = ({
   };
 
   const handleCloseModal = () => {
-    if (!loading) {
-      setEditingCategory(null);
-      setEditData({ name: '', iconId: '' });
-    }
+    if (loading || isDeleteModalOpen) return;
+
+    setEditingCategory(null);
+    setEditData({ name: '', iconId: '' });
   };
 
   const handleDeleteCategory = async () => {
@@ -47,7 +49,9 @@ const CategoryList: React.FC<CategoryListProps> = ({
         setCategories((prev) => prev.filter((cat) => cat.id !== editingCategory.id));
       }
 
-      handleCloseModal();
+      setIsDeleteModalOpen(false);
+      setEditingCategory(null);
+      setEditData({ name: '', iconId: '' });
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         const axiosError = err as AxiosError<ElysiaResponse>;
@@ -60,6 +64,7 @@ const CategoryList: React.FC<CategoryListProps> = ({
       } else {
         showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
       }
+      setIsDeleteModalOpen(false);
     } finally {
       setLoading(false);
     }
@@ -102,7 +107,8 @@ const CategoryList: React.FC<CategoryListProps> = ({
         );
       }
 
-      handleCloseModal();
+      setEditingCategory(null);
+      setEditData({ name: '', iconId: '' });
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         const axiosError = err as AxiosError<ElysiaResponse>;
@@ -163,7 +169,7 @@ const CategoryList: React.FC<CategoryListProps> = ({
 
       {editingCategory && (
         <Modal isOpen={!!editingCategory} onClose={handleCloseModal}>
-          <div className="flex justify-center">
+          <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 flex flex-col gap-4 bg-white rounded-2xl min-w-[382px] max-w-md">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-center mb-2">แก้ไขหมวดหมู่</h2>
@@ -202,19 +208,25 @@ const CategoryList: React.FC<CategoryListProps> = ({
 
               <div className="flex gap-3 mt-1">
                 <button
-                  onClick={handleDeleteCategory}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDeleteModalOpen(true);
+                  }}
                   disabled={loading}
                   className="flex-1 bg-[#FF2D55] text-white py-2.5 rounded-lg hover:bg-[#f91e46] transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   ลบ
                 </button>
                 <button
+                  type="button"
                   onClick={handleUpdateCategory}
                   disabled={isSaveDisabled}
                   className={`flex-1 py-2.5 rounded-lg font-medium transition ${
                     isSaveDisabled
                       ? 'bg-gray-400 text-white cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-purple-600 text-white hover:bg-purple-700'
                   }`}
                 >
                   {loading ? 'กำลังบันทึก...' : 'บันทึก'}
@@ -224,6 +236,15 @@ const CategoryList: React.FC<CategoryListProps> = ({
           </div>
         </Modal>
       )}
+
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteCategory}
+        title="ต้องการลบหมวดหมู่นี้ใช่หรือไม่?"
+        confirmText={loading ? 'กำลังลบ...' : 'ใช่ ลบเลย'}
+        cancelText="ยกเลิก"
+      />
     </>
   );
 };

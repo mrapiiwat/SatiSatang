@@ -66,8 +66,8 @@ const IconSelector: React.FC<IconSelectorProps> = ({
               : 'cursor-pointer hover:scale-105 hover:shadow-md'
           } ${
             selectedIconId
-              ? 'border-blue-600 bg-white shadow-sm'
-              : 'border-gray-300 bg-white hover:border-blue-600'
+              ? 'border-blue-300 bg-white shadow-sm'
+              : 'border-gray-300 bg-white hover:border-blue-300'
           }`}
         >
           {selectedIcon?.url || selectedIconUrl ? (

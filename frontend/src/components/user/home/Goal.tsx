@@ -7,16 +7,17 @@ import { AxiosError, isAxiosError } from 'axios';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 import Tooltip from '../../Tooltip';
+import DeleteModal from '../../DeleteModal';
 
 const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
   const [goalName, setGoalName] = useState('');
   const [amount, setAmount] = useState('');
-
   const [hasDeadline, setHasDeadline] = useState(false);
-
   const [year, setYear] = useState<SingleValue<OptionType>>(null);
   const [month, setMonth] = useState<SingleValue<OptionType>>(null);
   const [day, setDay] = useState<SingleValue<OptionType>>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const currentYear = new Date().getFullYear();
 
@@ -215,15 +216,19 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
     const dataWithId = editData as GoalDraftData & { id?: string | number };
     if (!dataWithId || !dataWithId.id) return;
 
+    setIsDeleting(true);
     try {
       await axios.delete(`/goal/${dataWithId.id}`);
       showToastAlert('ลบเป้าหมายสำเร็จ', 'success');
+      setIsDeleteModalOpen(false);
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
       console.log(err);
-
       showToastAlert('เกิดข้อผิดพลาดในการลบ', 'error');
+      setIsDeleteModalOpen(false);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -304,144 +309,155 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
   };
 
   return (
-    <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
-      <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-3 items-center">
-            <h4 className="font-semibold">{onUpdateDraft ? 'แก้ไขเป้าหมาย' : 'เป้าหมาย'}</h4>
-            <Tooltip text="ตั้งเป้าหมายเงินออมเพื่อเก็บเงินให้ได้ตามเป้าหมาย" position="right" />
+    <>
+      <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-3 items-center">
+              <h4 className="font-semibold">{onUpdateDraft ? 'แก้ไขเป้าหมาย' : 'เป้าหมาย'}</h4>
+              <Tooltip text="ตั้งเป้าหมายเงินออมเพื่อเก็บเงินให้ได้ตามเป้าหมาย" position="right" />
+            </div>
+
+            <div
+              onClick={onClose}
+              className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+            >
+              <RxCross2 size={25} />
+            </div>
           </div>
 
-          <div
-            onClick={onClose}
-            className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
-          >
-            <RxCross2 size={25} />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">ชื่อเป้าหมาย</label>
-            <input
-              type="text"
-              value={goalName}
-              onChange={(e) => setGoalName(e.target.value)}
-              className="border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">จำนวนเงิน</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-center h-8">
-              <label
-                htmlFor="hasDeadline"
-                className="text-sm font-medium cursor-pointer select-none text-black-900"
-              >
-                <div className="flex items-center gap-3">
-                  ระยะเวลา{' '}
-                  <Tooltip text="กำหนดวันสิ้นสุดของเป้าหมาย" position="right" type="help" />
-                </div>
-              </label>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium">ชื่อเป้าหมาย</label>
               <input
-                type="checkbox"
-                id="hasDeadline"
-                checked={hasDeadline}
-                onChange={(e) => setHasDeadline(e.target.checked)}
-                className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                type="text"
+                value={goalName}
+                onChange={(e) => setGoalName(e.target.value)}
+                className="border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none"
               />
             </div>
 
-            {hasDeadline && (
-              <div className="flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1">
-                <div className="flex flex-col flex-1 min-w-0">
-                  <Select<OptionType, false>
-                    options={yearOptions}
-                    value={year}
-                    onChange={handleYearChange}
-                    placeholder="ปี"
-                    isClearable
-                    isSearchable={false}
-                    styles={selectStyles}
-                  />
-                </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium">จำนวนเงิน</label>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none"
+              />
+            </div>
 
-                <div className="flex flex-col flex-1 min-w-0">
-                  <Select<OptionType, false>
-                    options={monthOptions}
-                    value={month}
-                    onChange={handleMonthChange}
-                    placeholder="เดือน"
-                    isClearable
-                    isSearchable={false}
-                    isOptionDisabled={(option) => {
-                      if (!year) return false;
-                      const currentY = new Date().getFullYear();
-                      const currentM = new Date().getMonth() + 1;
-                      return Number(year.value) === currentY && Number(option.value) < currentM;
-                    }}
-                    styles={selectStyles}
-                  />
-                </div>
-
-                <div className="flex flex-col flex-1 min-w-0">
-                  <Select<OptionType, false>
-                    options={dayOptions}
-                    value={day}
-                    onChange={(option) => setDay(option)}
-                    placeholder="วัน"
-                    isClearable
-                    isSearchable={false}
-                    isOptionDisabled={(option) => {
-                      if (!year || !month) return false;
-                      const currentY = new Date().getFullYear();
-                      const currentM = new Date().getMonth() + 1;
-                      const currentD = new Date().getDate();
-
-                      if (Number(year.value) === currentY && Number(month.value) === currentM) {
-                        return Number(option.value) < currentD;
-                      }
-                      return false;
-                    }}
-                    styles={selectStyles}
-                  />
-                </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center h-8">
+                <label
+                  htmlFor="hasDeadline"
+                  className="text-sm font-medium cursor-pointer select-none text-black-900"
+                >
+                  <div className="flex items-center gap-3">
+                    ระยะเวลา{' '}
+                    <Tooltip text="กำหนดวันสิ้นสุดของเป้าหมาย" position="right" type="help" />
+                  </div>
+                </label>
+                <input
+                  type="checkbox"
+                  id="hasDeadline"
+                  checked={hasDeadline}
+                  onChange={(e) => setHasDeadline(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                />
               </div>
-            )}
-          </div>
 
-          <div className="flex items-center gap-3">
-            {editData && (
+              {hasDeadline && (
+                <div className="flex gap-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1">
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <Select<OptionType, false>
+                      options={yearOptions}
+                      value={year}
+                      onChange={handleYearChange}
+                      placeholder="ปี"
+                      isClearable
+                      isSearchable={false}
+                      styles={selectStyles}
+                    />
+                  </div>
+
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <Select<OptionType, false>
+                      options={monthOptions}
+                      value={month}
+                      onChange={handleMonthChange}
+                      placeholder="เดือน"
+                      isClearable
+                      isSearchable={false}
+                      isOptionDisabled={(option) => {
+                        if (!year) return false;
+                        const currentY = new Date().getFullYear();
+                        const currentM = new Date().getMonth() + 1;
+                        return Number(year.value) === currentY && Number(option.value) < currentM;
+                      }}
+                      styles={selectStyles}
+                    />
+                  </div>
+
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <Select<OptionType, false>
+                      options={dayOptions}
+                      value={day}
+                      onChange={(option) => setDay(option)}
+                      placeholder="วัน"
+                      isClearable
+                      isSearchable={false}
+                      isOptionDisabled={(option) => {
+                        if (!year || !month) return false;
+                        const currentY = new Date().getFullYear();
+                        const currentM = new Date().getMonth() + 1;
+                        const currentD = new Date().getDate();
+
+                        if (Number(year.value) === currentY && Number(month.value) === currentM) {
+                          return Number(option.value) < currentD;
+                        }
+                        return false;
+                      }}
+                      styles={selectStyles}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {editData && (
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="flex-1 py-3 rounded-xl bg-[#FF2D55] text-white text-sm font-semibold hover:bg-[#f91e46] transition"
+                >
+                  ลบ
+                </button>
+              )}
               <button
-                type="button"
-                onClick={handleDelete}
-                className="flex-1 py-3 rounded-xl bg-[#FF2D55] text-white text-sm font-semibold hover:bg-[#f91e46] transition"
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                className={`flex-1 py-3 rounded-xl text-white text-sm font-semibold transition ${
+                  canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+                }`}
               >
-                ลบ
+                บันทึก
               </button>
-            )}
-            <button
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className={`flex-1 py-3 rounded-xl text-white text-sm font-semibold transition ${
-                canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
-              }`}
-            >
-              บันทึก
-            </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="ต้องการลบเป้าหมายนี้ใช่หรือไม่?"
+        confirmText={isDeleting ? 'กำลังลบ...' : 'ใช่ ลบเลย'}
+        cancelText="ยกเลิก"
+      />
+    </>
   );
 };
 

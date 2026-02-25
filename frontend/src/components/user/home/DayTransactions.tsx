@@ -8,6 +8,7 @@ import { RxCross2 } from 'react-icons/rx';
 import { showToastAlert } from '../../../store/toastStore';
 import { MdSubject } from 'react-icons/md';
 import { MdOutlineNotInterested } from 'react-icons/md';
+import DeleteModal from '../../DeleteModal';
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({
   groupedByDate,
@@ -18,6 +19,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
   const [categoryMap, setCategoryMap] = useState<Record<number, string>>({});
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -37,6 +39,11 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
     fetchCategories();
   }, []);
 
+  const handleCloseMainModal = () => {
+    if (isDeleteModalOpen || isDeleting) return;
+    setSelectedTransaction(null);
+  };
+
   const handleDelete = async () => {
     if (!selectedTransaction) return;
 
@@ -44,10 +51,14 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
     try {
       await axios.delete(`/transaction/${selectedTransaction.id}`);
       showToastAlert('ลบรายการสำเร็จ', 'success');
+
+      setIsDeleteModalOpen(false);
       setSelectedTransaction(null);
+
       if (onRefresh) onRefresh();
-    } catch (err) {
-      showToastAlert('ไม่สามารถลบรายการได้', err instanceof Error ? 'error' : 'error');
+    } catch {
+      showToastAlert('ไม่สามารถลบรายการได้', 'error');
+      setIsDeleteModalOpen(false);
     } finally {
       setIsDeleting(false);
     }
@@ -57,6 +68,10 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
     if (!selectedTransaction || !onEdit) return;
     onEdit(selectedTransaction);
     setSelectedTransaction(null);
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
   };
 
   if (sortedDates.length === 0)
@@ -150,22 +165,26 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
           </div>
         );
       })}
-      <Modal isOpen={!!selectedTransaction} onClose={() => setSelectedTransaction(null)}>
+
+      <Modal isOpen={!!selectedTransaction} onClose={handleCloseMainModal}>
         {selectedTransaction && (
-          <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
-              <div className="flex justify-between items-center mb-6">
+          <div
+            className="flex justify-center items-center h-full w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-white w-full max-w-[340px] rounded-2xl py-6 px-6 shadow-xl">
+              <div className="flex justify-between items-center mb-5">
                 <h4 className="font-semibold text-lg">รายละเอียด</h4>
                 <div
-                  onClick={() => setSelectedTransaction(null)}
-                  className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+                  onClick={handleCloseMainModal}
+                  className="bg-black-300 flex justify-center items-center rounded-full w-10 h-10 hover:bg-black-400 cursor-pointer"
                 >
-                  <RxCross2 size={20} />
+                  <RxCross2 size={18} />
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-28 h-28 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden">
                   {categoryMap[selectedTransaction.categoryId] ? (
                     <Image
                       src={categoryMap[selectedTransaction.categoryId]}
@@ -174,35 +193,35 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
-                      <MdOutlineNotInterested size={40} />
+                      <MdOutlineNotInterested size={36} />
                     </div>
                   )}
                 </div>
 
-                <div className="text-center mb-2">
+                <div className="text-center mb-1">
                   <div
-                    className={`text-xl font-bold mb-1 flex items-center justify-center gap-1 ${
+                    className={`text-lg font-bold mb-0.5 flex items-center justify-center gap-1 ${
                       selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
                     {selectedTransaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
                     {!categoryMap[selectedTransaction.categoryId] && (
-                      <span className="text-base font-normal text-gray-400">(ไม่มีหมวดหมู่)</span>
+                      <span className="text-sm font-normal text-gray-400">(ไม่มีหมวดหมู่)</span>
                     )}
                   </div>
                   <h2
-                    className={`text-3xl font-bold ${selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-2xl font-bold ${selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}
                   >
                     {selectedTransaction.type === 'INCOME' ? '+' : '-'}
                     {selectedTransaction.amount.toLocaleString()}
                   </h2>
                 </div>
 
-                <div className="w-full mt-2">
+                <div className="w-full mt-1">
                   {selectedTransaction.description ? (
-                    <div className="flex gap-3 items-start bg-gray-50 rounded-2xl p-4">
+                    <div className="flex gap-2 items-start bg-gray-50 rounded-xl p-3">
                       <div className="text-gray-400 mt-0.5 flex-shrink-0">
-                        <MdSubject size={18} />
+                        <MdSubject size={16} />
                       </div>
                       <p className="text-gray-700 text-sm leading-relaxed break-words text-left">
                         {selectedTransaction.description}
@@ -212,20 +231,26 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 mt-6">
+              <div className="flex items-center gap-3 mt-5">
                 <button
                   type="button"
-                  onClick={handleDelete}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDeleteModalOpen(true);
+                  }}
                   disabled={isDeleting}
-                  className="flex-1 py-3 rounded-xl bg-[#FF2D55] text-white text-sm font-semibold hover:bg-[#f91e46] transition"
+                  className="flex-1 py-2.5 rounded-xl bg-[#FF2D55] text-white text-sm font-semibold hover:bg-[#f91e46] transition disabled:opacity-50"
                 >
                   {isDeleting ? 'กำลังลบ...' : 'ลบ'}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => handleEdit()}
-                  className="flex-1 bg-blue-600 py-3 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit();
+                  }}
+                  className="flex-1 bg-blue-600 py-2.5 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
                 >
                   แก้ไข
                 </button>
@@ -234,6 +259,15 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
           </div>
         )}
       </Modal>
+
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleDelete}
+        title="ต้องการลบรายการนี้ใช่หรือไม่?"
+        confirmText={isDeleting ? 'กำลังลบ...' : 'ใช่ ลบเลย'}
+        cancelText="ยกเลิก"
+      />
     </div>
   );
 };
