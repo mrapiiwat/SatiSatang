@@ -379,6 +379,18 @@ export class OpenAIService {
         };
       }
 
+      if (fnName === "manage_categories") {
+        return {
+          type: "message_with_action",
+          message:
+            "โอ๊ะ! ถ้าเป็นการเพิ่มหรือจัดการหมวดหมู่ใหม่ น้องสติยังทำเองไม่ได้ครับ 😅 เพื่อความถูกต้อง พี่สามารถกดไปจัดการเพิ่มหรือแก้ไขหมวดหมู่เองได้ที่ปุ่มด้านล่างนี้เลยครับ!",
+          action: {
+            label: "ไปจัดการหมวดหมู่",
+            action_type: "manage_categories",
+          },
+        };
+      }
+
       if (fnName === "create_budget") {
         try {
           const targetCategory = await budgetService.getTargetCategory(

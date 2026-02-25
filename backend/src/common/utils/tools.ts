@@ -229,4 +229,21 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "manage_categories",
+      description:
+        "ใช้เมื่อ User พูดถึงการเพิ่มหมวดหมู่ใหม่, ลบหมวดหมู่, แก้ไขหมวดหมู่ หรือบ่นว่าหาหมวดหมู่ที่ต้องการไม่เจอ",
+      parameters: {
+        type: "object",
+        properties: {
+          intent: {
+            type: "string",
+            description: "ความต้องการของ user เช่น 'add', 'edit', 'list'",
+          },
+        },
+      },
+    },
+  },
 ];

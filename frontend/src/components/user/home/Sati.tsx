@@ -592,6 +592,9 @@ const Sati: React.FC<SatiProps> = ({
                     handleCloseChatModal();
                     navigate('/user/satang');
                     if (onSwitchToSatang) onSwitchToSatang();
+                  } else if (parsed.action.action_type === 'manage_categories') {
+                    handleCloseChatModal();
+                    navigate('/user/categories');
                   }
                 }}
                 className="mt-1 w-fit flex items-center gap-1 text-blue-300 hover:text-blue-300/50 text-sm font-medium transition-colors group"
@@ -600,7 +603,7 @@ const Sati: React.FC<SatiProps> = ({
                   {parsed.action.label}
                 </span>
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
+                  xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={2}
