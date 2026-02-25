@@ -5,6 +5,7 @@ import { NotFoundError } from "@/common/exceptions";
 import { financialService } from "@/common/services/financial.service";
 import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
+import { SatangSystemPrompt } from "@/common/utils/prompts";
 import { SATANG_TOOLS } from "@/common/utils/tools";
 import { db } from "@/db";
 import { category, chatMessage, chatSession, goals, user } from "@/db/schema";
@@ -209,26 +210,7 @@ export class ChatService {
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
 
-    const systemPrompt = `You are "Satang", a smart financial assistant.
-    User ID: ${userId}
-    Current Date: ${todayStr} (Today is ${today.toDateString()})
-
-    Relevant Memories:
-    ${memories.length ? memories.join("\n") : "- No prior context."}
-    
-    Guidelines for Tool Selection:
-    1. **Summaries/Balance**: If user asks about "balance", "total overview", "income vs expense" -> Call 'get_financial_summary'.
-    2. **Behavior/Context**: If user asks "what did I buy?", "list items", "history", or specific details -> Call 'search_transactions' (Vector Search).
-    3. **Specific Calculation**: If user asks "how much spent on [Keyword]?" (e.g., coffee, grab) -> Call 'calculate_spending_by_keyword' (SQL).
-    4. **Category Calculation**: If user asks "how much spent on [Category]?" (e.g., food, travel) -> Call 'get_spending_by_category' (SQL).
-    
-    Guidelines for Date/Time:
-    - If user asks about time (e.g., "this month", "last year"), ALWAYS calculate 'startDate' and 'endDate' based on Current Date.
-    - Example: If today is 2026-02-07 and user asks "this month", params are startDate="2026-02-01", endDate="2026-02-28".
-    
-    General:
-    - Always answer in Thai.
-    `;
+    const systemPrompt = SatangSystemPrompt(userId, todayStr, today, memories);
 
     const history = await db.query.chatMessage.findMany({
       where: eq(chatMessage.sessionId, sessionId),

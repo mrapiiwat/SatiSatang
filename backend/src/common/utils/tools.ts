@@ -152,4 +152,23 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "switch_to_satang",
+      description:
+        "เรียกใช้ Tool นี้เมื่อผู้ใช้ถามคำถามที่ 'นอกเหนือ' จากการจดบันทึก เช่น ขอดูสรุปยอดการใช้จ่าย, ขอดูประวัติย้อนหลัง, ให้วิเคราะห์ข้อมูล, หรือขอคำปรึกษาด้านการลงทุนและการเงิน",
+      parameters: {
+        type: "object",
+        properties: {
+          reason: {
+            type: "string",
+            description:
+              "เหตุผลสั้นๆ ว่าทำไมถึงส่งให้พี่สตางค์ เช่น 'ดูสรุปยอด' หรือ 'วิเคราะห์การลงทุน'",
+          },
+        },
+        required: ["reason"],
+      },
+    },
+  },
 ];

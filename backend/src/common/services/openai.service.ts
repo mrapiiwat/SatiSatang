@@ -245,6 +245,18 @@ export class OpenAIService {
       const fnName = toolCall.function.name;
       const args = JSON.parse(toolCall.function.arguments);
 
+      if (fnName === "switch_to_satang") {
+        return {
+          type: "message_with_action",
+          message:
+            "โอ๊ะ! คำถามนี้เกินหน้าที่จดบันทึกของน้องสติแล้วครับ 😅 ถ้าเป็นเรื่องดูสรุปยอด ประวัติย้อนหลัง หรือวิเคราะห์ข้อมูล ต้องให้พี่สตางค์ช่วยดูให้แล้วล่ะครับ!",
+          action: {
+            label: "ไปคุยกับพี่สตางค์",
+            action_type: "switch_to_satang",
+          },
+        };
+      }
+
       if (fnName === "create_budget") {
         try {
           const targetCategory = await budgetService.getTargetCategory(

@@ -13,6 +13,32 @@ export const isStockQueryPrompt = `
 คุณคือระบบตรวจจับว่าประโยคนี้เกี่ยวกับ "หุ้น" "การลงทุนในตลาดหลักทรัพย์" หรือ "คริปโต" หรือไม่
 ให้ตอบแค่ true หรือ false`;
 
+export const SatangSystemPrompt = (
+  userId: number,
+  todayStr: string,
+  today: Date,
+  memories: string[]
+) => `You are "Satang", a smart financial assistant.
+    User ID: ${userId}
+    Current Date: ${todayStr} (Today is ${today.toDateString()})
+
+    Relevant Memories:
+    ${memories.length ? memories.join("\n") : "- No prior context."}
+    
+    Guidelines for Tool Selection:
+    1. **Summaries/Balance**: If user asks about "balance", "total overview", "income vs expense" -> Call 'get_financial_summary'.
+    2. **Behavior/Context**: If user asks "what did I buy?", "list items", "history", or specific details -> Call 'search_transactions' (Vector Search).
+    3. **Specific Calculation**: If user asks "how much spent on [Keyword]?" (e.g., coffee, grab) -> Call 'calculate_spending_by_keyword' (SQL).
+    4. **Category Calculation**: If user asks "how much spent on [Category]?" (e.g., food, travel) -> Call 'get_spending_by_category' (SQL).
+    
+    Guidelines for Date/Time:
+    - If user asks about time (e.g., "this month", "last year"), ALWAYS calculate 'startDate' and 'endDate' based on Current Date.
+    - Example: If today is 2026-02-07 and user asks "this month", params are startDate="2026-02-01", endDate="2026-02-28".
+    
+    General:
+    - Always answer in Thai.
+    `;
+
 export const getExtractTransactionPrompt = (
   user: string,
   categoryListText: string,
@@ -73,7 +99,7 @@ export const getHandleMessagePrompt = (
 
       [คำสั่งหลัก (Main Instructions)]
       1. วิเคราะห์ข้อความของ User
-      2. เลือก Tool ที่เหมาะสมที่สุด (create_transaction, create_budget, create_goal)
+      2. เลือก Tool ที่เหมาะสมที่สุด (create_transaction, create_budget, create_goal, switch_to_satang)
       3. หากเป็น Transaction ให้พยายาม Map เข้ากับ "Category ID" หรือ "GOAL_ID" ที่ถูกต้อง
 
       --------------------------------------------------
@@ -113,18 +139,10 @@ export const getHandleMessagePrompt = (
       [การตอบกลับทั่วไป (General Response)]
       - When handling date (e.g. "next month"), calculate based on "Today" and return ISO Format (YYYY-MM-DD).
 
-      [กฎพิเศษ: การแนะนำ Action Button (ส่งต่อให้พี่สตางค์)]
+      [กฎพิเศษ: การส่งต่อให้พี่สตางค์]
       - หน้าที่ของน้องสติมีแค่ "จดบันทึกรายรับ-รายจ่าย", "ตั้งงบประมาณ", และ "ตั้งเป้าหมาย" เท่านั้น!
       - หากผู้ใช้ถามคำถามที่อยู่นอกเหนือจากนี้ เช่น:
         1. ขอดูสรุปยอด, ถามว่าใช้เงินไปกี่บาทแล้ว, เหลือเงินเท่าไหร่, หรือขอดูประวัติย้อนหลัง (History/Summary)
         2. ความรู้การเงิน, การลงทุน, หุ้น, หรือขอคำแนะนำเชิงลึก (Advisory topics)
-      - ห้ามพยายามตอบเอง และห้ามตอบเป็นข้อความธรรมดาเด็ดขาด ให้ตอบกลับเป็นรูปแบบ JSON ด้านล่างนี้เท่านั้น (ห้ามใช้ Markdown \`\`\` ครอบเด็ดขาด ให้ส่ง JSON เพียวๆ):
-        {
-          "type": "message_with_action",
-          "message": "โอ๊ะ! คำถามนี้เกินหน้าที่จดบันทึกของน้องสติแล้วครับ 😅 ถ้าเป็นเรื่องดูสรุปยอด ประวัติย้อนหลัง หรือวิเคราะห์ข้อมูล ต้องให้พี่สตางค์ช่วยดูให้แล้วล่ะครับ!",
-          "action": {
-            "label": "ไปคุยกับพี่สตางค์",
-            "action_type": "switch_to_satang"
-          }
-        }
+      - ห้ามพยายามตอบเองเด็ดขาด ให้คุณเรียกใช้ Tool ที่ชื่อว่า \`switch_to_satang\` ทันที
       `;
