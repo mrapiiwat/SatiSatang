@@ -5,6 +5,7 @@ import type { SatangTextModeProps } from '../../../interface/satang';
 import TypingIndicator from './TypingIndicator';
 import PageWrapper from '../../PageWrapper';
 import TrackingFace from './TrackingFace';
+import ReactMarkdown from 'react-markdown';
 
 const SatangTextMode: React.FC<SatangTextModeProps> = ({
   text,
@@ -97,13 +98,38 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`p-3 rounded-2xl w-fit max-w-[75%] break-words whitespace-pre-wrap ${
+              className={`p-3 rounded-2xl w-fit max-w-[75%] break-words ${
                 msg.role === 'user'
-                  ? 'bg-blue-600 text-white self-end rounded-tr-none'
+                  ? 'bg-blue-600 text-white self-end rounded-tr-none whitespace-pre-wrap'
                   : 'bg-gray-100 text-black self-start rounded-tl-none'
               }`}
             >
-              {msg.content}
+              {msg.role === 'user' ? (
+                msg.content
+              ) : (
+                <div className="markdown-body text-[15px] leading-relaxed">
+                  <ReactMarkdown
+                    components={{
+                      p: ({ node: _node, ...props }) => <p className="mb-3 last:mb-0" {...props} />,
+                      ul: ({ node: _node, ...props }) => (
+                        <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />
+                      ),
+                      ol: ({ node: _node, ...props }) => (
+                        <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />
+                      ),
+                      li: ({ node: _node, ...props }) => <li className="" {...props} />,
+                      strong: ({ node: _node, ...props }) => (
+                        <strong className="font-bold text-gray-900" {...props} />
+                      ),
+                      h3: ({ node: _node, ...props }) => (
+                        <h3 className="text-lg font-bold mt-4 mb-2" {...props} />
+                      ),
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
+              )}
             </div>
           ))}
 

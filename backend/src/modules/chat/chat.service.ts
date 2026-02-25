@@ -1,12 +1,9 @@
 import { and, desc, eq, gte, ilike, isNull, lt, or } from "drizzle-orm";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { openai } from "@/common/config/openai";
 import { NotFoundError } from "@/common/exceptions";
-import { financialService } from "@/common/services/financial.service";
 import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { SatangSystemPrompt } from "@/common/utils/prompts";
-import { SATANG_TOOLS } from "@/common/utils/tools";
 import { db } from "@/db";
 import { category, chatMessage, chatSession, goals, user } from "@/db/schema";
 import type * as chatSchema from "./chat.schema";
@@ -14,7 +11,6 @@ import { BotType } from "./chat.schema";
 
 const ragService = new RAGService();
 const openAIService = new OpenAIService();
-const MODEL_NAME = "gpt-4o";
 
 export class ChatService {
   async getOrCreateSession(
@@ -210,12 +206,27 @@ export class ChatService {
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
 
-    const systemPrompt = SatangSystemPrompt(userId, todayStr, today, memories);
+    const currentUser = await db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: { name: true, balance: true },
+    });
+
+    const userName = currentUser?.name?.split(" ")[0] || "พี่";
+    const currentBalance = currentUser?.balance || 0;
+
+    const systemPrompt = SatangSystemPrompt(
+      userName,
+      userId,
+      currentBalance,
+      todayStr,
+      today,
+      memories
+    );
 
     const history = await db.query.chatMessage.findMany({
       where: eq(chatMessage.sessionId, sessionId),
       orderBy: [desc(chatMessage.createdAt)],
-      limit: 4,
+      limit: 6,
     });
 
     const chatHistory = history.reverse().map((m) => ({
@@ -229,72 +240,10 @@ export class ChatService {
       { role: "user", content },
     ] as ChatCompletionMessageParam[];
 
-    const decision = await openai.chat.completions.create({
-      model: MODEL_NAME,
-      messages: messages,
-      tools: SATANG_TOOLS,
-      tool_choice: "auto",
-    });
-
-    const aiMsg = decision.choices[0].message;
-
-    if (aiMsg.tool_calls) {
-      messages.push(aiMsg);
-
-      for (const tool of aiMsg.tool_calls) {
-        if (tool.type !== "function") continue;
-        const fnName = tool.function.name;
-        const args = JSON.parse(tool.function.arguments);
-        let result = "";
-
-        console.log(`[Satang] Executing Tool: ${fnName}`);
-
-        if (fnName === "get_financial_summary") {
-          result = await financialService.getSummary(
-            userId,
-            args.startDate,
-            args.endDate
-          );
-        } else if (fnName === "search_transactions") {
-          const txs = await ragService.searchTransactions(
-            userId,
-            args.query,
-            args.startDate,
-            args.endDate
-          );
-          result = txs.length ? txs.join("\n") : "ไม่พบข้อมูลธุรกรรมในช่วงเวลานี้ครับ";
-        } else if (fnName === "search_stock_knowledge") {
-          const stocks = await ragService.searchStock(args.query);
-          result = JSON.stringify(stocks);
-        } else if (fnName === "calculate_spending_by_keyword") {
-          result = await financialService.getSpendingStats(
-            userId,
-            args.keyword,
-            args.startDate,
-            args.endDate
-          );
-        } else if (fnName === "get_spending_by_category") {
-          result = await financialService.getSpendingByCategory(
-            userId,
-            args.categoryName,
-            args.startDate,
-            args.endDate
-          );
-        }
-
-        messages.push({
-          role: "tool",
-          tool_call_id: tool.id,
-          content: typeof result === "string" ? result : JSON.stringify(result),
-        });
-      }
-    }
-
-    const stream = await openai.chat.completions.create({
-      model: MODEL_NAME,
-      messages: messages,
-      stream: true,
-    });
+    const stream = await openAIService.processSatangToolCallsAndStream(
+      userId,
+      messages
+    );
 
     let fullReply = "";
 

@@ -5,12 +5,12 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "get_financial_summary",
-      description: "ดึงข้อมูลสรุปภาพรวมการเงิน (รายรับ vs รายจ่าย) รองรับการระบุช่วงเวลา",
+      description: "ดึงข้อมูลสรุปภาพรวมการเงิน (รายรับ vs รายจ่าย)",
       parameters: {
         type: "object",
         properties: {
-          startDate: { type: "string", description: "วันที่เริ่มต้น YYYY-MM-DD" },
-          endDate: { type: "string", description: "วันที่สิ้นสุด YYYY-MM-DD" },
+          startDate: { type: "string", description: "YYYY-MM-DD" },
+          endDate: { type: "string", description: "YYYY-MM-DD" },
         },
       },
     },
@@ -19,13 +19,13 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "search_transactions",
-      description: "ค้นหาประวัติธุรกรรมเจาะจงเพื่อดูบริบท (รองรับช่วงเวลา)",
+      description: "ค้นหาประวัติธุรกรรมเจาะจงด้วย Vector Search",
       parameters: {
         type: "object",
         properties: {
-          query: { type: "string", description: "Keyword สำหรับค้นหา" },
-          startDate: { type: "string", description: "YYYY-MM-DD" },
-          endDate: { type: "string", description: "YYYY-MM-DD" },
+          query: { type: "string" },
+          startDate: { type: "string" },
+          endDate: { type: "string" },
         },
         required: ["query"],
       },
@@ -35,12 +35,10 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "search_stock_knowledge",
-      description: "ค้นหาความรู้การลงทุน ข่าวสารหุ้น หรือข้อมูลตลาด",
+      description: "ค้นหาข้อมูลหุ้น",
       parameters: {
         type: "object",
-        properties: {
-          query: { type: "string", description: "ชื่อหุ้น หรือเรื่องที่สงสัย" },
-        },
+        properties: { query: { type: "string" } },
         required: ["query"],
       },
     },
@@ -49,16 +47,13 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "calculate_spending_by_keyword",
-      description: "คำนวณยอดเงินรวมของสินค้าตามคีย์เวิร์ด (ใช้ SQL เพื่อความแม่นยำ)",
+      description: "คำนวณยอดเงินรวมของสินค้าตามคีย์เวิร์ดเฉพาะเจาะจง",
       parameters: {
         type: "object",
         properties: {
-          keyword: {
-            type: "string",
-            description: "เช่น 'กาแฟ', 'Netflix', 'Grab'",
-          },
-          startDate: { type: "string", description: "YYYY-MM-DD" },
-          endDate: { type: "string", description: "YYYY-MM-DD" },
+          keyword: { type: "string" },
+          startDate: { type: "string" },
+          endDate: { type: "string" },
         },
         required: ["keyword"],
       },
@@ -68,19 +63,61 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "get_spending_by_category",
-      description: "ดูยอดรวมรายจ่ายแยกตามหมวดหมู่ (Category)",
+      description: "ดูยอดรวมรายจ่ายแยกตามหมวดหมู่ 1 หมวด",
       parameters: {
         type: "object",
         properties: {
-          categoryName: {
-            type: "string",
-            description: "ชื่อหมวดหมู่ เช่น Food, Travel",
-          },
-          startDate: { type: "string", description: "YYYY-MM-DD" },
-          endDate: { type: "string", description: "YYYY-MM-DD" },
+          categoryName: { type: "string" },
+          startDate: { type: "string" },
+          endDate: { type: "string" },
         },
         required: ["categoryName"],
       },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_category_ranking",
+      description: "ดูอันดับหมวดหมู่ที่ใช้เงินเยอะที่สุด (ใช้หาว่าเงินหมดไปกับอะไร)",
+      parameters: {
+        type: "object",
+        properties: {
+          startDate: { type: "string" },
+          endDate: { type: "string" },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_top_expenses",
+      description: "ค้นหารายการที่ใช้จ่ายแพงที่สุด",
+      parameters: {
+        type: "object",
+        properties: {
+          limit: { type: "number", description: "จำนวนรายการ (default 5)" },
+          startDate: { type: "string" },
+          endDate: { type: "string" },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "compare_monthly_spending",
+      description: "เปรียบเทียบยอดใช้จ่ายเดือนนี้กับเดือนที่แล้ว เพื่อดูพฤติกรรมความฟุ่มเฟือย",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_goals_and_budgets",
+      description: "ดูข้อมูลเป้าหมายเก็บเงิน (Goals) และงบประมาณ (Budgets) ปัจจุบัน",
+      parameters: { type: "object", properties: {} },
     },
   },
 ];

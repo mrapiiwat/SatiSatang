@@ -1,11 +1,15 @@
 import { and, eq, isNull } from "drizzle-orm";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { openai } from "@/common/config/openai";
+import { financialService } from "@/common/services/financial.service";
+import { RAGService } from "@/common/services/rag.service";
 import * as prompts from "@/common/utils/prompts";
-import { SATI_TOOLS } from "@/common/utils/tools";
+import { SATANG_TOOLS, SATI_TOOLS } from "@/common/utils/tools";
 import { db } from "@/db";
 import { goals } from "@/db/schema";
 import { BudgetService } from "@/modules/budget/budget.service";
+
+const ragService = new RAGService();
 
 export interface ChatHistoryItem {
   role: "user" | "assistant" | "system" | string;
@@ -30,6 +34,15 @@ export interface Icon {
 
 export interface User {
   name: string;
+}
+
+interface SatangToolArgs {
+  startDate?: string;
+  endDate?: string;
+  query?: string;
+  keyword?: string;
+  categoryName?: string;
+  limit?: number;
 }
 
 const budgetService = new BudgetService();
@@ -129,6 +142,106 @@ export class OpenAIService {
       console.error("[OpenAI] isStockQuery Error:", error);
       return false;
     }
+  }
+
+  async processSatangToolCallsAndStream(
+    userId: number,
+    messages: ChatCompletionMessageParam[]
+  ) {
+    const decision = await openai.chat.completions.create({
+      model: MODEL_NAME,
+      messages: messages,
+      tools: SATANG_TOOLS,
+      tool_choice: "auto",
+    });
+
+    const aiMsg = decision.choices[0].message;
+
+    if (aiMsg.tool_calls) {
+      messages.push(aiMsg);
+
+      for (const tool of aiMsg.tool_calls) {
+        if (tool.type !== "function") continue;
+        const fnName = tool.function.name;
+
+        let args: SatangToolArgs = {};
+        try {
+          args = tool.function.arguments
+            ? (JSON.parse(tool.function.arguments) as SatangToolArgs)
+            : {};
+        } catch (e) {
+          console.error(
+            `[Satang] Error parsing tool arguments for ${fnName}:`,
+            e
+          );
+        }
+
+        let result = "";
+        console.log(`[Satang] Executing Tool: ${fnName}`, args);
+
+        if (fnName === "get_financial_summary") {
+          result = await financialService.getSummary(
+            userId,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "search_transactions" && args.query) {
+          const txs = await ragService.searchTransactions(
+            userId,
+            args.query,
+            args.startDate,
+            args.endDate
+          );
+          result = txs.length ? txs.join("\n") : "ไม่พบข้อมูลธุรกรรมในช่วงเวลานี้ครับ";
+        } else if (fnName === "search_stock_knowledge" && args.query) {
+          const stocks = await ragService.searchStock(args.query);
+          result = JSON.stringify(stocks);
+        } else if (fnName === "calculate_spending_by_keyword" && args.keyword) {
+          result = await financialService.getSpendingStats(
+            userId,
+            args.keyword,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "get_spending_by_category" && args.categoryName) {
+          result = await financialService.getSpendingByCategory(
+            userId,
+            args.categoryName,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "get_category_ranking") {
+          result = await financialService.getCategoryRanking(
+            userId,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "get_top_expenses") {
+          result = await financialService.getTopExpenses(
+            userId,
+            args.limit,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "compare_monthly_spending") {
+          result = await financialService.compareMonthlySpending(userId);
+        } else if (fnName === "get_goals_and_budgets") {
+          result = await financialService.getGoalsAndBudgets(userId);
+        }
+
+        messages.push({
+          role: "tool",
+          tool_call_id: tool.id,
+          content: typeof result === "string" ? result : JSON.stringify(result),
+        });
+      }
+    }
+
+    return await openai.chat.completions.create({
+      model: MODEL_NAME,
+      messages: messages,
+      stream: true,
+    });
   }
 
   async handleMessage(
