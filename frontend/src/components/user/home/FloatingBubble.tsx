@@ -4,13 +4,14 @@ import TrackingFace from '../satang/TrackingFace';
 
 const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   const BUBBLE_SIZE = 65;
-  const MARGIN = 15;
+  const SIDE_MARGIN = 30;
+  const VERTICAL_MARGIN = 15;
   const TOP_LIMIT_RATIO = 0.88;
   const STORAGE_KEY = 'bubble_position';
 
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
   const getTopLimit = () => window.innerHeight * TOP_LIMIT_RATIO;
-  const getBottomLimit = () => window.innerHeight - BUBBLE_SIZE - MARGIN;
+  const getBottomLimit = () => window.innerHeight - BUBBLE_SIZE - VERTICAL_MARGIN;
 
   const [position, setPosition] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -19,11 +20,11 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
         try {
           const parsed = JSON.parse(savedPos);
           return {
-            x: clamp(parsed.x, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN),
+            x: clamp(parsed.x, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN),
             y: clamp(
               parsed.y,
               window.innerHeight * TOP_LIMIT_RATIO,
-              window.innerHeight - BUBBLE_SIZE - MARGIN,
+              window.innerHeight - BUBBLE_SIZE - VERTICAL_MARGIN,
             ),
           };
         } catch (e) {
@@ -32,8 +33,8 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
       }
 
       return {
-        x: window.innerWidth - BUBBLE_SIZE - MARGIN,
-        y: window.innerHeight - BUBBLE_SIZE - MARGIN,
+        x: window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN,
+        y: window.innerHeight - BUBBLE_SIZE - VERTICAL_MARGIN,
       };
     }
 
@@ -49,9 +50,11 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   const snapToEdge = useCallback(() => {
     const middle = window.innerWidth / 2;
     const snapX =
-      position.x + BUBBLE_SIZE / 2 > middle ? window.innerWidth - BUBBLE_SIZE - MARGIN : MARGIN;
+      position.x + BUBBLE_SIZE / 2 > middle
+        ? window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN
+        : SIDE_MARGIN;
 
-    const newX = clamp(snapX, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN);
+    const newX = clamp(snapX, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN);
     const newY = clamp(position.y, getTopLimit(), getBottomLimit());
 
     setIsSnapping(true);
@@ -73,7 +76,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
         const newX = e.clientX - offset.x;
         const newY = e.clientY - offset.y;
         setPosition({
-          x: clamp(newX, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN),
+          x: clamp(newX, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN),
           y: clamp(newY, getTopLimit(), getBottomLimit()),
         });
       });
@@ -108,7 +111,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
         const newX = touch.clientX - offset.x;
         const newY = touch.clientY - offset.y;
         setPosition({
-          x: clamp(newX, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN),
+          x: clamp(newX, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN),
           y: clamp(newY, getTopLimit(), getBottomLimit()),
         });
       });
@@ -130,7 +133,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
     window.addEventListener('touchend', handleTouchEnd);
 
     const handleResize = () => {
-      const newX = clamp(position.x, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN);
+      const newX = clamp(position.x, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN);
       const newY = clamp(position.y, getTopLimit(), getBottomLimit());
 
       setPosition({ x: newX, y: newY });
@@ -151,7 +154,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
-    position.x, // เพิ่ม dependency เพื่อให้ resize ทำงานถูกต้องกับค่าปัจจุบัน
+    position.x,
     position.y,
   ]);
 
