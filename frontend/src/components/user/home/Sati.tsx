@@ -22,6 +22,7 @@ import Modal from '../../Modal';
 import Manual from './Manual';
 import Budget from './Budget';
 import Goal from './Goal';
+import ReactMarkdown from 'react-markdown';
 
 const Sati: React.FC<SatiProps> = ({
   handleCloseChatModal,
@@ -530,6 +531,31 @@ const Sati: React.FC<SatiProps> = ({
   const renderMessageContent = (msg: ChatMessage, isLastMessage: boolean) => {
     if (msg.role === 'user') return msg.content;
 
+    const renderMarkdown = (text: string) => (
+      <div className="whitespace-normal text-[15px] leading-relaxed [&_ul_ul]:mb-0 [&_ul_ul]:mt-1">
+        <ReactMarkdown
+          components={{
+            p: ({ node: _node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+            ul: ({ node: _node, ...props }) => (
+              <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />
+            ),
+            ol: ({ node: _node, ...props }) => (
+              <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />
+            ),
+            li: ({ node: _node, ...props }) => <li className="" {...props} />,
+            strong: ({ node: _node, ...props }) => (
+              <strong className="font-bold text-gray-900" {...props} />
+            ),
+            h3: ({ node: _node, ...props }) => (
+              <h3 className="text-lg font-bold mt-4 mb-2" {...props} />
+            ),
+          }}
+        >
+          {text}
+        </ReactMarkdown>
+      </div>
+    );
+
     try {
       let cleanContent = msg.content.trim();
       if (cleanContent.startsWith('```')) {
@@ -541,6 +567,7 @@ const Sati: React.FC<SatiProps> = ({
 
       const parsed = JSON.parse(cleanContent);
       const currentStatus: DraftStatus = parsed.data?.status || 'pending';
+
       if (
         (parsed.type === 'create_transaction' || parsed.ui_type === 'CONFIRM_CARD') &&
         parsed.data
@@ -583,8 +610,7 @@ const Sati: React.FC<SatiProps> = ({
       if (parsed.type === 'message_with_action') {
         return (
           <div className="flex flex-col gap-1">
-            <span className="text-gray-800 leading-relaxed">{parsed.message}</span>
-
+            {renderMarkdown(parsed.message)}
             {isLastMessage && parsed.action && (
               <button
                 onClick={() => {
@@ -622,9 +648,13 @@ const Sati: React.FC<SatiProps> = ({
         );
       }
 
-      if (parsed.type === 'message' && parsed.message) return parsed.message;
-      return parsed.message || JSON.stringify(parsed);
+      if (parsed.type === 'message' && parsed.message) return renderMarkdown(parsed.message);
+
+      return renderMarkdown(parsed.message || JSON.stringify(parsed));
     } catch {
+      if (msg.role === 'assistant') {
+        return renderMarkdown(msg.content);
+      }
       return msg.content;
     }
   };
