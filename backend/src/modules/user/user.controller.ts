@@ -85,7 +85,7 @@ export const userController = new Elysia()
       query: userSchema.getSummaryQuery,
     }
   )
-  .get("/balance", async ({ user, set }) => {
+  .get("/users/balance", async ({ user, set }) => {
     const userId = Number(user.id);
     set.status = StatusCodes.OK;
     const result = await userService.getBalance(userId);

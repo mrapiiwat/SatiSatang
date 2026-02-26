@@ -23,3 +23,7 @@ export interface SatangVoiceModeProps {
   toggleVoiceMode: () => void;
   isMicOn: boolean;
 }
+
+export interface TrackingFaceProps {
+  mode: 'sati' | 'satang';
+}

@@ -185,7 +185,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
         }}
         className="w-full h-full flex items-center justify-center"
       >
-        <TrackingFace />
+        <TrackingFace mode="sati" />
       </button>
     </div>
   );

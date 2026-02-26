@@ -78,10 +78,10 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
 
   return (
     <PageWrapper animation="scale-fade">
-      <div className="min-h-[calc(100vh-80px)] flex flex-col justify-between px-6 py-6">
+      <div className="min-h-[calc(100vh-80px)] flex flex-col justify-evenly px-6">
         <div
           ref={containerRef}
-          className="border-[1px] border-black-600 rounded-xl flex-1 w-full mb-5 overflow-y-auto p-2 max-h-[75vh] scrollbar-none flex flex-col gap-2 relative"
+          className="border-[1px] border-black-600 rounded-xl flex-1 w-full overflow-y-auto p-2 max-h-[75vh] scrollbar-none flex flex-col gap-2 relative"
         >
           {isLoadingHistory && (
             <div className="w-full flex justify-center py-4 relative">
@@ -140,10 +140,10 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
           )}
         </div>
 
-        <div className="flex flex-row justify-between gap-3 px-2 py-4">
-          <TrackingFace />
+        <div className="flex flex-row items-center gap-3 px-2 py-4">
+          <TrackingFace mode="satang" />
 
-          <form className="w-full relative" onSubmit={handleSubmit}>
+          <form className="flex-1 relative" onSubmit={handleSubmit}>
             <input
               className="flex justify-center items-center h-16 text-xl px-3 w-full rounded-full border-2 border-black-400 pr-16"
               value={text}
