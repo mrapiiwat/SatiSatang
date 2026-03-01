@@ -19,12 +19,12 @@ export default defineConfig({
         background_color: '#ffffff',
         icons: [
           {
-            src: './public/logo/192-white.svg',
+            src: '/logo/192-white.svg',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: './public/logo/512-white.svg',
+            src: '/logo/512-white.svg',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable',
@@ -39,6 +39,9 @@ export default defineConfig({
       },
     }),
   ],
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
   server: {
     host: '0.0.0.0',
     watch: {

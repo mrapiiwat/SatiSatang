@@ -1,5 +1,5 @@
+name: satisatang
 services:
-
   web:
     build: 
       context: ../frontend
