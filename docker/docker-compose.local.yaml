@@ -1,24 +1,32 @@
 services:
-
-  web:
+  frontend:
     build: 
-      context: ./frontend
+      context: ../frontend
       dockerfile: dockerfile
-    ports:
-      - "80:80"
     restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - 5173:5173
     depends_on:
       - backend
     networks:
       - satisatang-network
-
+      
   backend:
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: dockerfile
     restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - 8080:8080
     depends_on:
       - db
+      - minio
       - qdrant
       - redis
     networks:
@@ -26,7 +34,7 @@ services:
 
   cron-job:
     build:
-      context: ./cron
+      context: ../cron
       dockerfile: dockerfile
     container_name: cron-job
     restart: unless-stopped
@@ -40,7 +48,7 @@ services:
 
   db:
     build:
-      context: ./db
+      context: ../db
       dockerfile: dockerfile
     container_name: satisatang-postgres
     restart: unless-stopped
@@ -48,27 +56,49 @@ services:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - "${DATABASE_PORT}:5432"
     volumes:
       - satisatang_postgres_data:/var/lib/postgresql
+    networks:
+      - satisatang-network
+
+  minio:
+    image: minio/minio
+    container_name: satisatang-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - satisatang_minio_data:/data
     networks:
       - satisatang-network
 
   qdrant:
     image: qdrant/qdrant:v1.3.0
     container_name: satisatang-qdrant
+    ports:
+      - "${QDRANT_PORT}:6333"
     volumes:
       - satisatang_qdrant_data:/qdrant/storage
     restart: unless-stopped
     networks:
       - satisatang-network
-
+  
   redis:
     image: redis:7
     container_name: satisatang-redis
     restart: unless-stopped
-    command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}" ]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT}:6379"
     volumes:
       - satisatang_redis_data:/data
     networks:
@@ -80,5 +110,6 @@ networks:
 
 volumes:
   satisatang_postgres_data:
+  satisatang_minio_data:
   satisatang_qdrant_data:
   satisatang_redis_data:
