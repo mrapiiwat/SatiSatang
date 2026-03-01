@@ -4,7 +4,7 @@ import TrackingFace from '../satang/TrackingFace';
 
 const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   const BUBBLE_SIZE = 65;
-  const SIDE_MARGIN = 30;
+  const SIDE_MARGIN = 20;
   const VERTICAL_MARGIN = 20;
   const TOP_LIMIT_RATIO = 0.88;
   const STORAGE_KEY = 'bubble_position';

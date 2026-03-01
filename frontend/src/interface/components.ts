@@ -57,3 +57,12 @@ export interface TooltipProps {
   position?: 'top' | 'bottom' | 'left' | 'right';
   type?: 'info' | 'help';
 }
+
+export interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}

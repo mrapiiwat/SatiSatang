@@ -14,8 +14,7 @@ import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
 import type { LoginForm } from '../../interface/auth';
 import type { ElysiaResponse } from '../../interface/error';
-import SATISATANG1 from '../../assets/SATISATANG1.png';
-import SATISATANG from '../../assets/SATISATANG.svg';
+import SATISATANG from '../../../public/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -246,8 +245,7 @@ const Login: React.FC = () => {
     <PageWrapper animation="scale-fade">
       <div className="flex min-h-screen w-full">
         <div className="hidden lg:flex lg:flex-col lg:w-1/2 bg-gray-50 items-center justify-center">
-          <img src={SATISATANG} alt="Logo SatiSatang" className="h-56 object-contain" />
-          <img src={SATISATANG1} alt="Logo SatiSatang" className="h-36 object-contain" />
+          <img src={SATISATANG} alt="Logo SatiSatang" className="h-96 object-contain" />
         </div>
 
         <div className="w-full lg:w-1/2 flex flex-col justify-center">

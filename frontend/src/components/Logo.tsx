@@ -1,10 +1,10 @@
 import React from 'react';
-import SatiSatang from '../assets/SATISATANG.svg';
+import SATISATANG from '../../public/SATISATANG.svg';
 
 const Logo: React.FC = () => {
   return (
     <div className="flex justify-center">
-      <img className="w-8 object-contain" src={SatiSatang} alt="SatiSatang Logo" />
+      <img className="w-8 object-contain" src={SATISATANG} alt="SatiSatang Logo" />
     </div>
   );
 };

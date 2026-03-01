@@ -26,13 +26,7 @@ import { OCRService } from "@/common/services/ocr.service";
 import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { db } from "@/db";
-import {
-  category,
-  goals,
-  goalTransaction,
-  transaction,
-  user,
-} from "@/db/schema";
+import { category, goalTransaction, transaction, user } from "@/db/schema";
 import type * as transactionSchema from "./transaction.schema";
 
 const ocrService = new OCRService();
@@ -191,11 +185,6 @@ export class TransactionService {
             balance: sql`${user.balance} - ${data.amount}`,
           })
           .where(eq(user.id, userId));
-
-        await tx
-          .update(goals)
-          .set({ amount: sql`${goals.amount} + ${data.amount}` })
-          .where(eq(goals.id, data.categoryId));
 
         return { type: "goal", data: newGoalTxn };
       }

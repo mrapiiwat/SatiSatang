@@ -72,6 +72,16 @@ export class GoalService {
           })
           .reduce((sum, gt) => sum + Number(gt.amount), 0);
 
+        const totalAmountBeforeStartDate = goal.goalTransactions
+          .filter((gt) => {
+            const date = new Date(gt.createdAt);
+            return date < startDate;
+          })
+          .reduce((sum, gt) => sum + Number(gt.amount), 0);
+
+        const wasFinishedBeforeThisMonth =
+          totalAmountBeforeStartDate >= Number(goal.amount);
+
         let isGoalFinished = goal.finished;
 
         if (!isGoalFinished && totalAmount >= Number(goal.amount)) {
@@ -89,13 +99,18 @@ export class GoalService {
           amount: Number(goal.amount),
           totalAmount,
           currentAmount,
+          wasFinishedBeforeThisMonth,
         };
       })
     );
 
-    const filteredGoals = goalsWithAmounts.filter((goal) =>
-      isFinished === undefined ? true : goal.finished === isFinished
-    );
+    const filteredGoals = goalsWithAmounts.filter((goal) => {
+      if (isFinished === undefined) {
+        return !goal.wasFinishedBeforeThisMonth;
+      }
+
+      return goal.finished === isFinished;
+    });
 
     const totalGoalAmount = filteredGoals.reduce((sum, g) => sum + g.amount, 0);
     const totalCurrentAmount = filteredGoals.reduce(

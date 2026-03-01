@@ -46,37 +46,25 @@ const TrackingFace: React.FC<TrackingFaceProps> = ({ mode }) => {
   const getDynamicMessage = () => {
     if (balance === null) return 'จ้องทำไม? 👀';
 
-    const hour = new Date().getHours();
     const formattedBalance = balance.toLocaleString();
 
-    if (balance <= 0) return 'ยอดติดลบแล้ว! 😭';
-    if (balance < 500) return `เหลือ ${formattedBalance} ฿ ประหยัดหน่อย 💰`;
+    const satangMsgs = [
+      `ยอดรวม ${formattedBalance}฿ 💰`,
+      'ดูภาพรวมไหม? 📊',
+      'ให้พี่สรุปให้ไหม? 📝',
+      'การเงินเป๊ะมาก ✨',
+      'วางแผนกันหน่อย 🧐',
+      'มีวินัยดีเยี่ยม 👍',
+      'ใกล้เป้าหมายแล้ว 🎯',
+      'เช็คยอดหน่อย 👀',
+      'บริหารเงินเก่ง 👏',
+    ];
 
-    if (mode === 'satang') {
-      if (balance > 100000) return `พอร์ตโตสวย! รวม ${formattedBalance} ฿ 📈`;
+    if (balance <= 0) satangMsgs.push('ยอดติดลบแล้ว! 😭');
+    if (balance < 500) satangMsgs.push(`เหลือ ${formattedBalance} ฿ ประหยัดหน่อย 💰`);
+    if (balance > 100000) satangMsgs.push(`พอร์ตโตสวย! รวม ${formattedBalance} ฿ 📈`);
 
-      const satangMsgs = [
-        `ยอดคงเหลือ ${formattedBalance} ฿`,
-        'เช็คภาพรวมกันไหม?',
-        'วิเคราะห์ดี มีเงินเก็บ ✨',
-        'การเงินมั่นคงดีครับ',
-        'ให้พี่สรุปยอดไหนบอกได้นะ',
-      ];
-      return satangMsgs[Math.floor(Math.random() * satangMsgs.length)];
-    } else {
-      if (balance > 50000) return 'รวยจัง! ขอยืมหน่อย 🤑';
-      if (hour >= 0 && hour < 5) return 'ดึกแล้ว ไปนอนเถอะ 😴';
-      if (hour >= 11 && hour < 13) return 'เที่ยงแล้ว หาไรกินด้วย 🍜';
-
-      const satiMsgs = [
-        `มีเงินอยู่ ${formattedBalance} ฿ ✨`,
-        'จดรายจ่ายหรอ?',
-        'มีไรให้ช่วยไหม?',
-        'สู้ๆ ฮึบๆ ✌️',
-        'วันนี้ใช้เงินเยอะไหม? 🤔',
-      ];
-      return satiMsgs[Math.floor(Math.random() * satiMsgs.length)];
-    }
+    return satangMsgs[Math.floor(Math.random() * satangMsgs.length)];
   };
 
   useEffect(() => {
@@ -143,6 +131,8 @@ const TrackingFace: React.FC<TrackingFaceProps> = ({ mode }) => {
   }, [isHovered, currentMsg]);
 
   const handleMouseEnter = () => {
+    if (mode === 'sati') return;
+
     setCurrentMsg(getDynamicMessage());
     setIsHovered(true);
   };
@@ -150,7 +140,7 @@ const TrackingFace: React.FC<TrackingFaceProps> = ({ mode }) => {
   return (
     <div className="relative flex items-center justify-center z-50">
       <AnimatePresence>
-        {isHovered && !isDizzy && (
+        {isHovered && !isDizzy && mode !== 'sati' && (
           <motion.div
             ref={tooltipRef}
             initial={{ opacity: 0, y: 10, scale: 0.8, x: 0 }}
