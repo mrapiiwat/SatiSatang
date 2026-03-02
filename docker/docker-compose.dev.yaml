@@ -16,7 +16,7 @@ services:
     build:
       context: ../frontend
       dockerfile: dockerfile
-    env_file: ../frontend/.env.dev
+    env_file: ../frontend/.env
     volumes:
       - ../frontend:/app
       - /app/node_modules
@@ -29,7 +29,7 @@ services:
     build:
       context: ../backend
       dockerfile: dockerfile
-    env_file: ../backend/.env.dev
+    env_file: ../backend/.env
     volumes:
       - ../backend:/app
       - /app/node_modules

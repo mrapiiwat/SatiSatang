@@ -3,7 +3,9 @@ services:
   web:
     build: 
       context: ../frontend
-      dockerfile: dockerfile
+      dockerfile: dockerfile.prod
+    env_file:
+      - ../frontend/.env
     ports:
       - "80:80"
     restart: unless-stopped
@@ -15,7 +17,9 @@ services:
   backend:
     build:
       context: ../backend
-      dockerfile: dockerfile
+      dockerfile: dockerfile.prod
+    env_file:
+      - ../backend/.env
     restart: unless-stopped
     depends_on:
       - db
