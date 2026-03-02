@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'SATISATANG',
+        name: 'SatiSatang',
         short_name: 'สติสตางค์',
         description:
           'สติสตางค์ เป็นเว็บแอปพลิเคชันจัดการการเงินส่วนบุคคล ที่ช่วยให้ผู้ใช้ “มีสติเรื่องสตางค์”',

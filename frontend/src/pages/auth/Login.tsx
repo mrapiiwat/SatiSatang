@@ -17,7 +17,6 @@ import type { ElysiaResponse } from '../../interface/error';
 import SATISATANG from '../../../public/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const API_URL = import.meta.env.VITE_API_URL;
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -36,11 +35,11 @@ const Login: React.FC = () => {
   }, []);
 
   const googleLogin = useCallback(() => {
-    window.location.href = `${API_URL}/api/google`;
+    window.location.href = '/api/google';
   }, []);
 
   const facebookLogin = useCallback(() => {
-    window.location.href = `${API_URL}/api/facebook`;
+    window.location.href = '/api/facebook';
   }, []);
 
   const handleEmailChange = useCallback(
@@ -107,7 +106,7 @@ const Login: React.FC = () => {
         }
 
         try {
-          const res = await axios.post(`${API_URL}/api/register`, {
+          const res = await axios.post('/api/register', {
             email,
             password,
             name,
@@ -159,7 +158,7 @@ const Login: React.FC = () => {
       setIsLoading(true);
 
       try {
-        const res = await axios.post(`${API_URL}/api/check-email`, { email });
+        const res = await axios.post('/api/check-email', { email });
         const message = res.data.message;
 
         if (message === 'SIGN IN') {
@@ -172,7 +171,7 @@ const Login: React.FC = () => {
           facebookLogin();
         } else if (message === 'PENDING VERIFICATION') {
           try {
-            const otpRes = await axios.post(`${API_URL}/api/resend-otp`, { email });
+            const otpRes = await axios.post('/api/resend-otp', { email });
             const userId = otpRes.data.userId;
 
             sessionStorage.setItem('pendingVerification', 'true');

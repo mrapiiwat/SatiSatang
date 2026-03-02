@@ -49,7 +49,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
 
   isRefreshing = true;
   try {
-    const refreshResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/refreshToken`, {
+    const refreshResponse = await fetch('/api/refreshToken', {
       method: 'GET',
       credentials: 'include',
     });

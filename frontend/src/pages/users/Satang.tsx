@@ -76,7 +76,7 @@ const Satang: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/satang`, {
+      const response = await fetchWithAuth('/api/satang', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -8,7 +8,7 @@ interface FailedQueueItem {
 }
 
 const instance = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  baseURL: '/api',
   withCredentials: true,
 });
 
@@ -53,7 +53,7 @@ instance.interceptors.response.use(
 
       try {
         const res = await axios.get<{ accessToken: string }>(
-          `${import.meta.env.VITE_API_URL}/api/refreshToken`,
+          '/api/refreshToken',
           { withCredentials: true },
         );
 

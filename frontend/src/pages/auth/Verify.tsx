@@ -7,8 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { showToastAlert } from '../../store/toastStore';
 import type { ElysiaResponse } from '../../interface/error';
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 const Verify: React.FC = () => {
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -67,7 +65,7 @@ const Verify: React.FC = () => {
     setSuccess('');
 
     try {
-      const res = await axios.post(`${API_URL}/api/verify-email`, {
+      const res = await axios.post('/api/verify-email', {
         userId: parseInt(userId),
         otp: code,
       });
@@ -134,7 +132,7 @@ const Verify: React.FC = () => {
         return;
       }
 
-      await axios.post(`${API_URL}/api/resend-otp`, {
+      await axios.post('/api/resend-otp', {
         email: userEmail,
       });
 
