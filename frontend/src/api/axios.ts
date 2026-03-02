@@ -52,10 +52,9 @@ instance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axios.get<{ accessToken: string }>(
-          '/api/refreshToken',
-          { withCredentials: true },
-        );
+        const res = await axios.get<{ accessToken: string }>('/api/refreshToken', {
+          withCredentials: true,
+        });
 
         const newToken = res.data.accessToken;
         useAuthStore.getState().actionSetToken(newToken);
