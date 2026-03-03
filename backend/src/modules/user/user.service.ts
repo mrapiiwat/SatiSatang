@@ -32,7 +32,6 @@ export class UserService {
       id: userRecord.id,
       email: userRecord.email,
       name: userRecord.name,
-      balance: userRecord.balance,
       oauthAccounts: userRecord.oauthAccounts,
       currentLogin: provider,
     };
