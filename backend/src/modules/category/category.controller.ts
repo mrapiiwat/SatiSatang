@@ -1,6 +1,11 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import {
+  cached,
+  categoryCache,
+  clearCategoryCache,
+} from "@/common/utils/cache";
 import * as categorySchema from "./category.schema";
 import { CategoriesService } from "./category.service";
 
@@ -12,8 +17,9 @@ export const categoryController = new Elysia()
     "/category",
     async ({ body, set, user }) => {
       const userId = Number(user.id);
-      const result = await categoriesService.createCategory(userId, body);
 
+      const result = await categoriesService.createCategory(userId, body);
+      await clearCategoryCache(userId);
       set.status = StatusCodes.CREATED;
       return {
         message: "Category created successfully",
@@ -28,15 +34,19 @@ export const categoryController = new Elysia()
     "/categories",
     async ({ query, user, set }) => {
       const userId = Number(user.id);
-      const { result, includeGoals } = await categoriesService.getCategories(
-        userId,
-        query
+      const cacheKey = categoryCache.list(userId, query);
+
+      const { data, status } = await cached(
+        cacheKey,
+        () => categoriesService.getCategories(userId, query),
+        "50m"
       );
 
+      set.headers["X-Cache"] = status;
       set.status = StatusCodes.OK;
       return {
-        message: `Categories${includeGoals ? " (and goals)" : ""} fetched successfully`,
-        data: result,
+        message: `Categories${data.includeGoals ? " (and goals)" : ""} fetched successfully`,
+        data: data.result,
       };
     },
     {
@@ -48,12 +58,13 @@ export const categoryController = new Elysia()
     async ({ params: { id }, body, user, set }) => {
       const userId = Number(user.id);
       const categoryId = Number(id);
+
       const result = await categoriesService.updateCategory(
         userId,
         categoryId,
         body
       );
-
+      await clearCategoryCache(userId);
       set.status = StatusCodes.OK;
       return {
         message: "Category updated successfully",
@@ -70,8 +81,9 @@ export const categoryController = new Elysia()
     async ({ params: { id }, user, set }) => {
       const userId = Number(user.id);
       const categoryId = Number(id);
-      const result = await categoriesService.deleteCategory(userId, categoryId);
 
+      const result = await categoriesService.deleteCategory(userId, categoryId);
+      await clearCategoryCache(userId);
       set.status = StatusCodes.OK;
       return result;
     },

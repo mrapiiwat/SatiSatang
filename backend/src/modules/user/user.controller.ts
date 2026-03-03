@@ -1,9 +1,8 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
-import { redis } from "@/common/config/redis";
 import { BadRequestError } from "@/common/exceptions";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
-import { clearUserCache, userCache } from "@/common/utils/cache";
+import { cached, clearUserCache, userCache } from "@/common/utils/cache";
 import * as userSchema from "./user.schema";
 import { UserService } from "./user.service";
 
@@ -13,31 +12,18 @@ export const userController = new Elysia()
   .use(authenticateJWT)
   .get("/me", async ({ user, set }) => {
     const userId = Number(user.id);
-    const provider = user.provider;
+    const cacheKey = userCache.me(userId, user.provider);
 
-    const cacheKey = userCache.me(userId, provider);
+    const { data, status } = await cached(
+      cacheKey,
+      () => userService.me(userId, user.provider),
+      "1h"
+    );
 
-    try {
-      const cachedUser = await redis.get(cacheKey);
+    set.headers["X-Cache"] = status;
+    set.status = 200;
 
-      if (cachedUser) {
-        set.headers["X-Cache"] = "HIT";
-        return JSON.parse(cachedUser);
-      }
-
-      const result = await userService.me(userId, provider);
-      await redis.set(cacheKey, JSON.stringify(result), "EX", 3600);
-
-      set.headers["X-Cache"] = "MISS";
-      set.status = 200;
-
-      return result;
-    } catch {
-      const result = await userService.me(userId, provider);
-      set.headers["X-Cache"] = "ERROR";
-
-      return result;
-    }
+    return data;
   })
 
   .put(
