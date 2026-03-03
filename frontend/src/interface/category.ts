@@ -26,6 +26,8 @@ export interface CategoryListProps {
   setCategories: React.Dispatch<React.SetStateAction<CategoriesType[]>>;
   onAddClick: () => void;
   refresh?: () => void;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
 }
 
 export interface Transaction {

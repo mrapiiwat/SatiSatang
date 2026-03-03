@@ -11,16 +11,47 @@ import type { ElysiaResponse } from '../../../interface/error';
 import { RxCross2 } from 'react-icons/rx';
 import DeleteModal from '../../DeleteModal';
 
-const CategoryList: React.FC<CategoryListProps> = ({
-  categories,
-  onAddClick,
-  setCategories,
-  refresh,
-}) => {
+const CategoryList: React.FC<
+  CategoryListProps & { onSwipeLeft?: () => void; onSwipeRight?: () => void }
+> = ({ categories, onAddClick, setCategories, refresh, onSwipeLeft, onSwipeRight }) => {
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);
   const [loading, setLoading] = useState(false);
   const [editData, setEditData] = useState({ name: '', iconId: '' });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [startX, setStartX] = useState<number | null>(null);
+  const [endX, setEndX] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setEndX(null);
+    setStartX(e.targetTouches[0].clientX);
+  };
+  const onTouchMove = (e: React.TouchEvent) => setEndX(e.targetTouches[0].clientX);
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setEndX(null);
+    setStartX(e.clientX);
+  };
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) setEndX(e.clientX);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    if (startX === null || endX === null) return;
+    const distance = startX - endX;
+
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && onSwipeLeft) onSwipeLeft();
+    if (isRightSwipe && onSwipeRight) onSwipeRight();
+
+    setStartX(null);
+    setEndX(null);
+  };
 
   const handleCategoryClick = (category: CategoriesType & { iconId?: number }) => {
     const iconId = String(category.iconId || '');
@@ -30,14 +61,12 @@ const CategoryList: React.FC<CategoryListProps> = ({
 
   const handleCloseModal = () => {
     if (loading || isDeleteModalOpen) return;
-
     setEditingCategory(null);
     setEditData({ name: '', iconId: '' });
   };
 
   const handleDeleteCategory = async () => {
     if (!editingCategory) return;
-
     try {
       setLoading(true);
       await axios.delete(`/category/${editingCategory.id}`);
@@ -56,9 +85,7 @@ const CategoryList: React.FC<CategoryListProps> = ({
       if (isAxiosError(err)) {
         const axiosError = err as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
-        const errorMessage = data?.message || 'ไม่สามารถลบหมวดหมู่ได้';
-
-        showToastAlert(errorMessage, 'error');
+        showToastAlert(data?.message || 'ไม่สามารถลบหมวดหมู่ได้', 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {
@@ -72,14 +99,8 @@ const CategoryList: React.FC<CategoryListProps> = ({
 
   const handleUpdateCategory = async () => {
     if (!editingCategory) return;
-
-    if (!editData.name.trim()) {
-      return showToastAlert('กรุณากรอกชื่อหมวดหมู่', 'error');
-    }
-
-    if (!editData.iconId) {
-      return showToastAlert('กรุณาเลือกไอคอน', 'error');
-    }
+    if (!editData.name.trim()) return showToastAlert('กรุณากรอกชื่อหมวดหมู่', 'error');
+    if (!editData.iconId) return showToastAlert('กรุณาเลือกไอคอน', 'error');
 
     try {
       setLoading(true);
@@ -114,10 +135,10 @@ const CategoryList: React.FC<CategoryListProps> = ({
         const axiosError = err as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
-        const errorMessage =
-          customError || data?.errors?.[0]?.summary || data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้';
-
-        showToastAlert(errorMessage, 'error');
+        showToastAlert(
+          customError || data?.errors?.[0]?.summary || data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้',
+          'error',
+        );
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {
@@ -145,25 +166,48 @@ const CategoryList: React.FC<CategoryListProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-y-6 gap-x-4 justify-items-center transition-opacity duration-300">
-        {categories.map((cat) => (
-          <div
-            key={cat.id}
-            className="flex flex-col items-center gap-2 cursor-pointer"
-            onClick={() => handleCategoryClick(cat)}
-          >
-            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-              <Image src={cat.icon} alt={cat.name} className="w-full h-full object-cover" />
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={handleDragEnd}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={handleDragEnd}
+        onMouseLeave={handleDragEnd}
+        className="w-full min-h-[60vh] cursor-grab active:cursor-grabbing"
+      >
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-y-6 gap-x-4 justify-items-center transition-opacity duration-300">
+          {categories.map((cat) => (
+            <div
+              key={cat.id}
+              className="flex flex-col items-center gap-2 cursor-pointer"
+              onClick={(e) => {
+                if (startX && endX && Math.abs(startX - endX) > 10) {
+                  e.preventDefault();
+                  return;
+                }
+                handleCategoryClick(cat);
+              }}
+            >
+              <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden pointer-events-none">
+                <Image src={cat.icon} alt={cat.name} className="w-full h-full object-cover" />
+              </div>
+              <span className="text-sm text-center">{cat.name}</span>
             </div>
-            <span className="text-sm text-center">{cat.name}</span>
-          </div>
-        ))}
+          ))}
 
-        <div className="flex flex-col items-center gap-2 cursor-pointer" onClick={onAddClick}>
-          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-purple-600 text-2xl font-semibold hover:scale-110 transition-transform">
-            <AiOutlinePlus />
+          <div
+            className="flex flex-col items-center gap-2 cursor-pointer"
+            onClick={(_e) => {
+              if (startX && endX && Math.abs(startX - endX) > 10) return;
+              onAddClick();
+            }}
+          >
+            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-purple-600 text-2xl font-semibold hover:scale-110 transition-transform pointer-events-none">
+              <AiOutlinePlus />
+            </div>
+            <span className="text-sm text-center text-gray-700">เพิ่มหมวดหมู่</span>
           </div>
-          <span className="text-sm text-center text-gray-700">เพิ่มหมวดหมู่</span>
         </div>
       </div>
 

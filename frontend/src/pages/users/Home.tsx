@@ -563,7 +563,7 @@ const Home = () => {
               )}
             </div>
 
-            <div className="flex flex-row md:flex md:justify-center">
+            <div className="flex flex-row justify-center md:flex md:justify-center">
               <div className="w-1/6 md:w-[7%]">
                 {sortedDates.map((date) => {
                   const dayTransactions = groupedByDate[date];
