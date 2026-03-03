@@ -65,7 +65,7 @@ const Verify: React.FC = () => {
     setSuccess('');
 
     try {
-      const res = await axios.post('/api/verify-email', {
+      const res = await axios.post('/verify-email', {
         userId: parseInt(userId),
         otp: code,
       });
@@ -132,7 +132,7 @@ const Verify: React.FC = () => {
         return;
       }
 
-      await axios.post('/api/resend-otp', {
+      await axios.post('/resend-otp', {
         email: userEmail,
       });
 

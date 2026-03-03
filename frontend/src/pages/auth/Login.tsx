@@ -106,7 +106,7 @@ const Login: React.FC = () => {
         }
 
         try {
-          const res = await axios.post('/api/register', {
+          const res = await axios.post('/register', {
             email,
             password,
             name,
@@ -158,7 +158,7 @@ const Login: React.FC = () => {
       setIsLoading(true);
 
       try {
-        const res = await axios.post('/api/check-email', { email });
+        const res = await axios.post('/check-email', { email });
         const message = res.data.message;
 
         if (message === 'SIGN IN') {
@@ -171,7 +171,7 @@ const Login: React.FC = () => {
           facebookLogin();
         } else if (message === 'PENDING VERIFICATION') {
           try {
-            const otpRes = await axios.post('/api/resend-otp', { email });
+            const otpRes = await axios.post('/resend-otp', { email });
             const userId = otpRes.data.userId;
 
             sessionStorage.setItem('pendingVerification', 'true');

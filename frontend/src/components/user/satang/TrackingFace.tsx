@@ -38,10 +38,12 @@ const TrackingFace: React.FC<TrackingFaceProps> = ({ mode }) => {
   }, []);
 
   useEffect(() => {
+    if (mode === 'sati') return;
+
     fetchBalance();
     const interval = setInterval(fetchBalance, 30000);
     return () => clearInterval(interval);
-  }, [fetchBalance]);
+  }, [fetchBalance, mode]);
 
   const getDynamicMessage = () => {
     if (balance === null) return 'จ้องทำไม? 👀';
