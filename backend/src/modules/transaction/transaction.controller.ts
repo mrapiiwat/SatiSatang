@@ -1,10 +1,21 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { cached } from "@/common/utils/cache";
+import { clearBudgetCache } from "../budget/budget.cache";
+import { clearGoalCache } from "../goal/goal.cache";
+import { clearTransactionCache, transactionCache } from "./transaction.cache";
 import * as transactionSchema from "./transaction.schema";
 import { TransactionService } from "./transaction.service";
 
 const transactionService = new TransactionService();
+const invalidateAllFinancialData = async (userId: number) => {
+  await Promise.all([
+    clearTransactionCache(userId),
+    clearBudgetCache(userId),
+    clearGoalCache(userId),
+  ]);
+};
 
 export const transactionController = new Elysia({ prefix: "/transaction" })
   .use(authenticateJWT)
@@ -12,13 +23,19 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
     "/",
     async ({ query, user, set }) => {
       const userId = Number(user.id);
+      const cacheKey = transactionCache.list(userId, query);
 
-      const result = await transactionService.getTransactions(userId, query);
+      const { data, status } = await cached(
+        cacheKey,
+        () => transactionService.getTransactions(userId, query),
+        "30m"
+      );
 
+      set.headers["X-Cache"] = status;
       set.status = StatusCodes.OK;
       return {
         message: "Transactions fetched successfully",
-        ...result,
+        ...data,
       };
     },
     {
@@ -30,13 +47,19 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
     "/total-amount",
     async ({ query, user, set }) => {
       const userId = Number(user.id);
+      const cacheKey = transactionCache.total(userId, query);
 
-      const result = await transactionService.getTotalAmount(userId, query);
+      const { data, status } = await cached(
+        cacheKey,
+        () => transactionService.getTotalAmount(userId, query),
+        "10m"
+      );
 
+      set.headers["X-Cache"] = status;
       set.status = StatusCodes.OK;
       return {
         message: "Total amount calculated successfully",
-        ...result,
+        ...data,
       };
     },
     {
@@ -50,6 +73,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
       const userId = Number(user.id);
 
       const result = await transactionService.createTransaction(body, userId);
+      await invalidateAllFinancialData(userId);
 
       set.status = StatusCodes.CREATED;
 
@@ -87,11 +111,18 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
   .get(
     "/receipt/:id",
     async ({ params: { id }, set }) => {
-      const result = await transactionService.getReceiptUrl(Number(id));
+      const txnId = Number(id);
+      const cacheKey = transactionCache.receipt(txnId);
 
+      const { data, status } = await cached(
+        cacheKey,
+        () => transactionService.getReceiptUrl(txnId),
+        "50m"
+      );
+
+      set.headers["X-Cache"] = status;
       set.status = StatusCodes.OK;
-
-      return result;
+      return data;
     },
     {
       params: transactionSchema.paramsId,
@@ -132,6 +163,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
         body,
         userId
       );
+      await invalidateAllFinancialData(userId);
 
       set.status = StatusCodes.OK;
 
@@ -151,6 +183,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
     async ({ params: { id }, user, set }) => {
       const userId = Number(user.id);
       const result = await transactionService.deleteTransaction(id, userId);
+      await invalidateAllFinancialData(userId);
 
       set.status = StatusCodes.OK;
       return result;
