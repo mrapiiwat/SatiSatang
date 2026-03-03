@@ -1,11 +1,8 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
-import {
-  cached,
-  categoryCache,
-  clearCategoryCache,
-} from "@/common/utils/cache";
+import { cached } from "@/common/utils/cache";
+import { categoryCache, clearCategoryCache } from "./category.cache";
 import * as categorySchema from "./category.schema";
 import { CategoriesService } from "./category.service";
 

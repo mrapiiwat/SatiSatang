@@ -1,6 +1,8 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { cached } from "@/common/utils/cache";
+import { clearIconCache, iconCache } from "./icon.cache";
 import * as iconSchema from "./icon.schema";
 import { IconService } from "./icon.service";
 
@@ -14,6 +16,7 @@ export const iconController = new Elysia({ prefix: "/icon" })
       const userId = Number(user.id);
 
       const result = await iconService.createIcon(userId, body);
+      await clearIconCache(userId);
 
       set.status = StatusCodes.CREATED;
       return {
@@ -30,37 +33,33 @@ export const iconController = new Elysia({ prefix: "/icon" })
     async ({ query, user, set }) => {
       const userId = Number(user.id);
       const search = query.search;
+      const cacheKey = iconCache.list(userId, search);
 
-      const result = await iconService.getIcons(userId, search);
+      const { data, status } = await cached(
+        cacheKey,
+        () => iconService.getIcons(userId, search),
+        "50m"
+      );
 
+      set.headers["X-Cache"] = status;
       set.status = StatusCodes.OK;
 
       return {
         message: "Icons fetched successfully",
-        data: result,
+        data: data,
       };
     },
     {
       query: iconSchema.querySearch,
     }
   )
-  .get(
-    "/:id",
-    async ({ params: { id }, set }) => {
-      const result = await iconService.getIconUrl(Number(id));
-
-      set.status = StatusCodes.OK;
-
-      return result;
-    },
-    {
-      params: iconSchema.paramsId,
-    }
-  )
   .put(
     "/:id",
-    async ({ params: { id }, body, set }) => {
-      const result = await iconService.updateIcon(Number(id), body);
+    async ({ params: { id }, body, set, user }) => {
+      const userId = Number(user.id);
+      const iconId = Number(id);
+      const result = await iconService.updateIcon(iconId, body);
+      await clearIconCache(userId);
 
       set.status = StatusCodes.OK;
       return {

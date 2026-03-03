@@ -2,7 +2,8 @@ import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError } from "@/common/exceptions";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
-import { cached, clearUserCache, userCache } from "@/common/utils/cache";
+import { cached } from "@/common/utils/cache";
+import { clearUserCache, userCache } from "./user.cache";
 import * as userSchema from "./user.schema";
 import { UserService } from "./user.service";
 

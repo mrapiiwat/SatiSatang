@@ -89,35 +89,6 @@ export class IconService {
     return iconsWithUrl;
   }
 
-  async getIconUrl(iconId: number) {
-    const iconRecord = await db.query.icon.findFirst({
-      where: eq(icon.id, iconId),
-    });
-
-    if (!iconRecord) {
-      throw new NotFoundError("Icon not found");
-    }
-
-    try {
-      const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: iconRecord.url,
-      });
-
-      const signedUrl = await getSignedUrl(s3Client, command, {
-        expiresIn: 3600,
-      });
-
-      return {
-        url: signedUrl,
-        filename: iconRecord.url,
-      };
-    } catch (error) {
-      console.error("S3 Signing Error:", error);
-      throw new Error("Cannot generate image URL");
-    }
-  }
-
   async updateIcon(iconId: number, data: iconSchema.updateIcon) {
     const existingIcon = await db.query.icon.findFirst({
       where: eq(icon.id, iconId),

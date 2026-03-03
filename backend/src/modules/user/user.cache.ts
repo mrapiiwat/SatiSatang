@@ -1,4 +1,4 @@
-import { scanAndDelete } from "./cache.helper";
+import { scanAndDelete } from "@/common/utils/cache";
 
 export const userCache = {
   me: (userId: number, provider: string) =>

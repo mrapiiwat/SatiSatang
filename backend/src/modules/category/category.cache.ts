@@ -1,5 +1,5 @@
+import { scanAndDelete } from "@/common/utils/cache";
 import type { GetCategoriesQuery } from "@/modules/category/category.schema";
-import { scanAndDelete } from "./cache.helper";
 
 export const categoryCache = {
   list: (userId: number, query: GetCategoriesQuery): string => {
