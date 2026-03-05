@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, ilike, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, isNull, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { budgets, category, goals, transaction } from "@/db/schema";
 
@@ -21,7 +21,7 @@ export class FinancialService {
         totalAmount: sql<number>`sum(${transaction.amount})`.mapWith(Number),
       })
       .from(transaction)
-      .where(and(...conditions))
+      .where(and(...conditions, isNull(transaction.deletedAt)))
       .groupBy(transaction.type);
 
     const timeLabel = startDate
@@ -43,6 +43,7 @@ export class FinancialService {
   ) {
     const conditions = [
       eq(transaction.userId, userId),
+      isNull(transaction.deletedAt),
       ilike(transaction.description, `%${keyword}%`),
     ];
 
@@ -83,6 +84,8 @@ export class FinancialService {
   ) {
     const conditions = [
       eq(transaction.userId, userId),
+      isNull(transaction.deletedAt),
+      isNull(category.deletedAt),
       ilike(category.name, `%${categoryName}%`),
     ];
 
@@ -127,6 +130,8 @@ export class FinancialService {
     const conditions = [
       eq(transaction.userId, userId),
       eq(transaction.type, "EXPENSE"),
+      isNull(transaction.deletedAt),
+      isNull(category.deletedAt),
     ];
 
     if (startDate)
@@ -168,6 +173,8 @@ export class FinancialService {
     const conditions = [
       eq(transaction.userId, userId),
       eq(transaction.type, "EXPENSE"),
+      isNull(transaction.deletedAt),
+      isNull(category.deletedAt),
     ];
 
     if (startDate)
@@ -218,7 +225,11 @@ export class FinancialService {
     endDate?: string,
     categoryName?: string
   ) {
-    const conditions = [eq(transaction.userId, userId)];
+    const conditions = [
+      eq(transaction.userId, userId),
+      isNull(transaction.deletedAt),
+      isNull(category.deletedAt),
+    ];
 
     if (startDate)
       conditions.push(gte(transaction.createdAt, new Date(startDate)));
@@ -262,13 +273,41 @@ export class FinancialService {
     );
   }
 
-  async compareMonthlySpending(userId: number) {
+  async compareMonthlySpending(userId: number, month?: number, year?: number) {
     const now = new Date();
-    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const targetYear = year ?? now.getFullYear();
+    const targetMonthIndex = month ? month - 1 : now.getMonth();
+    const currentMonthStart = new Date(
+      targetYear,
+      targetMonthIndex,
+      1,
+      0,
+      0,
+      0,
+      0
+    );
+    const currentMonthEnd = new Date(
+      targetYear,
+      targetMonthIndex + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
+
+    const lastMonthStart = new Date(
+      targetYear,
+      targetMonthIndex - 1,
+      1,
+      0,
+      0,
+      0,
+      0
+    );
     const lastMonthEnd = new Date(
-      now.getFullYear(),
-      now.getMonth(),
+      targetYear,
+      targetMonthIndex,
       0,
       23,
       59,
@@ -285,7 +324,9 @@ export class FinancialService {
         and(
           eq(transaction.userId, userId),
           eq(transaction.type, "EXPENSE"),
-          gte(transaction.createdAt, currentMonthStart)
+          isNull(transaction.deletedAt),
+          gte(transaction.createdAt, currentMonthStart),
+          lte(transaction.createdAt, currentMonthEnd)
         )
       );
 
@@ -298,6 +339,7 @@ export class FinancialService {
         and(
           eq(transaction.userId, userId),
           eq(transaction.type, "EXPENSE"),
+          isNull(transaction.deletedAt),
           gte(transaction.createdAt, lastMonthStart),
           lte(transaction.createdAt, lastMonthEnd)
         )
@@ -307,14 +349,27 @@ export class FinancialService {
     const lastTotal = lastRes[0]?.total || 0;
     const diff = currentTotal - lastTotal;
 
-    return `เดือนนี้ใช้ไป: ${currentTotal} บาท\nเดือนที่แล้วใช้ไป: ${lastTotal} บาท\nส่วนต่าง: ${diff > 0 ? `มากกว่าเดือนที่แล้ว ${diff} บาท` : `น้อยกว่าเดือนที่แล้ว ${Math.abs(diff)} บาท`}`;
+    const currentMonthName = currentMonthStart.toLocaleDateString("th-TH", {
+      month: "long",
+      year: "numeric",
+    });
+    const lastMonthName = lastMonthStart.toLocaleDateString("th-TH", {
+      month: "long",
+      year: "numeric",
+    });
+
+    return `[ข้อมูลจริงจาก Database - ห้ามสลับหรือดัดแปลงตัวเลขเด็ดขาด]
+    - เดือน ${currentMonthName}: มียอดใช้จ่ายทั้งหมด ${currentTotal} บาท
+    - เดือน ${lastMonthName}: มียอดใช้จ่ายทั้งหมด ${lastTotal} บาท
+    สรุปส่วนต่าง: ${diff > 0 ? `เดือน ${currentMonthName} ใช้เยอะกว่าเดือน ${lastMonthName} อยู่ ${diff} บาท` : `เดือน ${currentMonthName} ใช้น้อยกว่าเดือน ${lastMonthName} อยู่ ${Math.abs(diff)} บาท`}`;
   }
 
   async getGoalsAndBudgets(userId: number) {
     const userGoals = await db
       .select()
       .from(goals)
-      .where(eq(goals.userId, userId));
+      .where(and(eq(goals.userId, userId), isNull(goals.deletedAt)));
+
     const userBudgets = await db
       .select({
         amount: budgets.amount,
@@ -324,7 +379,13 @@ export class FinancialService {
       })
       .from(budgets)
       .innerJoin(category, eq(budgets.categoryId, category.id))
-      .where(eq(budgets.userId, userId));
+      .where(
+        and(
+          eq(budgets.userId, userId),
+          isNull(budgets.deletedAt),
+          isNull(category.deletedAt)
+        )
+      );
 
     const goalsText = userGoals.length
       ? userGoals

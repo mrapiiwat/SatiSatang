@@ -43,6 +43,8 @@ interface SatangToolArgs {
   keyword?: string;
   categoryName?: string;
   limit?: number;
+  month?: number;
+  year?: number;
 }
 
 const budgetService = new BudgetService();
@@ -233,7 +235,11 @@ export class OpenAIService {
             args.categoryName
           );
         } else if (fnName === "compare_monthly_spending") {
-          result = await financialService.compareMonthlySpending(userId);
+          result = await financialService.compareMonthlySpending(
+            userId,
+            args.month,
+            args.year
+          );
         } else if (fnName === "get_goals_and_budgets") {
           result = await financialService.getGoalsAndBudgets(userId);
         }

@@ -20,7 +20,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black-900/80 px-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black-900/80 backdrop-blur-sm px-4">
       <div className="bg-white rounded-[2rem] p-8 flex flex-col items-center w-full max-w-[350px] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
         <div className="mb-5">
           <svg

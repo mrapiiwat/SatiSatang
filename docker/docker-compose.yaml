@@ -1,4 +1,4 @@
-name: satisatang
+name: SatiSatang
 services:
   nginx:
     image: nginx:alpine

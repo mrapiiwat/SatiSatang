@@ -3,7 +3,7 @@ import { useState } from 'react';
 import axios from '../../../api/axios';
 import { isAxiosError, AxiosError } from 'axios';
 import Modal from '../../../components/Modal';
-import IconSelector from '../account/IconSelector';
+import IconSelector from './IconSelector';
 import type { CategoryModalProps } from '../../../interface/category';
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';

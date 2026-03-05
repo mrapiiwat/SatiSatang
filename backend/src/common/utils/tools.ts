@@ -129,8 +129,21 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "compare_monthly_spending",
-      description: "เปรียบเทียบยอดใช้จ่ายเดือนนี้กับเดือนที่แล้ว เพื่อดูพฤติกรรมความฟุ่มเฟือย",
-      parameters: { type: "object", properties: {} },
+      description: "ใช้เปรียบเทียบยอดการใช้จ่ายระหว่างเดือนที่ระบุ กับ เดือนก่อนหน้า",
+      parameters: {
+        type: "object",
+        properties: {
+          month: {
+            type: "number",
+            description:
+              "เดือนที่ต้องการเปรียบเทียบ (1-12) เช่น 1 คือมกราคม, 2 คือกุมภาพันธ์ (ถ้าไม่ระบุจะใช้เดือนปัจจุบัน)",
+          },
+          year: {
+            type: "number",
+            description: "ปี ค.ศ. เช่น 2026 (ถ้าไม่ระบุจะใช้ปีปัจจุบัน)",
+          },
+        },
+      },
     },
   },
   {

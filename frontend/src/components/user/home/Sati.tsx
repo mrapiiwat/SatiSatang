@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useLayoutEffect, useCallback, useMemo } from 'react';
-import { RxCross2 } from 'react-icons/rx';
+// import { RxCross2 } from 'react-icons/rx';
 import { FaPlus } from 'react-icons/fa6';
 import { GoArrowUp } from 'react-icons/go';
 import AddMenu from './AddMenu';
@@ -676,14 +676,14 @@ const Sati: React.FC<SatiProps> = ({
               ref={containerRef}
               className="overscroll-contain border-[1px] bg-white border-black-500 rounded-xl flex-1 w-full overflow-y-auto p-2 mb-4 scrollbar-none flex flex-col"
             >
-              <div className="flex justify-end m-3 mb-4 sticky top-3 z-10">
+              {/* <div className="flex justify-end m-3 mb-4 sticky top-3 z-10">
                 <div
                   className="bg-gray-100 flex justify-center items-center rounded-full w-12 h-12 hover:bg-gray-200 cursor-pointer shadow-sm"
                   onClick={handleCloseChatModal}
                 >
                   <RxCross2 size={25} />
                 </div>
-              </div>
+              </div> */}
               {hasMore && (
                 <div className="text-center text-gray-400 text-xs py-2 w-full">
                   {isLoading ? 'กำลังโหลด...' : 'เลื่อนขึ้นเพื่อดูข้อความเก่า'}

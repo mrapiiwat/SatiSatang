@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
 import Image from '../../../components/Image';
 import Modal from '../../Modal';
-import IconSelector from '../account/IconSelector';
+import IconSelector from './IconSelector';
 import axios from '../../../api/axios';
 import { AxiosError, isAxiosError } from 'axios';
 import type { CategoriesType, CategoryListProps } from '../../../interface/category';
