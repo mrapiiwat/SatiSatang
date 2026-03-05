@@ -30,8 +30,16 @@ export const authController = new Elysia()
 
   .post(
     "/register",
-    async ({ body, set }) => {
-      const result = await authService.register(body);
+    async ({ body, set, headers }) => {
+      const userAgent = headers["user-agent"] || "unknown";
+      const ipAddress =
+        headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+      const result = await authService.register({
+        ...body,
+        userAgent,
+        ipAddress,
+      });
+
       set.status = StatusCodes.CREATED;
       return {
         userId: result,

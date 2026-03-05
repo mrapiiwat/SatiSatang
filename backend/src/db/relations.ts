@@ -13,6 +13,7 @@ import {
   refreshToken,
   transaction,
   user,
+  userConsents,
 } from "./schema";
 
 export const oauthAccountRelations = relations(oauthAccount, ({ one }) => ({
@@ -34,6 +35,7 @@ export const userRelations = relations(user, ({ many }) => ({
   budgets: many(budgets),
   chatSessions: many(chatSession),
   chatMessages: many(chatMessage),
+  userConsents: many(userConsents),
 }));
 
 export const passwordResetTokenRelations = relations(
@@ -139,6 +141,13 @@ export const chatMessageRelations = relations(chatMessage, ({ one }) => ({
   }),
   user: one(user, {
     fields: [chatMessage.userId],
+    references: [user.id],
+  }),
+}));
+
+export const userConsentsRelations = relations(userConsents, ({ one }) => ({
+  user: one(user, {
+    fields: [userConsents.userId],
     references: [user.id],
   }),
 }));

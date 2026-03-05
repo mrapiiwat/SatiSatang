@@ -31,6 +31,7 @@ export interface PageWrapperProps {
 
 export interface SubmitButtonProps {
   isLoading: boolean;
+  disabled?: boolean;
   text: string;
 }
 

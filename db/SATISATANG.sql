@@ -4,6 +4,8 @@ CREATE TYPE public.transaction_type_enum AS ENUM ('INCOME', 'EXPENSE');
 
 CREATE TYPE public.provider_enum AS ENUM ('local', 'google', 'facebook');
 
+CREATE TYPE public.policy_type_enum AS ENUM ('TERMS_OF_SERVICE', 'PRIVACY_POLICY', 'AI_DISCLAIMER');
+
 CREATE
 OR REPLACE FUNCTION update_updated_at_column () RETURNS TRIGGER AS $$
 BEGIN
@@ -24,6 +26,19 @@ CREATE TABLE
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
   );
+
+CREATE TABLE public.user_consents (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    policy_type public.policy_type_enum NOT NULL,
+    version TEXT NOT NULL,
+    ip_address TEXT,
+    user_agent TEXT,
+    accepted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_user_consents_lookup ON public.user_consents (user_id, policy_type, version);
 
 CREATE TABLE
   public.oauth_accounts (
@@ -134,6 +149,7 @@ CREATE TABLE
     type public.transaction_type_enum,
     description TEXT,
     amount DOUBLE PRECISION NOT NULL,
+    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     receipt TEXT,
     to_account TEXT,
     from_account TEXT,

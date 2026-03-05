@@ -7,14 +7,25 @@ const InstallPWA: React.FC = () => {
   const [showButton, setShowButton] = useState<boolean>(false);
 
   useEffect(() => {
-    const isDismissed = sessionStorage.getItem('pwa_install_dismissed');
-
     const handler = (e: Event) => {
       const installEvent = e as BeforeInstallPromptEvent;
       installEvent.preventDefault();
       setDeferredPrompt(installEvent);
 
-      if (!isDismissed) {
+      const dismissedAt = localStorage.getItem('pwa_dismissed_at');
+
+      let shouldShow = true;
+
+      if (dismissedAt) {
+        const dismissTime = parseInt(dismissedAt, 10);
+        const daysPassed = (Date.now() - dismissTime) / (1000 * 60 * 60 * 24);
+
+        if (daysPassed < 1) {
+          shouldShow = false;
+        }
+      }
+
+      if (shouldShow) {
         setShowButton(true);
       }
     };
@@ -31,15 +42,16 @@ const InstallPWA: React.FC = () => {
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
       setShowButton(false);
+      localStorage.setItem('pwa_installed', 'true');
     }
   };
 
   const handleDismiss = () => {
     setShowButton(false);
-    sessionStorage.setItem('pwa_install_dismissed', 'true');
+    localStorage.setItem('pwa_dismissed_at', Date.now().toString());
   };
 
-  if (!showButton) return null;
+  if (!showButton || localStorage.getItem('pwa_installed') === 'true') return null;
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-max max-w-[calc(100vw-2rem)]">

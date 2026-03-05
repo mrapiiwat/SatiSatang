@@ -1,6 +1,6 @@
 name: SatiSatang
 services:
-  nginx:
+  gateway:
     image: nginx:alpine
     ports:
       - "80:80"

@@ -51,6 +51,7 @@ export const registerSchema = t.Object({
     ],
     { error: "Invalid password format" }
   ),
+  acceptTermsAndPrivacy: t.Boolean(),
 });
 
 export type registerSchema = Static<typeof registerSchema>;

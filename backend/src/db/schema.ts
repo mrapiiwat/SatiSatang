@@ -29,6 +29,12 @@ export const providerEnum = pgEnum("provider_enum", [
   "facebook",
 ]);
 
+export const policyTypeEnum = pgEnum("policy_type_enum", [
+  "TERMS_OF_SERVICE",
+  "PRIVACY_POLICY",
+  "AI_DISCLAIMER",
+]);
+
 export const stock = pgTable(
   "stocks",
   {
@@ -105,6 +111,35 @@ export const user = pgTable(
       "btree",
       table.email.asc().nullsLast().op("text_ops")
     ),
+  ]
+);
+
+export const userConsents = pgTable(
+  "user_consents",
+  {
+    id: serial("id").primaryKey().notNull(),
+    userId: integer("user_id").notNull(),
+    policyType: policyTypeEnum("policy_type").notNull(),
+    version: text("version").notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    acceptedAt: timestamp("accepted_at", { precision: 3, mode: "date" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("idx_user_consents_lookup").on(
+      table.userId,
+      table.policyType,
+      table.version
+    ),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [user.id],
+      name: "user_consents_user_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
   ]
 );
 

@@ -26,6 +26,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isUser, setIsUser] = useState<string>('Guest');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const actionLogin = useAuthStore((state) => state.actionLogin);
   const navigate = useNavigate();
@@ -76,6 +77,25 @@ const Login: React.FC = () => {
     }
   }, []);
 
+  const isFormValid = (() => {
+    if (isUser === 'Guest') {
+      return validateEmail(email);
+    }
+    if (isUser === 'Login') {
+      return validateEmail(email) && password.length >= 6;
+    }
+    if (isUser === 'Register') {
+      return (
+        validateEmail(email) &&
+        password.length >= 6 &&
+        password === confirmPassword &&
+        name.trim() !== '' &&
+        acceptTerms
+      );
+    }
+    return false;
+  })();
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -85,7 +105,7 @@ const Login: React.FC = () => {
 
       if (isUser === 'Login') {
         try {
-          await actionLogin(LoginForm!);
+          actionLogin(LoginForm!);
           showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
           navigate('/user');
         } catch (error) {
@@ -105,11 +125,18 @@ const Login: React.FC = () => {
           return;
         }
 
+        if (!acceptTerms) {
+          setError('กรุณายอมรับข้อตกลงและเงื่อนไขการใช้งานทั้งหมดก่อนทำการลงทะเบียน');
+          setIsLoading(false);
+          return;
+        }
+
         try {
           const res = await axios.post('/register', {
             email,
             password,
             name,
+            acceptTermsAndPrivacy: acceptTerms,
           });
 
           const userId = res.data.userId;
@@ -219,6 +246,7 @@ const Login: React.FC = () => {
       isLoading,
       googleLogin,
       facebookLogin,
+      acceptTerms,
     ],
   );
 
@@ -318,6 +346,40 @@ const Login: React.FC = () => {
                       autoComplete="name"
                     />
                   </div>
+
+                  <div className="flex flex-col justify-center items-center gap-3 mt-2">
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <div className="flex items-center h-5 shrink-0">
+                        <input
+                          type="checkbox"
+                          required
+                          checked={acceptTerms}
+                          onChange={(e) => setAcceptTerms(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                      </div>
+                      <span className="text-sm leading-relaxed text-gray-600 group-hover:text-gray-800 transition-colors">
+                        ฉันได้อ่านและยอมรับ{' '}
+                        <Link
+                          to="/policies/terms-of-use"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 font-medium hover:underline"
+                        >
+                          ข้อตกลงการใช้งาน
+                        </Link>{' '}
+                        และ{' '}
+                        <Link
+                          to="/policies/privacy-policy"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 font-medium hover:underline"
+                        >
+                          นโยบายความเป็นส่วนตัว
+                        </Link>
+                      </span>
+                    </label>
+                  </div>
                 </div>
               )}
 
@@ -335,7 +397,11 @@ const Login: React.FC = () => {
                 </div>
               )}
 
-              <SubmitButton isLoading={isLoading} text="ดำเนินการต่อ" />
+              <SubmitButton
+                isLoading={isLoading}
+                disabled={!isFormValid || isLoading}
+                text="ดำเนินการต่อ"
+              />
             </form>
 
             <div className="relative my-7 flex items-center">
