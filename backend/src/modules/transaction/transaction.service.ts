@@ -21,10 +21,14 @@ import {
 } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { BUCKET_NAME, s3Client } from "@/common/config/s3";
-import { BadRequestError, NotFoundError } from "@/common/exceptions";
+import { NotFoundError } from "@/common/exceptions";
 import { SmartCategorizer } from "@/common/services/categorizer";
 import { OCRService } from "@/common/services/ocr.service";
-import { OpenAIService } from "@/common/services/openai.service";
+import {
+  type Category,
+  OpenAIService,
+  type User,
+} from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { db } from "@/db";
 import { category, goalTransaction, transaction, user } from "@/db/schema";
@@ -303,46 +307,45 @@ export class TransactionService {
     };
   }
 
-  async processSingleSlip(file: File, userId: number) {
+  private async processSingleSlip(
+    file: File,
+    categories: Category[],
+    user: User
+  ) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     const text = await ocrService.extractTextFromImage(buffer);
-    if (!text) throw new BadRequestError("ไม่สามารถอ่านข้อความจากภาพได้");
+    if (!text) throw new Error("ไม่สามารถอ่านข้อความจากภาพได้");
 
     const isSlip = await openAIService.checkSlipType(text);
-    if (!isSlip) throw new BadRequestError("รูปที่อัปโหลดไม่ใช่สลิปการเงิน");
-
-    const categories = await db.query.category.findMany({
-      where: and(eq(category.userId, userId), isNull(category.deletedAt)),
-      columns: { id: true, name: true, type: true },
-    });
-
-    const userData = await db.query.user.findFirst({
-      where: and(eq(user.id, userId), isNull(user.deletedAt)),
-      columns: { name: true },
-    });
-
-    if (!userData) throw new NotFoundError("User not found");
-
-    const formattedCategories = categories.map((c) => ({
-      id: c.id,
-      name: c.name,
-      type: c.type,
-    }));
+    if (!isSlip) throw new Error("รูปภาพนี้ไม่ใช่สลิปการเงิน");
 
     const transactionData = await openAIService.extractTransactionData(
       text,
-      formattedCategories,
-      { name: userData.name }
+      categories,
+      { name: user.name }
     );
 
     return transactionData;
   }
 
   async transactionByUpload(files: File[], userId: number) {
+    const [categories, userData] = await Promise.all([
+      db.query.category.findMany({
+        where: and(eq(category.userId, userId), isNull(category.deletedAt)),
+        columns: { id: true, name: true, type: true },
+      }),
+      db.query.user.findFirst({
+        where: and(eq(user.id, userId), isNull(user.deletedAt)),
+        columns: { name: true },
+      }),
+    ]);
+
+    if (!userData) throw new NotFoundError("ไม่พบข้อมูลผู้ใช้งาน");
+
     const results = await Promise.allSettled(
-      files.map((file) => this.processSingleSlip(file, userId))
+      files.map((file) => this.processSingleSlip(file, categories, userData))
     );
 
     return results.map((result, index) => {
@@ -356,10 +359,7 @@ export class TransactionService {
         return {
           status: "error",
           fileName: files[index].name,
-          error:
-            result.reason instanceof Error
-              ? result.reason.message
-              : "Unknown error",
+          error: result.reason?.message || "Unknown error",
         };
       }
     });
@@ -383,30 +383,21 @@ export class TransactionService {
         throw new NotFoundError("Transaction not found");
       }
 
-      if (existingTxn.type === "INCOME") {
-        await tx
-          .update(user)
-          .set({ balance: sql`${user.balance} - ${existingTxn.amount}` })
-          .where(eq(user.id, userId));
-      } else {
-        await tx
-          .update(user)
-          .set({ balance: sql`${user.balance} + ${existingTxn.amount}` })
-          .where(eq(user.id, userId));
-      }
-
-      const newAmount = data.amount ?? existingTxn.amount;
+      const oldAmount = Number(existingTxn.amount);
+      const newAmount = Number(data.amount ?? existingTxn.amount);
+      const oldType = existingTxn.type;
       const newType = data.type ?? existingTxn.type;
 
-      if (newType === "INCOME") {
+      let balanceChange = 0;
+
+      balanceChange += oldType === "INCOME" ? -oldAmount : oldAmount;
+
+      balanceChange += newType === "INCOME" ? newAmount : -newAmount;
+
+      if (balanceChange !== 0) {
         await tx
           .update(user)
-          .set({ balance: sql`${user.balance} + ${newAmount}` })
-          .where(eq(user.id, userId));
-      } else {
-        await tx
-          .update(user)
-          .set({ balance: sql`${user.balance} - ${newAmount}` })
+          .set({ balance: sql`${user.balance} + ${balanceChange}` })
           .where(eq(user.id, userId));
       }
 
@@ -416,7 +407,6 @@ export class TransactionService {
         const ext = file.name.split(".").pop();
         const newFilename = `${uuidv4()}.${ext}`;
         const newS3Key = `receipts/${newFilename}`;
-
         const buffer = new Uint8Array(await file.arrayBuffer());
         await s3Client.send(
           new PutObjectCommand({
@@ -473,7 +463,9 @@ export class TransactionService {
   }
 
   async deleteTransaction(id: number, userId: number) {
-    return await db.transaction(async (tx) => {
+    let s3KeyToDelete: string | null = null;
+
+    await db.transaction(async (tx) => {
       const existingTxn = await tx.query.transaction.findFirst({
         where: and(
           eq(transaction.id, id),
@@ -486,30 +478,15 @@ export class TransactionService {
         throw new NotFoundError("Transaction not found");
       }
 
-      if (existingTxn.type === "INCOME") {
-        await tx
-          .update(user)
-          .set({ balance: sql`${user.balance} - ${existingTxn.amount}` })
-          .where(eq(user.id, userId));
-      } else if (existingTxn.type === "EXPENSE") {
-        await tx
-          .update(user)
-          .set({ balance: sql`${user.balance} + ${existingTxn.amount}` })
-          .where(eq(user.id, userId));
-      }
+      s3KeyToDelete = existingTxn.receipt;
 
-      if (existingTxn.receipt) {
-        try {
-          await s3Client.send(
-            new DeleteObjectCommand({
-              Bucket: BUCKET_NAME,
-              Key: existingTxn.receipt,
-            })
-          );
-        } catch (e) {
-          console.warn("Failed to delete receipt from S3:", e);
-        }
-      }
+      const amount = Number(existingTxn.amount);
+      const balanceUpdate = existingTxn.type === "INCOME" ? -amount : amount;
+
+      await tx
+        .update(user)
+        .set({ balance: sql`${user.balance} + ${balanceUpdate}` })
+        .where(eq(user.id, userId));
 
       await tx
         .update(transaction)
@@ -521,10 +498,20 @@ export class TransactionService {
             isNull(transaction.deletedAt)
           )
         );
-
-      ragService.deleteTransactionIndex(id).catch(console.error);
-
-      return { message: "Transaction deleted successfully" };
     });
+
+    if (s3KeyToDelete) {
+      s3Client
+        .send(
+          new DeleteObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: s3KeyToDelete ?? undefined,
+          })
+        )
+        .catch((err) => console.error("[S3] Cleanup Error:", err));
+    }
+
+    ragService.deleteTransactionIndex(id).catch(console.error);
+    return { message: "Transaction deleted successfully" };
   }
 }

@@ -4,7 +4,11 @@ import { openai } from "@/common/config/openai";
 import { financialService } from "@/common/services/financial.service";
 import { RAGService } from "@/common/services/rag.service";
 import * as prompts from "@/common/utils/prompts";
-import { SATANG_TOOLS, SATI_TOOLS } from "@/common/utils/tools";
+import {
+  SATANG_TOOLS,
+  SATI_TOOLS,
+  SLIP_EXTRACTION_TOOL,
+} from "@/common/utils/tools";
 import { db } from "@/db";
 import { goals } from "@/db/schema";
 import { BudgetService } from "@/modules/budget/budget.service";
@@ -102,23 +106,37 @@ export class OpenAIService {
 
       const prompt = prompts.getExtractTransactionPrompt(
         user.name,
-        categoryListText,
-        text
+        categoryListText
       );
 
       const jsonResponse = await openai.chat.completions.create({
         model: MODEL_NAME,
-        response_format: { type: "json_object" },
         messages: [
           { role: "system", content: prompt },
           { role: "user", content: text },
         ],
+        tools: [SLIP_EXTRACTION_TOOL],
+        tool_choice: {
+          type: "function",
+          function: { name: "extract_slip_data" },
+        },
       });
 
-      const content = jsonResponse.choices[0].message?.content;
-      if (!content) throw new Error("No JSON content returned from OpenAI");
+      const toolCall = jsonResponse.choices[0].message?.tool_calls?.[0];
+      if (!toolCall) throw new Error("No tool calls returned from OpenAI");
 
-      return JSON.parse(content);
+      if (toolCall.type !== "function") {
+        throw new Error("Unexpected tool call type");
+      }
+
+      const content = toolCall.function.arguments;
+      const data = JSON.parse(content);
+
+      if (!data.date) {
+        data.date = new Date().toISOString();
+      }
+
+      return data;
     } catch (error) {
       console.error("[OpenAI] extractTransactionData Error:", error);
       throw new Error("Failed to extract transaction data");
@@ -279,18 +297,29 @@ export class OpenAIService {
 
       const now = new Date();
       const currentDateTH = now.toLocaleDateString("th-TH", {
+        timeZone: "Asia/Bangkok",
         year: "numeric",
         month: "long",
         day: "numeric",
         weekday: "long",
       });
-      const currentYearAD = now.getFullYear();
+      const currentYearAD = Number(
+        now.toLocaleDateString("en-US", {
+          timeZone: "Asia/Bangkok",
+          year: "numeric",
+        })
+      );
+
+      const currentDateISO = now.toLocaleDateString("en-CA", {
+        timeZone: "Asia/Bangkok",
+      });
 
       const extendedSystemPrompt = prompts.getHandleMessagePrompt(
         categoryListText,
         goalListText,
         currentDateTH,
-        currentYearAD
+        currentYearAD,
+        currentDateISO
       );
 
       const historyMessages: ChatCompletionMessageParam[] = history.map(
@@ -437,12 +466,7 @@ export class OpenAIService {
 
       if (fnName === "create_goal") {
         if (args.deadline) {
-          const deadlineDate = new Date(args.deadline);
-          const today = new Date();
-
-          today.setHours(0, 0, 0, 0);
-
-          if (deadlineDate < today) {
+          if (args.deadline < currentDateISO) {
             return {
               type: "message",
               message: `การตั้งเป้าหมายย้อนหลังทำไม่ได้นะครับ (ผมย้อนเวลาไม่ได้ 😅) รบกวนระบุเป็น "วันนี้" หรือ "วันในอนาคต" แทนนะครับ`,

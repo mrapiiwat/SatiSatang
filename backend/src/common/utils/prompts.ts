@@ -62,46 +62,33 @@ export const SatangSystemPrompt = (
 
 export const getExtractTransactionPrompt = (
   user: string,
-  categoryListText: string,
-  text: string
+  categoryListText: string
 ) => `
-คุณเป็นระบบแปลงข้อมูลสลิปเป็น JSON
+คุณคือระบบสกัดข้อมูลสลิปธนาคารไทยที่มีความแม่นยำสูงที่สุด
 
-ให้วิเคราะห์ว่าเป็น "INCOME" หรือ "EXPENSE" โดยใช้กฎต่อไปนี้ (สำคัญมาก):
-- ให้ใช้การเทียบชื่อแบบ Fuzzy Matching
-- ชื่อผู้ใช้จริงคือ "${user}"
-- ชื่อในสลิปอาจสะกดต่างออกไป เช่น คนละภาษา (ไทย/อังกฤษ), สะกดคลาดเคลื่อน, เพิ่ม/ลดตัวอักษร หรือออกเสียงใกล้เคียง
-- ถ้าชื่อผู้ใช้หรือชื่อที่ “ออกเสียง/อ่านใกล้เคียง” ปรากฏในตำแหน่ง **ผู้รับเงิน** → ให้ type = "INCOME"
-- ถ้าปรากฏในตำแหน่ง **ผู้จ่ายเงิน** → ให้ type = "EXPENSE"
+ขั้นตอนการสกัดวันที่ (Strict Step-by-Step Date Extraction):
+1. **ค้นหาข้อความ**: หาบรรทัดที่มีวันที่ เช่น "05 มี.ค. 69", "5 Mar 2026", "05/03/2569"
+2. **วิเคราะห์เดือน**: 
+   - ถ้าเจอ "มี.ค." หรือ "Mar" = เดือน 03
+   - ถ้าเจอ "ธ.ค." หรือ "Dec" = เดือน 12
+   - (ห้ามสับสนเด็ดขาด!)
+3. **วิเคราะห์ปี**:
+   - ถ้าปีเป็น พ.ศ. (2569 หรือ 69) ให้ลบ 543 เพื่อเป็น ค.ศ. (2026)
+   - **สำคัญ**: วันนี้คือวันที่ ${new Date().toLocaleDateString("th-TH")} (ค.ศ. ${new Date().getFullYear()}) ดังนั้นปีในสลิปควรจะใกล้เคียงกับปีนี้
+4. **ตรวจสอบความสมเหตุสมผล**: หากสกัดได้ปีที่เก่าเกินไป (เช่น 2024 หรือ 2025 ทั้งที่เป็นสลิปใหม่) ให้ตรวจสอบตัวเลขในสลิปอีกครั้ง
 
-ถ้าไม่พบชื่อผู้ใช้:
-- ถ้าพบคำที่สื่อถึงการจ่าย เช่น "จ่าย", "โอนออก", "ชำระ", "ซื้อ" → ให้ type = "EXPENSE"
-- ถ้าพบคำที่สื่อถึงการได้รับ เช่น "ได้รับ", "โอนเข้า", "เงินเข้า", "รับเงิน" → ให้ type = "INCOME"
+ข้อมูลผู้ใช้: "${user}"
+หมวดหมู่: ${categoryListText}
 
-รูปแบบข้อมูล JSON ที่ต้องตอบกลับ:
-{
-  "type": "INCOME หรือ EXPENSE",
-  "description": "คำอธิบาย",
-  "amount": number,
-  "toAccount": "ชื่อบัญชีปลายทาง",
-  "fromAccount": "ชื่อบัญชีต้นทาง",
-  "categoryId": "เลือก id ของ category ที่เหมาะสมที่สุดจาก list"
-}
-
-Category list ของผู้ใช้:
-${categoryListText}
-
-ข้อความสลิป:
-"${text}"
-
-ตอบเป็น JSON เท่านั้น โดยไม่ต้องมีคำอธิบายเพิ่มเติม
+จงสกัดข้อมูลแล้วเรียกใช้ function 'extract_slip_data'
 `;
 
 export const getHandleMessagePrompt = (
   categoryListText: string,
   goalListText: string,
   currentDateTH: string,
-  currentYearAD: number
+  currentYearAD: number,
+  currentDateISO: string
 ) => `
       คุณคือ "น้องสติ" ผู้ช่วยจัดการการเงินที่ฉลาดและรอบคอบ
       
@@ -114,6 +101,7 @@ export const getHandleMessagePrompt = (
 
       [เวลาปัจจุบัน (Current Time)]
       Today is: ${currentDateTH}
+      Today (ISO): ${currentDateISO} 
       Current Year (AD): ${currentYearAD}
       
       --------------------------------------------------

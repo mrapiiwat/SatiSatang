@@ -265,3 +265,50 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
     },
   },
 ];
+
+export const SLIP_EXTRACTION_TOOL: ChatCompletionTool = {
+  type: "function",
+  function: {
+    name: "extract_slip_data",
+    description: "สกัดข้อมูลการเงินจากข้อความ OCR ของสลิปธนาคารหรือใบเสร็จ",
+    parameters: {
+      type: "object",
+      properties: {
+        type: {
+          type: "string",
+          enum: ["INCOME", "EXPENSE"],
+          description:
+            "ทิศทางของเงิน (INCOME = เงินเข้าบัญชีเรา, EXPENSE = เงินออกจากบัญชีเรา)",
+        },
+        description: {
+          type: "string",
+          description: "รายละเอียดรายการ เช่น โอนเงินให้..., จ่ายค่า...",
+        },
+        amount: {
+          type: "number",
+          description: "จำนวนเงินที่ทำรายการ",
+        },
+        toAccount: {
+          type: "string",
+          description: "ชื่อบัญชีหรือชื่อผู้รับเงิน (ถ้ามี)",
+        },
+        fromAccount: {
+          type: "string",
+          description: "ชื่อบัญชีหรือชื่อผู้โอนเงิน (ถ้ามี)",
+        },
+        categoryId: {
+          type: "number",
+          description:
+            "ID ของหมวดหมู่ที่เหมาะสมที่สุด (อ้างอิงจาก Category List ที่แนบไปใน Prompt)",
+        },
+        date: {
+          type: "string",
+          description:
+            "วันที่และเวลาที่ทำรายการ (ISO 8601) เช่น 2026-03-05T14:04:00+07:00 " +
+            "ห้ามเดาเดือนผิดเด็ดขาด ตรวจสอบตัวย่อเดือนไทยให้ดี",
+        },
+      },
+      required: ["type", "description", "amount"],
+    },
+  },
+};
