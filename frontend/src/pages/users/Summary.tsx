@@ -55,7 +55,7 @@ const Summary: React.FC = () => {
   }, [selectedMonth, selectedYear]);
 
   const filteredTransactions = transactions.filter((t) => {
-    const date = new Date(t.createdAt);
+    const date = new Date(t.date);
     return date.getMonth() + 1 === selectedMonth && date.getFullYear() === selectedYear;
   });
 

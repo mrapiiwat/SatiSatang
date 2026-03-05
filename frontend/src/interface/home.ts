@@ -37,7 +37,7 @@ export interface Transaction {
   type: 'INCOME' | 'EXPENSE';
   description: string;
   amount: number;
-  createdAt: string;
+  date: string;
   categoryId: number;
 }
 
@@ -215,6 +215,7 @@ export interface ChatMessage {
 export interface DraftData {
   type: 'INCOME' | 'EXPENSE';
   amount: number;
+  date: string;
   description: string;
   category?: string;
   categoryId: number;

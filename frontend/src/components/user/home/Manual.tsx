@@ -2,6 +2,7 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { GoCalendar } from 'react-icons/go';
 import { RxCross2 } from 'react-icons/rx';
+import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 import type { SingleValue } from 'react-select';
 import Select from 'react-select';
 import axios from '../../../api/axios';
@@ -20,12 +21,37 @@ const options: OptionType[] = [
   { value: 'EXPENSE', label: 'รายจ่าย' },
 ];
 
+const monthsThai = [
+  'มกราคม',
+  'กุมภาพันธ์',
+  'มีนาคม',
+  'เมษายน',
+  'พฤษภาคม',
+  'มิถุนายน',
+  'กรกฎาคม',
+  'สิงหาคม',
+  'กันยายน',
+  'ตุลาคม',
+  'พฤศจิกายน',
+  'ธันวาคม',
+];
+
+const daysThai = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
   const today = new Date();
-  const displayDate =
-    editData && 'createdAt' in editData ? new Date(editData.createdAt as string) : today;
+  today.setHours(0, 0, 0, 0);
 
-  const formattedDate = displayDate
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    return editData && 'date' in editData ? new Date(editData.date as string) : new Date();
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const [viewDate, setViewDate] = useState<Date>(new Date(selectedDate));
+
+  const datePickerRef = useRef<HTMLDivElement>(null);
+
+  const formattedDate = selectedDate
     .toLocaleDateString('th-TH', {
       weekday: 'long',
       day: 'numeric',
@@ -36,12 +62,36 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
     .replace('ที่', '')
     .replace('พ.ศ. ', '');
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showDatePicker &&
+        datePickerRef.current &&
+        !datePickerRef.current.contains(event.target as Node)
+      ) {
+        setShowDatePicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDatePicker]);
+
+  const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
+
+  const handlePrevMonth = () => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  };
+
   const [selectedType, setSelectedType] = useState<OptionType | null>(null);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryOption | null>(null);
   const [detail, setDetail] = useState('');
   const [amount, setAmount] = useState('');
-
   const [pendingAutoSelectId, setPendingAutoSelectId] = useState<number | null>(null);
 
   const pendingAutoSelectIdRef = useRef(pendingAutoSelectId);
@@ -60,6 +110,12 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
       setAmount(editData.amount.toString());
       const typeOption = options.find((opt) => opt.value === editData.type);
       if (typeOption) setSelectedType(typeOption);
+
+      if ('date' in editData && editData.date) {
+        const d = new Date(editData.date as string);
+        setSelectedDate(d);
+        setViewDate(d);
+      }
     }
   }, [editData]);
 
@@ -70,24 +126,18 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
         setSelectedCategory(null);
         return;
       }
-
       try {
         const isCreateMode = !editData || !('id' in editData);
         const goalQuery = isCreateMode ? '&includeGoals=true' : '';
-
         const res = await axios.get(`/categories?type=${selectedType.value}${goalQuery}`);
         const data: CategoryResponse[] = res.data.data;
-
         const formatted: CategoryOption[] = data.map((cat) => ({
           value: cat.id,
           label: cat.name,
           isGoal: cat.isGoal || false,
         }));
-
         setCategories(formatted);
-
         const isPending = pendingAutoSelectIdRef.current;
-
         if (editData && editData.type === selectedType.value && !isPending) {
           const currentCat = formatted.find((cat) => cat.value === editData.categoryId);
           if (currentCat) setSelectedCategory(currentCat);
@@ -98,7 +148,6 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
         console.error('Error fetching categories:', err);
       }
     };
-
     fetchCategories();
   }, [selectedType, editData]);
 
@@ -114,58 +163,56 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
 
   useEffect(() => {
     if (editData || !detail) return;
-
     const timeoutId = setTimeout(async () => {
       try {
         const res = await axios.post('/transaction/predict-category', { description: detail });
-
         const { categoryId, type } = res.data;
-
         if (categoryId && type) {
           if (selectedTypeRef.current?.value !== type) {
             const newTypeOption = options.find((o) => o.value === type);
             if (newTypeOption) setSelectedType(newTypeOption);
           }
-
           setPendingAutoSelectId(categoryId);
         }
       } catch (err) {
         console.error('Error predicting category:', err);
       }
     }, 800);
-
     return () => clearTimeout(timeoutId);
   }, [detail, editData]);
 
   const isModified = () => {
     if (!editData || !('id' in editData)) return true;
-
     const isTypeChanged = selectedType?.value !== editData.type;
     const isCategoryChanged = selectedCategory?.value !== editData.categoryId;
     const isDetailChanged = detail !== (editData.description || '');
     const isAmountChanged = Number(amount) !== Number(editData.amount);
-    return isTypeChanged || isCategoryChanged || isDetailChanged || isAmountChanged;
+    const oldDate = editData.date ? new Date(editData.date as string) : new Date();
+    const isDateChanged = selectedDate.toDateString() !== oldDate.toDateString();
+
+    return (
+      isTypeChanged || isCategoryChanged || isDetailChanged || isAmountChanged || isDateChanged
+    );
   };
 
   const canSubmit = isModified();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!selectedType || !selectedCategory || !amount || !detail) {
       return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
     }
-
     if (Number(amount) < 0) {
       return showToastAlert('จำนวนเงินต้องมากกว่า 0', 'error');
     }
-
+    const offsetDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
     const payload = {
       type: selectedType.value as 'INCOME' | 'EXPENSE',
       description: detail,
       categoryId: selectedCategory.value,
       amount: Number(amount),
       isGoal: selectedCategory.isGoal || false,
+      date: offsetDate.toISOString(),
     };
 
     if (onUpdateDraft) {
@@ -182,17 +229,14 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
         await axios.post('/transaction', payload);
         showToastAlert('บันทึกสำเร็จ', 'success');
       }
-
       onSuccess();
       onClose();
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         const axiosError = err as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
-
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
         const msg = customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
-
         showToastAlert(msg, 'error');
       } else {
         showToastAlert(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
@@ -202,7 +246,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
 
   return (
     <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
-      <div className="bg-white w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8">
+      <div className="bg-white w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8 relative">
         <div className="flex justify-between items-center mb-5">
           <h4 className="font-medium">
             {editData && 'id' in editData ? 'แก้ไขรายการ' : 'บันทึกรายรับรายจ่าย'}
@@ -215,9 +259,86 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           </div>
         </div>
 
-        <div className="flex items-center gap-3 mb-5">
-          <GoCalendar size={20} />
-          <h5 className="text-base">{formattedDate}</h5>
+        <div className="relative mb-5 w-max">
+          <div
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => setShowDatePicker(!showDatePicker)}
+          >
+            <GoCalendar size={20} className="group-hover:text-blue-600 transition-colors" />
+            <h5 className="text-base group-hover:text-blue-600 transition-colors select-none">
+              {formattedDate}
+            </h5>
+          </div>
+
+          {showDatePicker && (
+            <div
+              ref={datePickerRef}
+              className="absolute top-8 left-0 z-50 bg-white border border-gray-100 shadow-2xl rounded-2xl p-3 w-64 mt-2 animate-in fade-in zoom-in duration-200"
+            >
+              <div className="flex justify-between items-center mb-3 px-1">
+                <button
+                  onClick={handlePrevMonth}
+                  className="p-1 hover:bg-gray-100 rounded-full transition"
+                >
+                  <IoIosArrowBack size={14} />
+                </button>
+                <span className="font-bold text-sm">
+                  {monthsThai[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
+                </span>
+                <button
+                  onClick={handleNextMonth}
+                  className="p-1 hover:bg-gray-100 rounded-full transition"
+                >
+                  <IoIosArrowForward size={14} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-7 gap-1 mb-1.5">
+                {daysThai.map((day) => (
+                  <div key={day} className="text-center text-[11px] text-gray-400 font-medium">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-y-0.5 gap-x-0.5">
+                {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                  <div key={`empty-${i}`} />
+                ))}
+
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const currentDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+
+                  const isSelected =
+                    selectedDate.getDate() === day &&
+                    selectedDate.getMonth() === viewDate.getMonth() &&
+                    selectedDate.getFullYear() === viewDate.getFullYear();
+
+                  const isFuture = currentDate > today;
+
+                  return (
+                    <div key={day} className="flex justify-center items-center">
+                      <button
+                        type="button"
+                        disabled={isFuture}
+                        onClick={() => {
+                          setSelectedDate(currentDate);
+                          setShowDatePicker(false);
+                        }}
+                        className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
+                          isSelected
+                            ? 'bg-[#33302E] text-white shadow-md'
+                            : 'text-gray-600 hover:text-black-900 hover:bg-gray-100'
+                        } ${isFuture ? 'opacity-20 cursor-not-allowed hover:bg-transparent' : ''}`}
+                      >
+                        {day}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <form className="flex flex-col gap-3" onSubmit={handleSubmit}>

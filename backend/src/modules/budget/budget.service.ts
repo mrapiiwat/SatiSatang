@@ -48,8 +48,8 @@ export class BudgetService {
           eq(transaction.userId, userId),
           eq(transaction.categoryId, data.categoryId),
           eq(transaction.type, "EXPENSE"),
-          gte(transaction.createdAt, start),
-          lte(transaction.createdAt, end)
+          gte(transaction.date, start),
+          lte(transaction.date, end)
         )
       );
 
@@ -135,8 +135,8 @@ export class BudgetService {
               eq(transaction.userId, userId),
               eq(transaction.categoryId, budget.categoryId),
               eq(transaction.type, "EXPENSE"),
-              gte(transaction.createdAt, startDate),
-              lte(transaction.createdAt, endDate),
+              gte(transaction.date, startDate),
+              lte(transaction.date, endDate),
               isNull(transaction.deletedAt)
             )
           );

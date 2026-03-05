@@ -22,7 +22,7 @@ export interface TransactionIndexData {
   amount: number;
   description: string | null;
   userId: number;
-  createdAt: number;
+  date: number;
 }
 
 const MODEL_NAME = "gpt-5-nano";
@@ -175,7 +175,7 @@ export class RAGService {
             type: tx.type,
             amount: tx.amount,
             description: tx.description,
-            createdAt: new Date(tx.createdAt).toISOString().split("T")[0],
+            date: tx.date,
           },
         },
       ],
@@ -214,7 +214,7 @@ export class RAGService {
 
         if (Object.keys(rangeBody).length > 0) {
           mustFilters.push({
-            key: "createdAt",
+            key: "date",
             range: rangeBody,
           });
         }
@@ -233,7 +233,7 @@ export class RAGService {
 
       return result.map(
         (r) =>
-          `[${new Date(r.payload?.createdAt as number).toLocaleDateString()}] ${r.payload?.description}: ${r.payload?.amount}`
+          `[${new Date(r.payload?.date as number).toLocaleDateString()}] ${r.payload?.description}: ${r.payload?.amount}`
       );
     } catch (e) {
       console.error("[RAG] Search error:", e);

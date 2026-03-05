@@ -302,6 +302,9 @@ export const transaction = pgTable(
     type: transactionType("type"),
     description: text("description"),
     amount: doublePrecision("amount").notNull(),
+    date: timestamp("date", { precision: 3, mode: "date" })
+      .defaultNow()
+      .notNull(),
     receipt: text("receipt"),
     toAccount: text("to_account"),
     fromAccount: text("from_account"),
@@ -317,10 +320,10 @@ export const transaction = pgTable(
     categoryId: integer("category_id").notNull(),
   },
   (table) => [
-    index("idx_transactions_user_created_at").using(
+    index("idx_transactions_user_date").using(
       "btree",
       table.userId.asc().nullsLast().op("int4_ops"),
-      table.createdAt.asc().nullsLast().op("int4_ops")
+      table.date.asc().nullsLast().op("timestamp_ops")
     ),
     foreignKey({
       columns: [table.categoryId],

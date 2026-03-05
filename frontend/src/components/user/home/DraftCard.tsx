@@ -14,8 +14,29 @@ const DraftCard: React.FC<{
   status: DraftStatus;
 }> = ({ data, onConfirm, onCancel, onEdit, status }) => {
   const isExpense = data.type === 'EXPENSE';
+  const transactionDate = data.date ? new Date(data.date) : new Date();
+  const dateNum = transactionDate.getDate();
   const today = new Date();
-  const dateNum = today.getDate();
+  const isToday =
+    transactionDate.getDate() === today.getDate() &&
+    transactionDate.getMonth() === today.getMonth() &&
+    transactionDate.getFullYear() === today.getFullYear();
+  const monthNames = [
+    'ม.ค.',
+    'ก.พ.',
+    'มี.ค.',
+    'เม.ย.',
+    'พ.ค.',
+    'มิ.ย.',
+    'ก.ค.',
+    'ส.ค.',
+    'ก.ย.',
+    'ต.ค.',
+    'พ.ย.',
+    'ธ.ค.',
+  ];
+  const displayTopText = isToday ? 'วันนี้' : monthNames[transactionDate.getMonth()];
+
   const [isInteracted, setIsInteracted] = useState(false);
   const [categoryIconUrl, setCategoryIconUrl] = useState<string | null>(null);
 
@@ -65,7 +86,7 @@ const DraftCard: React.FC<{
             <span
               className={`text-base font-medium leading-none mb-1 ${isCancelled ? 'text-gray-400' : 'text-blue-700'}`}
             >
-              วันนี้
+              {displayTopText}
             </span>
             <span
               className={`text-base font-medium leading-none tracking-tighter ${isCancelled ? 'text-gray-400' : 'text-blue-700'}`}

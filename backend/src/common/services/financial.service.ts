@@ -6,13 +6,13 @@ export class FinancialService {
   async getSummary(userId: number, startDate?: string, endDate?: string) {
     const conditions = [eq(transaction.userId, userId)];
     if (startDate) {
-      conditions.push(gte(transaction.createdAt, new Date(startDate)));
+      conditions.push(gte(transaction.date, new Date(startDate)));
     }
 
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      conditions.push(lte(transaction.createdAt, end));
+      conditions.push(lte(transaction.date, end));
     }
 
     const summary = await db
@@ -48,12 +48,12 @@ export class FinancialService {
     ];
 
     if (startDate) {
-      conditions.push(gte(transaction.createdAt, new Date(startDate)));
+      conditions.push(gte(transaction.date, new Date(startDate)));
     }
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      conditions.push(lte(transaction.createdAt, end));
+      conditions.push(lte(transaction.date, end));
     }
 
     const result = await db
@@ -90,12 +90,12 @@ export class FinancialService {
     ];
 
     if (startDate) {
-      conditions.push(gte(transaction.createdAt, new Date(startDate)));
+      conditions.push(gte(transaction.date, new Date(startDate)));
     }
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      conditions.push(lte(transaction.createdAt, end));
+      conditions.push(lte(transaction.date, end));
     }
 
     const result = await db
@@ -134,12 +134,11 @@ export class FinancialService {
       isNull(category.deletedAt),
     ];
 
-    if (startDate)
-      conditions.push(gte(transaction.createdAt, new Date(startDate)));
+    if (startDate) conditions.push(gte(transaction.date, new Date(startDate)));
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      conditions.push(lte(transaction.createdAt, end));
+      conditions.push(lte(transaction.date, end));
     }
 
     const result = await db
@@ -177,19 +176,18 @@ export class FinancialService {
       isNull(category.deletedAt),
     ];
 
-    if (startDate)
-      conditions.push(gte(transaction.createdAt, new Date(startDate)));
+    if (startDate) conditions.push(gte(transaction.date, new Date(startDate)));
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      conditions.push(lte(transaction.createdAt, end));
+      conditions.push(lte(transaction.date, end));
     }
 
     const query = db
       .select({
         description: transaction.description,
         amount: transaction.amount,
-        date: transaction.createdAt,
+        date: transaction.date,
         categoryName: category.name,
       })
       .from(transaction)
@@ -212,7 +210,7 @@ export class FinancialService {
       result
         .map(
           (r, i) =>
-            `${i + 1}. ${r.description} (${r.categoryName}) - ${r.amount} บาท (${r.date.toISOString().split("T")[0]})`
+            `${i + 1}. ${r.description} (${r.categoryName}) - ${r.amount} บาท (${r.date.toLocaleDateString("th-TH", { day: "2-digit", month: "2-digit", year: "numeric" })})`
         )
         .join("\n")
     );
@@ -231,12 +229,11 @@ export class FinancialService {
       isNull(category.deletedAt),
     ];
 
-    if (startDate)
-      conditions.push(gte(transaction.createdAt, new Date(startDate)));
+    if (startDate) conditions.push(gte(transaction.date, new Date(startDate)));
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      conditions.push(lte(transaction.createdAt, end));
+      conditions.push(lte(transaction.date, end));
     }
 
     const query = db
@@ -244,7 +241,7 @@ export class FinancialService {
         description: transaction.description,
         amount: transaction.amount,
         type: transaction.type,
-        date: transaction.createdAt,
+        date: transaction.date,
         categoryName: category.name,
       })
       .from(transaction)
@@ -256,7 +253,7 @@ export class FinancialService {
 
     const result = await query
       .where(and(...conditions))
-      .orderBy(desc(transaction.createdAt))
+      .orderBy(desc(transaction.date))
       .limit(limit);
 
     if (result.length === 0)
@@ -267,7 +264,7 @@ export class FinancialService {
       result
         .map(
           (r) =>
-            `- [${r.date.toISOString().split("T")[0]}] ${r.description} (${r.categoryName}): ${r.amount} บาท`
+            `- [${r.date.toLocaleDateString("th-TH", { day: "2-digit", month: "2-digit", year: "numeric" })}] ${r.description} (${r.categoryName}): ${r.amount} บาท`
         )
         .join("\n")
     );
@@ -325,8 +322,8 @@ export class FinancialService {
           eq(transaction.userId, userId),
           eq(transaction.type, "EXPENSE"),
           isNull(transaction.deletedAt),
-          gte(transaction.createdAt, currentMonthStart),
-          lte(transaction.createdAt, currentMonthEnd)
+          gte(transaction.date, currentMonthStart),
+          lte(transaction.date, currentMonthEnd)
         )
       );
 
@@ -340,8 +337,8 @@ export class FinancialService {
           eq(transaction.userId, userId),
           eq(transaction.type, "EXPENSE"),
           isNull(transaction.deletedAt),
-          gte(transaction.createdAt, lastMonthStart),
-          lte(transaction.createdAt, lastMonthEnd)
+          gte(transaction.date, lastMonthStart),
+          lte(transaction.date, lastMonthEnd)
         )
       );
 

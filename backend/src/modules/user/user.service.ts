@@ -149,14 +149,14 @@ export class UserService {
       startDate = new Date(year, month - 1, 1);
       endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-      transactionConditions.push(gte(transaction.createdAt, startDate));
-      transactionConditions.push(lte(transaction.createdAt, endDate));
+      transactionConditions.push(gte(transaction.date, startDate));
+      transactionConditions.push(lte(transaction.date, endDate));
     }
 
     const transactionsData = await db.query.transaction.findMany({
       where: and(...transactionConditions, isNull(transaction.deletedAt)),
       with: { category: true },
-      orderBy: [desc(transaction.createdAt)],
+      orderBy: [desc(transaction.date)],
     });
 
     const goalsData = await db.query.goals.findMany({

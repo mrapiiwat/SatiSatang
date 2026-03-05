@@ -42,7 +42,6 @@ const Sati: React.FC<SatiProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
-
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [editingDraft, setEditingDraft] = useState<EditingDraftType>(null);
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
@@ -318,6 +317,7 @@ const Sati: React.FC<SatiProps> = ({
       const payload = {
         type: draftData.type,
         amount: Number(draftData.amount),
+        date: draftData.date,
         description: draftData.description,
         categoryId: Number(draftData.categoryId),
         isGoal: draftData.isGoal || false,

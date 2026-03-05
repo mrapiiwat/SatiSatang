@@ -15,7 +15,6 @@ import type {
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 import Tooltip from '../../Tooltip';
-// 🔥 Import DeleteModal เข้ามา
 import DeleteModal from '../../DeleteModal';
 
 const frequencies: FrequencyOption[] = [

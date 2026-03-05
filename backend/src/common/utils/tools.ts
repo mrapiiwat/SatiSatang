@@ -174,7 +174,12 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
           description: { type: "string", description: "รายละเอียดรายการ" },
           categoryId: {
             type: "number",
-            description: "ID ของหมวดหมู่ที่ตรงกับรายการที่สุด (จาก List ที่ให้ไป)",
+            description: "ID ของหมวดหมู่ที่ตรงกับรายการที่สุด",
+          },
+          date: {
+            type: "string",
+            description:
+              "วันที่เกิดรายการ (ISO Format YYYY-MM-DD) คำนวณจากข้อความเช่น 'เมื่อวาน', 'วันจันทร์' โดยอ้างอิงจาก Current Date หากไม่ระบุเวลาเจาะจงให้ใช้วันนี้",
           },
         },
         required: ["type", "amount"],

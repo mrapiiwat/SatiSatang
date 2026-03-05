@@ -233,7 +233,7 @@ const Home = () => {
   };
 
   const groupedByDate = transactions.reduce<Record<number, Transaction[]>>((acc, t) => {
-    const dateKey = new Date(t.createdAt).getDate();
+    const dateKey = new Date(t.date).getDate();
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(t);
     return acc;
@@ -571,10 +571,8 @@ const Home = () => {
                   const transactionHeight =
                     dayTransactions.length === 0 ? 64 : dayTransactions.length * 64;
                   const totalHeight = headerHeight + transactionHeight;
-                  const transaction = transactions.find(
-                    (t) => new Date(t.createdAt).getDate() === date,
-                  );
-                  const transactionDate = new Date(transaction?.createdAt || '');
+                  const transaction = transactions.find((t) => new Date(t.date).getDate() === date);
+                  const transactionDate = new Date(transaction?.date || '');
                   const isToday = transactionDate.toDateString() === today.toDateString();
                   const dayLabel = isToday
                     ? 'วันนี้'

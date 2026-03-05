@@ -6,6 +6,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   and,
+  asc,
   count,
   desc,
   eq,
@@ -40,7 +41,15 @@ export class TransactionService {
     userId: number,
     query: transactionSchema.getTransactionsQuery
   ) {
-    const { search, month, year, page = 1, limit = 10 } = query;
+    const {
+      search,
+      month,
+      year,
+      page = 1,
+      limit = 10,
+      sortBy = "date",
+      order = "desc",
+    } = query;
     const skip = (page - 1) * limit;
 
     const conditions: SQL[] = [eq(transaction.userId, userId)];
@@ -63,9 +72,18 @@ export class TransactionService {
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-      conditions.push(gte(transaction.createdAt, startDate));
-      conditions.push(lte(transaction.createdAt, endDate));
+      conditions.push(gte(transaction.date, startDate));
+      conditions.push(lte(transaction.date, endDate));
     }
+
+    const sortColumn =
+      sortBy === "amount"
+        ? transaction.amount
+        : sortBy === "createdAt"
+          ? transaction.createdAt
+          : transaction.date;
+
+    const orderFn = order === "asc" ? asc : desc;
 
     const [totalResult] = await db
       .select({ value: count() })
@@ -76,7 +94,7 @@ export class TransactionService {
 
     const transactions = await db.query.transaction.findMany({
       where: and(...conditions, isNull(transaction.deletedAt)),
-      orderBy: [desc(transaction.createdAt)],
+      orderBy: [orderFn(sortColumn)],
       limit: limit,
       offset: skip,
       with: {
@@ -118,8 +136,8 @@ export class TransactionService {
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-      conditions.push(gte(transaction.createdAt, startDate));
-      conditions.push(lte(transaction.createdAt, endDate));
+      conditions.push(gte(transaction.date, startDate));
+      conditions.push(lte(transaction.date, endDate));
     }
 
     const [result] = await db
@@ -216,6 +234,7 @@ export class TransactionService {
           type: data.type,
           description: data.description,
           amount: data.amount,
+          date: data.date ? new Date(data.date) : undefined,
           categoryId: data.categoryId,
           receipt: s3Key,
           userId: userId,
@@ -247,7 +266,7 @@ export class TransactionService {
           amount: newTransaction.amount,
           description: newTransaction.description,
           userId: newTransaction.userId,
-          createdAt: new Date(newTransaction.createdAt).getTime(),
+          date: new Date(newTransaction.date).getTime(),
         })
         .catch((err) => {
           console.error(
@@ -407,19 +426,6 @@ export class TransactionService {
             ContentType: file.type,
           })
         );
-
-        if (existingTxn.receipt) {
-          try {
-            await s3Client.send(
-              new DeleteObjectCommand({
-                Bucket: BUCKET_NAME,
-                Key: existingTxn.receipt,
-              })
-            );
-          } catch (e) {
-            console.warn("Failed to delete old receipt:", e);
-          }
-        }
         finalReceiptPath = newS3Key;
       }
 
@@ -429,6 +435,7 @@ export class TransactionService {
           type: newType,
           description: data.description ?? existingTxn.description,
           amount: newAmount,
+          date: data.date ? new Date(data.date) : existingTxn.date,
           categoryId: data.categoryId ?? existingTxn.categoryId,
           receipt: finalReceiptPath,
           toAccount: data.toAccount ?? existingTxn.toAccount,
@@ -438,6 +445,18 @@ export class TransactionService {
         .where(eq(transaction.id, id))
         .returning();
 
+      if (data.receipt && existingTxn.receipt) {
+        try {
+          await s3Client.send(
+            new DeleteObjectCommand({
+              Bucket: BUCKET_NAME,
+              Key: existingTxn.receipt,
+            })
+          );
+        } catch (e) {
+          console.warn("Failed to delete old receipt:", e);
+        }
+      }
       ragService
         .addTransactionIndex({
           id: updatedTxn.id,
@@ -445,7 +464,7 @@ export class TransactionService {
           amount: updatedTxn.amount,
           description: updatedTxn.description,
           userId: updatedTxn.userId,
-          createdAt: new Date(updatedTxn.createdAt).getTime(),
+          date: new Date(updatedTxn.date).getTime(),
         })
         .catch(console.error);
 

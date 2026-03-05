@@ -6,6 +6,10 @@ export const getTransactionsQuery = t.Object({
   year: t.Optional(t.Numeric()),
   page: t.Optional(t.Numeric({ default: 1 })),
   limit: t.Optional(t.Numeric({ default: 10 })),
+  sortBy: t.Optional(
+    t.Union([t.Literal("date"), t.Literal("amount"), t.Literal("createdAt")])
+  ),
+  order: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
 });
 
 export type getTransactionsQuery = Static<typeof getTransactionsQuery>;
@@ -30,6 +34,7 @@ export const createTransaction = t.Object({
   ]),
   description: t.Optional(t.String()),
   amount: t.Numeric(),
+  date: t.Optional(t.String()),
   categoryId: t.Numeric(),
   receipt: t.Optional(
     t.File({
@@ -62,6 +67,7 @@ export const updateTransaction = t.Object({
   ),
   description: t.Optional(t.String()),
   amount: t.Optional(t.Numeric()),
+  date: t.Optional(t.String()),
   categoryId: t.Optional(t.Numeric()),
   receipt: t.Optional(t.File({ maxSize: 5 * 1024 * 1024 })),
   toAccount: t.Optional(t.String()),
