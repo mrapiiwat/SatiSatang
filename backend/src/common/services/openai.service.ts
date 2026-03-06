@@ -52,7 +52,7 @@ interface SatangToolArgs {
 }
 
 const budgetService = new BudgetService();
-const MODEL_NAME = "gpt-4o";
+const MODEL_NAME = "gpt-4o-mini";
 const EMBEDDING_MODEL = "text-embedding-3-small";
 
 export class OpenAIService {

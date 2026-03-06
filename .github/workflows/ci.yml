@@ -47,7 +47,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./backend 
-          file: ./backend/Dockerfile 
+          file: ./backend/dockerfile 
           push: false
           tags: backend:test
           cache-from: type=gha 
@@ -68,7 +68,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./frontend
-          file: ./frontend/Dockerfile
+          file: ./frontend/dockerfile
           push: false 
           tags: frontend:test
           cache-from: type=gha

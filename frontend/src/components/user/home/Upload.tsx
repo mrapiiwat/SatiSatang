@@ -4,7 +4,6 @@ import { RxCross2, RxChevronLeft, RxChevronRight } from 'react-icons/rx';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 import axios from '../../../api/axios';
 import { isAxiosError, AxiosError } from 'axios';
-import useAuthStore from '../../../store/authStore';
 import { showToastAlert } from '../../../store/toastStore';
 import FileUploadArea from './FileUploadArea';
 import TransactionForm from './TransactionForm';
@@ -25,29 +24,10 @@ const transactionTypes: OptionType[] = [
 ];
 
 const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { token } = useAuthStore();
   const [files, setFiles] = useState<File[]>([]);
   const [pendingTransactions, setPendingTransactions] = useState<PendingTransaction[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [categories, setCategories] = useState<CategoryOptions[]>([]);
-
-  const formatThaiDate = (dateString: string) => {
-    if (!dateString) return '';
-    const dateObj = new Date(dateString);
-
-    if (isNaN(dateObj.getTime())) return dateString;
-
-    return dateObj
-      .toLocaleDateString('th-TH', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-      .replace('วัน', '')
-      .replace('ที่', '')
-      .replace('พ.ศ. ', '');
-  };
 
   const currentTransaction = useMemo(
     () => pendingTransactions[currentIndex] || null,
@@ -101,9 +81,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     try {
       setLoading(true);
-      const res = await axios.post('/transaction/upload', formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.post('/transaction/upload', formData);
 
       const results = res.data.results || [];
       const newPendingList: PendingTransaction[] = [];
@@ -114,7 +92,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             id: `txn-${Date.now()}-${index}`,
             fileIndex: index,
             data: {
-              date: formatThaiDate(r.data.date || ''),
+              date: r.data.date ? new Date(r.data.date).toISOString() : new Date().toISOString(),
               description: r.data.description || '',
               type: r.data.type || '',
               categoryId: r.data.categoryId ? String(r.data.categoryId) : '',
@@ -186,14 +164,23 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     try {
       const formData = new FormData();
-      Object.entries(data).forEach(([k, v]) => formData.append(k, String(v)));
+      const d = new Date(data.date);
+      const offsetDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+
+      formData.append('type', data.type);
+      formData.append('description', data.description);
+      formData.append('amount', Number(data.amount).toString());
+      formData.append('date', offsetDate.toISOString());
+      formData.append('categoryId', Number(data.categoryId).toString());
+
+      if (data.fromAccount) formData.append('fromAccount', data.fromAccount);
+      if (data.toAccount) formData.append('toAccount', data.toAccount);
 
       const file = files[currentTransaction.fileIndex];
       if (file) formData.append('receipt', file);
 
-      await axios.post('/transaction', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await axios.post('/transaction', formData);
+
       showToastAlert('สร้างธุรกรรมสำเร็จ', 'success');
 
       const remaining = pendingTransactions.filter((_, idx) => idx !== currentIndex);

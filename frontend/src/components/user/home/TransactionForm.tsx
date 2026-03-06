@@ -48,6 +48,24 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
     transactionData.categoryId &&
     transactionData.amount;
 
+  const formatThaiDate = (dateString: string) => {
+    if (!dateString) return '';
+    const dateObj = new Date(dateString);
+
+    if (isNaN(dateObj.getTime())) return dateString;
+
+    return dateObj
+      .toLocaleDateString('th-TH', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+      .replace('วัน', '')
+      .replace('ที่', '')
+      .replace('พ.ศ. ', '');
+  };
+
   return (
     <div className="py-7 px-8 flex flex-col w-full">
       <div className="flex justify-between items-center mb-5">
@@ -62,7 +80,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
 
       <div className="flex items-center gap-3 mb-5 w-max">
         <GoCalendar size={20} />
-        <h5 className="text-base select-none">{transactionData.date}</h5>
+        <h5 className="text-base select-none">{formatThaiDate(transactionData.date)}</h5>
       </div>
 
       <div className="flex flex-col gap-3">

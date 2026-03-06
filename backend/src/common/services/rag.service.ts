@@ -25,7 +25,7 @@ export interface TransactionIndexData {
   date: number;
 }
 
-const MODEL_NAME = "gpt-5-nano";
+const MODEL_NAME = "gpt-4o-mini";
 const EMBEDDING_MODEL = "text-embedding-3-small";
 
 export class RAGService {
