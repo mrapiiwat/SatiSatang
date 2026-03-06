@@ -25,24 +25,29 @@ const transactionTypes: OptionType[] = [
 ];
 
 const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const today = new Date();
-  const formattedDate = today
-    .toLocaleDateString('th-TH', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
-    .replace('วัน', '')
-    .replace('ที่', '')
-    .replace('พ.ศ. ', '');
   const { token } = useAuthStore();
-
   const [files, setFiles] = useState<File[]>([]);
   const [pendingTransactions, setPendingTransactions] = useState<PendingTransaction[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [categories, setCategories] = useState<CategoryOptions[]>([]);
+
+  const formatThaiDate = (dateString: string) => {
+    if (!dateString) return '';
+    const dateObj = new Date(dateString);
+
+    if (isNaN(dateObj.getTime())) return dateString;
+
+    return dateObj
+      .toLocaleDateString('th-TH', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+      .replace('วัน', '')
+      .replace('ที่', '')
+      .replace('พ.ศ. ', '');
+  };
 
   const currentTransaction = useMemo(
     () => pendingTransactions[currentIndex] || null,
@@ -109,7 +114,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             id: `txn-${Date.now()}-${index}`,
             fileIndex: index,
             data: {
-              date: r.data.date || '',
+              date: formatThaiDate(r.data.date || ''),
               description: r.data.description || '',
               type: r.data.type || '',
               categoryId: r.data.categoryId ? String(r.data.categoryId) : '',
@@ -255,59 +260,60 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
       </Dialog>
       <Dialog open={isOpen} onClose={() => {}} className="relative z-[70]">
-        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
 
-        <div className="fixed inset-0 flex flex-col items-center justify-center p-5 pointer-events-none">
-          <Dialog.Panel className="bg-white rounded-2xl max-w-md w-full shadow-xl pointer-events-auto">
-            <div className="overflow-y-auto scrollbar-hide">
-              {currentTransaction ? (
-                <TransactionForm
-                  transactionData={currentTransaction.data}
-                  selectedTypeOption={getSelectedTypeOption()}
-                  selectedCategoryOption={getSelectedCategoryOption()}
-                  categories={categories}
-                  formattedDate={formattedDate}
-                  onInputChange={handleInputChange}
-                  onSelectChange={handleSelectChange}
-                  onSave={handleSave}
-                  onClose={() => setIsOpen(false)}
-                  previewUrl={currentPreviewUrl}
-                  onPreviewClick={() => {
-                    setIsOpen(false);
-                    setIsImageModalOpen(true);
-                  }}
-                />
-              ) : (
-                <div className="text-center py-10">ไม่พบข้อมูล</div>
-              )}
-            </div>
-          </Dialog.Panel>
-
-          {pendingTransactions.length > 0 && (
-            <div className="flex items-center gap-3 mt-5 pointer-events-auto">
-              <button
-                onClick={() => setCurrentIndex((c) => Math.max(0, c - 1))}
-                disabled={currentIndex === 0}
-                className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-gray-700"
-              >
-                <RxChevronLeft size={28} />
-              </button>
-
-              <div className="bg-white px-6 py-3 rounded-full shadow-lg text-gray-700 font-medium min-w-[160px] text-center">
-                สลิป {currentIndex + 1} จาก {pendingTransactions.length}
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full flex-col items-center justify-center p-4">
+            <Dialog.Panel className="w-full max-w-96 flex flex-col items-center outline-none">
+              <div className="bg-white rounded-2xl w-full shadow-xl">
+                {currentTransaction ? (
+                  <TransactionForm
+                    transactionData={currentTransaction.data}
+                    selectedTypeOption={getSelectedTypeOption()}
+                    selectedCategoryOption={getSelectedCategoryOption()}
+                    categories={categories}
+                    onInputChange={handleInputChange}
+                    onSelectChange={handleSelectChange}
+                    onSave={handleSave}
+                    onClose={() => setIsOpen(false)}
+                    previewUrl={currentPreviewUrl}
+                    onPreviewClick={() => {
+                      setIsOpen(false);
+                      setIsImageModalOpen(true);
+                    }}
+                  />
+                ) : (
+                  <div className="text-center py-10">ไม่พบข้อมูล</div>
+                )}
               </div>
 
-              <button
-                onClick={() =>
-                  setCurrentIndex((c) => Math.min(pendingTransactions.length - 1, c + 1))
-                }
-                disabled={currentIndex === pendingTransactions.length - 1}
-                className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-gray-700"
-              >
-                <RxChevronRight size={28} />
-              </button>
-            </div>
-          )}
+              {pendingTransactions.length > 1 && (
+                <div className="flex items-center gap-3 mt-5 pb-4">
+                  <button
+                    onClick={() => setCurrentIndex((c) => Math.max(0, c - 1))}
+                    disabled={currentIndex === 0}
+                    className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-gray-700"
+                  >
+                    <RxChevronLeft size={28} />
+                  </button>
+
+                  <div className="bg-white px-6 py-3 rounded-full shadow-lg text-gray-700 font-medium min-w-[160px] text-center">
+                    สลิป {currentIndex + 1} จาก {pendingTransactions.length}
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setCurrentIndex((c) => Math.min(pendingTransactions.length - 1, c + 1))
+                    }
+                    disabled={currentIndex === pendingTransactions.length - 1}
+                    className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-gray-700"
+                  >
+                    <RxChevronRight size={28} />
+                  </button>
+                </div>
+              )}
+            </Dialog.Panel>
+          </div>
         </div>
       </Dialog>
 

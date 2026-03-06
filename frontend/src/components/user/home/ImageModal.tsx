@@ -5,7 +5,11 @@ import type { ImageModalProps } from '../../../interface/home';
 
 const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, previewUrl }) => (
   <Dialog open={isOpen} onClose={onClose} className="relative z-[100]">
-    <div className="fixed inset-0 bg-black/90" aria-hidden="true" onClick={onClose} />
+    <div
+      className="fixed inset-0 bg-black/90 backdrop-blur-sm"
+      aria-hidden="true"
+      onClick={onClose}
+    />
     <div className="fixed inset-0 overflow-auto">
       <div className="min-h-full flex items-center justify-center p-4">
         <Dialog.Panel className="relative">
