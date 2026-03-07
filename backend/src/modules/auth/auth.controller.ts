@@ -64,7 +64,8 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: Bun.env.COOKIE_DOMAIN,
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -93,7 +94,8 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: Bun.env.COOKIE_DOMAIN,
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -125,7 +127,8 @@ export const authController = new Elysia()
       value: newRefreshToken,
       httpOnly: true,
       secure: Bun.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+      domain: Bun.env.COOKIE_DOMAIN,
       maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
       path: "/",
     });
@@ -281,7 +284,8 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: Bun.env.COOKIE_DOMAIN,
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -377,7 +381,8 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: Bun.env.COOKIE_DOMAIN,
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -402,7 +407,12 @@ export const authController = new Elysia()
         await authService.logout(rawRefreshToken);
       }
 
-      refreshToken.remove();
+      refreshToken.set({
+        value: "",
+        expires: new Date(0),
+        path: "/",
+        domain: Bun.env.COOKIE_DOMAIN,
+      });
 
       set.status = StatusCodes.OK;
       return { message: "Logged out" };
