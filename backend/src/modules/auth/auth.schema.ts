@@ -28,29 +28,30 @@ export const registerSchema = t.Object({
   name: t.String({
     minLength: 2,
     maxLength: 30,
-    error: "Name must be between 2 and 30 characters long",
+    error: "ชื่อผู้ใช้ต้องมีความยาวระหว่าง 2 ถึง 30 ตัวอักษร",
   }),
   password: t.Intersect(
     [
       t.String({
         minLength: 6,
-        error: "Password must be at least 6 characters long",
+        error: "กรุณาตั้งรหัสผ่านอย่างน้อย 6 ตัวอักษร",
       }),
       t.String({
         pattern: "(?=.*[A-Z])",
-        error: "Password must contain at least one uppercase letter",
+        error: "รหัสผ่านต้องมีตัวอักษรพิมพ์ใหญ่ อย่างน้อย 1 ตัว",
       }),
       t.String({
         pattern: "(?=.*[a-z])",
-        error: "Password must contain at least one lowercase letter",
+        error: "รหัสผ่านต้องมีตัวอักษรพิมพ์เล็ก อย่างน้อย 1 ตัว",
       }),
       t.String({
         pattern: "(?=.*[0-9])",
-        error: "Password must contain at least one number",
+        error: "รหัสผ่านต้องมีตัวเลข อย่างน้อย 1 ตัว",
       }),
     ],
     { error: "Invalid password format" }
   ),
+  acceptTermsAndPrivacy: t.Boolean(),
 });
 
 export type registerSchema = Static<typeof registerSchema>;

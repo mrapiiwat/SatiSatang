@@ -11,132 +11,151 @@ import {
   text,
   timestamp,
   uniqueIndex,
-  varchar,
 } from "drizzle-orm/pg-core";
 
-export const frequency = pgEnum("Frequency", [
+export const frequency = pgEnum("frequency_enum", [
   "DAILY",
   "WEEKLY",
   "MONTHLY",
   "YEARLY",
 ]);
-export const transactionType = pgEnum("TransactionType", ["INCOME", "EXPENSE"]);
+export const transactionType = pgEnum("transaction_type_enum", [
+  "INCOME",
+  "EXPENSE",
+]);
+export const providerEnum = pgEnum("provider_enum", [
+  "local",
+  "google",
+  "facebook",
+]);
 
-export const prismaMigrations = pgTable("_prisma_migrations", {
-  id: varchar({ length: 36 }).primaryKey().notNull(),
-  checksum: varchar({ length: 64 }).notNull(),
-  finishedAt: timestamp("finished_at", { withTimezone: true, mode: "date" }),
-  migrationName: varchar("migration_name", { length: 255 }).notNull(),
-  logs: text(),
-  rolledBackAt: timestamp("rolled_back_at", {
-    withTimezone: true,
-    mode: "date",
-  }),
-  startedAt: timestamp("started_at", { withTimezone: true, mode: "date" })
-    .defaultNow()
-    .notNull(),
-  appliedStepsCount: integer("applied_steps_count").default(0).notNull(),
-});
+export const policyTypeEnum = pgEnum("policy_type_enum", [
+  "TERMS_OF_SERVICE",
+  "PRIVACY_POLICY",
+  "AI_DISCLAIMER",
+]);
 
 export const stock = pgTable(
-  "Stock",
+  "stocks",
   {
-    id: serial().primaryKey().notNull(),
-    symbol: text().notNull(),
-    name: text(),
-    quoteType: text(),
-    currency: text(),
-    market: text(),
-    description: text(),
-    regularMarketPrice: doublePrecision(),
-    regularMarketOpen: doublePrecision(),
-    regularMarketHigh: doublePrecision(),
-    regularMarketLow: doublePrecision(),
-    previousClose: doublePrecision(),
-    dayHigh: doublePrecision(),
-    dayLow: doublePrecision(),
-    volume: bigint({ mode: "bigint" }),
-    averageVolume: bigint({ mode: "bigint" }),
-    fiftyDayAverage: doublePrecision(),
-    twoHundredDayAverage: doublePrecision(),
-    fiftyTwoWeekLow: doublePrecision(),
-    fiftyTwoWeekHigh: doublePrecision(),
-    fiftyTwoWeekChangePercent: doublePrecision(),
-    regularMarketChange: doublePrecision(),
-    regularMarketChangePercent: doublePrecision(),
-    marketState: text(),
-    tradeable: boolean(),
-    lastUpdated: timestamp("lastUpdated", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    symbol: text("symbol").notNull(),
+    name: text("name"),
+    quoteType: text("quote_type"),
+    currency: text("currency"),
+    market: text("market"),
+    description: text("description"),
+    regularMarketPrice: doublePrecision("regular_market_price"),
+    regularMarketOpen: doublePrecision("regular_market_open"),
+    regularMarketHigh: doublePrecision("regular_market_high"),
+    regularMarketLow: doublePrecision("regular_market_low"),
+    previousClose: doublePrecision("previous_close"),
+    dayHigh: doublePrecision("day_high"),
+    dayLow: doublePrecision("day_low"),
+    volume: bigint("volume", { mode: "bigint" }),
+    averageVolume: bigint("average_volume", { mode: "bigint" }),
+    fiftyDayAverage: doublePrecision("fifty_day_average"),
+    twoHundredDayAverage: doublePrecision("two_hundred_day_average"),
+    fiftyTwoWeekLow: doublePrecision("fifty_two_week_low"),
+    fiftyTwoWeekHigh: doublePrecision("fifty_two_week_high"),
+    fiftyTwoWeekChangePercent: doublePrecision("fifty_two_week_change_percent"),
+    regularMarketChange: doublePrecision("regular_market_change"),
+    regularMarketChangePercent: doublePrecision(
+      "regular_market_change_percent"
+    ),
+    marketState: text("market_state"),
+    tradeable: boolean("tradeable"),
+    lastUpdated: timestamp("last_updated", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [
-    index("Stock_symbol_idx").using(
+    index("stocks_symbol_idx").using(
       "btree",
       table.symbol.asc().nullsLast().op("text_ops")
     ),
-    uniqueIndex("Stock_symbol_key").using(
+    uniqueIndex("stocks_symbol_key").using(
       "btree",
       table.symbol.asc().nullsLast().op("text_ops")
-    ),
-    index("Stock_symbol_lastUpdated_idx").using(
-      "btree",
-      table.symbol.asc().nullsLast().op("text_ops"),
-      table.lastUpdated.asc().nullsLast().op("timestamp_ops")
     ),
   ]
 );
 
 export const user = pgTable(
-  "User",
+  "users",
   {
-    id: serial().primaryKey().notNull(),
-    email: text(),
-    password: text(),
-    name: text().notNull(),
-    balance: doublePrecision().default(0).notNull(),
-    isEmailVerified: boolean().default(false).notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    email: text("email"),
+    password: text("password"),
+    name: text("name").notNull(),
+    balance: doublePrecision("balance").default(0).notNull(),
+    isEmailVerified: boolean("is_email_verified").default(false).notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
+    deletedAt: timestamp("deleted_at", { precision: 3, mode: "date" }),
   },
   (table) => [
-    uniqueIndex("User_email_key").using(
+    uniqueIndex("users_email_key").using(
       "btree",
       table.email.asc().nullsLast().op("text_ops")
-    ),
-    index("User_id_email_idx").using(
-      "btree",
-      table.id.asc().nullsLast().op("int4_ops"),
-      table.email.asc().nullsLast().op("int4_ops")
     ),
   ]
 );
 
-export const oauthAccount = pgTable(
-  "OAuthAccount",
+export const userConsents = pgTable(
+  "user_consents",
   {
-    id: serial().primaryKey().notNull(),
-    provider: text().notNull(),
-    providerUserId: text().notNull(),
-    accessToken: text(),
-    refreshToken: text(),
-    expiresAt: timestamp("expiresAt", { precision: 3, mode: "date" }),
-    userId: integer().notNull(),
+    id: serial("id").primaryKey().notNull(),
+    userId: integer("user_id").notNull(),
+    policyType: policyTypeEnum("policy_type").notNull(),
+    version: text("version").notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    acceptedAt: timestamp("accepted_at", { precision: 3, mode: "date" })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
-    uniqueIndex("OAuthAccount_provider_providerUserId_key").using(
+    index("idx_user_consents_lookup").on(
+      table.userId,
+      table.policyType,
+      table.version
+    ),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [user.id],
+      name: "user_consents_user_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
+  ]
+);
+
+export const oauthAccount = pgTable(
+  "oauth_accounts",
+  {
+    id: serial("id").primaryKey().notNull(),
+    provider: text("provider").notNull(),
+    providerUserId: text("provider_user_id").notNull(),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    expiresAt: timestamp("expires_at", { precision: 3, mode: "date" }),
+    userId: integer("user_id").notNull(),
+  },
+  (table) => [
+    uniqueIndex("oauth_accounts_provider_provider_user_id_key").using(
       "btree",
       table.provider.asc().nullsLast().op("text_ops"),
       table.providerUserId.asc().nullsLast().op("text_ops")
@@ -144,7 +163,7 @@ export const oauthAccount = pgTable(
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "OAuthAccount_userId_fkey",
+      name: "oauth_accounts_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -152,34 +171,29 @@ export const oauthAccount = pgTable(
 );
 
 export const passwordResetToken = pgTable(
-  "PasswordResetToken",
+  "password_reset_tokens",
   {
-    id: serial().primaryKey().notNull(),
-    userId: integer().notNull(),
-    tokenHash: text().notNull(),
-    expiresAt: timestamp("expiresAt", { precision: 3, mode: "date" }).notNull(),
-    used: boolean().default(false).notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    userId: integer("user_id").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", {
+      precision: 3,
+      mode: "date",
+    }).notNull(),
+    used: boolean("used").default(false).notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
   },
   (table) => [
-    index("PasswordResetToken_tokenHash_idx").using(
+    uniqueIndex("password_reset_tokens_token_hash_key").using(
       "btree",
       table.tokenHash.asc().nullsLast().op("text_ops")
-    ),
-    uniqueIndex("PasswordResetToken_tokenHash_key").using(
-      "btree",
-      table.tokenHash.asc().nullsLast().op("text_ops")
-    ),
-    index("PasswordResetToken_userId_idx").using(
-      "btree",
-      table.userId.asc().nullsLast().op("int4_ops")
     ),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "PasswordResetToken_userId_fkey",
+      name: "password_reset_tokens_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -187,26 +201,30 @@ export const passwordResetToken = pgTable(
 );
 
 export const refreshToken = pgTable(
-  "RefreshToken",
+  "refresh_tokens",
   {
-    id: serial().primaryKey().notNull(),
-    tokenHash: text().notNull(),
-    revoked: boolean().default(false).notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    tokenHash: text("token_hash").notNull(),
+    revoked: boolean("revoked").default(false).notNull(),
+    provider: providerEnum("provider").notNull().default("local"),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    expiresAt: timestamp("expiresAt", { precision: 3, mode: "date" }).notNull(),
-    userId: integer().notNull(),
+    expiresAt: timestamp("expires_at", {
+      precision: 3,
+      mode: "date",
+    }).notNull(),
+    userId: integer("user_id").notNull(),
   },
   (table) => [
-    uniqueIndex("RefreshToken_tokenHash_key").using(
+    uniqueIndex("refresh_tokens_token_hash_key").using(
       "btree",
       table.tokenHash.asc().nullsLast().op("text_ops")
     ),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "RefreshToken_userId_fkey",
+      name: "refresh_tokens_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -214,25 +232,28 @@ export const refreshToken = pgTable(
 );
 
 export const emailVerification = pgTable(
-  "EmailVerification",
+  "email_verifications",
   {
-    id: serial().primaryKey().notNull(),
-    otpHash: text().notNull(),
-    expiresAt: timestamp("expiresAt", { precision: 3, mode: "date" }).notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    otpHash: text("otp_hash").notNull(),
+    expiresAt: timestamp("expires_at", {
+      precision: 3,
+      mode: "date",
+    }).notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    userId: integer().notNull(),
+    userId: integer("user_id").notNull(),
   },
   (table) => [
-    uniqueIndex("EmailVerification_otpHash_key").using(
+    uniqueIndex("email_verifications_otp_hash_key").using(
       "btree",
       table.otpHash.asc().nullsLast().op("text_ops")
     ),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "EmailVerification_userId_fkey",
+      name: "email_verifications_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -240,33 +261,34 @@ export const emailVerification = pgTable(
 );
 
 export const category = pgTable(
-  "Category",
+  "categories",
   {
-    id: serial().primaryKey().notNull(),
-    name: text().notNull(),
-    type: transactionType().notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    name: text("name").notNull(),
+    type: transactionType("type").notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    userId: integer(),
-    iconId: integer().notNull(),
+    deletedAt: timestamp("deleted_at", { precision: 3, mode: "date" }),
+    userId: integer("user_id"),
+    iconId: integer("icon_id").notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.iconId],
       foreignColumns: [icon.id],
-      name: "Category_iconId_fkey",
+      name: "categories_icon_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "Category_userId_fkey",
+      name: "categories_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -274,42 +296,46 @@ export const category = pgTable(
 );
 
 export const transaction = pgTable(
-  "Transaction",
+  "transactions",
   {
-    id: serial().primaryKey().notNull(),
-    type: transactionType(),
-    description: text(),
-    amount: doublePrecision().notNull(),
-    receipt: text(),
-    toAccount: text(),
-    fromAccount: text(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    type: transactionType("type"),
+    description: text("description"),
+    amount: doublePrecision("amount").notNull(),
+    date: timestamp("date", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    receipt: text("receipt"),
+    toAccount: text("to_account"),
+    fromAccount: text("from_account"),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    userId: integer().notNull(),
-    categoryId: integer().notNull(),
+    deletedAt: timestamp("deleted_at", { precision: 3, mode: "date" }),
+    userId: integer("user_id").notNull(),
+    categoryId: integer("category_id").notNull(),
   },
   (table) => [
-    index("Transaction_userId_createdAt_idx").using(
+    index("idx_transactions_user_date").using(
       "btree",
       table.userId.asc().nullsLast().op("int4_ops"),
-      table.createdAt.asc().nullsLast().op("int4_ops")
+      table.date.asc().nullsLast().op("timestamp_ops")
     ),
     foreignKey({
       columns: [table.categoryId],
       foreignColumns: [category.id],
-      name: "Transaction_categoryId_fkey",
+      name: "transactions_category_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "Transaction_userId_fkey",
+      name: "transactions_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -317,16 +343,16 @@ export const transaction = pgTable(
 );
 
 export const icon = pgTable(
-  "Icon",
+  "icons",
   {
-    id: serial().primaryKey().notNull(),
-    url: text().notNull(),
-    description: text(),
-    userId: integer(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    url: text("url").notNull().unique(),
+    description: text("description"),
+    userId: integer("user_id"),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
@@ -335,7 +361,7 @@ export const icon = pgTable(
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "Icon_userId_fkey",
+      name: "icons_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -343,27 +369,28 @@ export const icon = pgTable(
 );
 
 export const goals = pgTable(
-  "Goals",
+  "goals",
   {
-    id: serial().primaryKey().notNull(),
-    name: text().notNull(),
-    amount: doublePrecision().notNull(),
-    finished: boolean().default(false).notNull(),
+    id: serial("id").primaryKey().notNull(),
+    name: text("name").notNull(),
+    amount: doublePrecision("amount").notNull(),
+    finished: boolean("finished").default(false).notNull(),
     deadline: timestamp("deadline", { precision: 3, mode: "date" }),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    userId: integer().notNull(),
+    deletedAt: timestamp("deleted_at", { precision: 3, mode: "date" }),
+    userId: integer("user_id").notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "Goals_userId_fkey",
+      name: "goals_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -371,13 +398,13 @@ export const goals = pgTable(
 );
 
 export const goalTransaction = pgTable(
-  "GoalTransaction",
+  "goal_transactions",
   {
-    id: serial().primaryKey().notNull(),
-    goalId: integer().notNull(),
-    userId: integer().notNull(),
-    amount: doublePrecision().notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    goalId: integer("goal_id").notNull(),
+    userId: integer("user_id").notNull(),
+    amount: doublePrecision("amount").notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
   },
@@ -385,7 +412,7 @@ export const goalTransaction = pgTable(
     foreignKey({
       columns: [table.goalId],
       foreignColumns: [goals.id],
-      name: "GoalTransaction_goalId_fkey",
+      name: "goal_transactions_goal_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("restrict"),
@@ -393,35 +420,36 @@ export const goalTransaction = pgTable(
 );
 
 export const budgets = pgTable(
-  "Budgets",
+  "budgets",
   {
-    id: serial().primaryKey().notNull(),
-    amount: doublePrecision().notNull(),
-    currentAmount: doublePrecision().default(0).notNull(),
-    categoryId: integer().notNull(),
-    frequency: frequency().notNull(),
+    id: serial("id").primaryKey().notNull(),
+    amount: doublePrecision("amount").notNull(),
+    currentAmount: doublePrecision("current_amount").default(0).notNull(),
+    categoryId: integer("category_id").notNull(),
+    frequency: frequency("frequency").notNull(),
     deadline: timestamp("deadline", { precision: 3, mode: "date" }),
-    userId: integer().notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    userId: integer("user_id").notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
+    deletedAt: timestamp("deleted_at", { precision: 3, mode: "date" }),
   },
   (table) => [
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "Budgets_userId_fkey",
+      name: "budgets_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
     foreignKey({
       columns: [table.categoryId],
       foreignColumns: [category.id],
-      name: "Budgets_categoryId_fkey",
+      name: "budgets_category_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -429,24 +457,24 @@ export const budgets = pgTable(
 );
 
 export const chatSession = pgTable(
-  "ChatSession",
+  "chat_sessions",
   {
-    id: serial().primaryKey().notNull(),
-    title: text().notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    title: text("title").notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    userId: integer().notNull(),
+    userId: integer("user_id").notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "ChatSession_userId_fkey",
+      name: "chat_sessions_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
@@ -454,33 +482,33 @@ export const chatSession = pgTable(
 );
 
 export const chatMessage = pgTable(
-  "ChatMessage",
+  "chat_messages",
   {
-    id: serial().primaryKey().notNull(),
-    role: text().notNull(),
-    content: text().notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" })
+    id: serial("id").primaryKey().notNull(),
+    role: text("role").notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" })
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    userId: integer().notNull(),
-    sessionId: integer().notNull(),
+    userId: integer("user_id").notNull(),
+    sessionId: integer("session_id").notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.sessionId],
       foreignColumns: [chatSession.id],
-      name: "ChatMessage_sessionId_fkey",
+      name: "chat_messages_session_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "ChatMessage_userId_fkey",
+      name: "chat_messages_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),

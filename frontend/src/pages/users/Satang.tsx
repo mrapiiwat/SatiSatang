@@ -1,23 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import SatangTextMode from '../../components/user/satang/SatangTextMode';
-import SatangVoiceMode from '../../components/user/satang/SatangVoiceMode';
 import type { ChatMessage } from '../../interface/satang';
 import axios from '../../api/axios';
 import { fetchWithAuth } from '../../api/fetch';
 
 const Satang: React.FC = () => {
-  const [isVoiceMode, setIsVoiceMode] = useState(true);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [isMicOn, setIsMicOn] = useState(true);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-  const toggleVoiceMode = () => setIsVoiceMode((prev) => !prev);
-  const toggleMic = () => setIsMicOn((prev) => !prev);
+  const isLoadingRef = useRef(false);
 
-  const fetchSession = async (cursor?: number) => {
+  const fetchSession = useCallback(async (cursor?: number) => {
+    if (isLoadingRef.current) return;
+
+    isLoadingRef.current = true;
+    setIsLoadingHistory(true);
+
     try {
       const res = await axios.get('/satang/session', {
         params: { cursor, limit: 20 },
@@ -35,22 +37,28 @@ const Satang: React.FC = () => {
       if (!cursor) {
         setMessages(msgs);
       } else {
-        setMessages((prev) => [...msgs.filter((m) => !prev.find((p) => p.id === m.id)), ...prev]);
+        setMessages((prev) => {
+          const newMsgs = msgs.filter((m) => !prev.find((p) => p.id === m.id));
+          return [...newMsgs, ...prev];
+        });
       }
 
       setNextCursor(data.nextCursor);
       setHasMore(data.hasMore);
     } catch (error) {
       console.log('Failed to fetch session:', error);
+    } finally {
+      isLoadingRef.current = false;
+      setIsLoadingHistory(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchSession();
-  }, []);
+  }, [fetchSession]);
 
   const loadMore = async () => {
-    if (!hasMore || !nextCursor) return;
+    if (!hasMore || !nextCursor || isLoadingRef.current) return;
     await fetchSession(nextCursor);
   };
 
@@ -68,7 +76,7 @@ const Satang: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetchWithAuth(`${import.meta.env.VITE_API_URL}/api/satang`, {
+      const response = await fetchWithAuth('/api/satang', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,24 +146,16 @@ const Satang: React.FC = () => {
 
   return (
     <div>
-      {isVoiceMode ? (
-        <SatangVoiceMode
-          toggleMic={toggleMic}
-          isMicOn={isMicOn}
-          toggleVoiceMode={toggleVoiceMode}
-        />
-      ) : (
-        <SatangTextMode
-          toggleVoiceMode={toggleVoiceMode}
-          text={text}
-          setText={setText}
-          sendMessage={sendMessage}
-          messages={messages}
-          isTyping={isTyping}
-          loadMore={loadMore}
-          hasMore={hasMore}
-        />
-      )}
+      <SatangTextMode
+        text={text}
+        setText={setText}
+        sendMessage={sendMessage}
+        messages={messages}
+        isTyping={isTyping}
+        loadMore={loadMore}
+        hasMore={hasMore}
+        isLoadingHistory={isLoadingHistory}
+      />
     </div>
   );
 };

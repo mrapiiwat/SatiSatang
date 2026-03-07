@@ -14,11 +14,18 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
 
   const token = useAuthStore((state) => state.token);
   const setUser = useAuthStore((state) => state.actionSetUser);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     const checkAuth = async () => {
       if (!token) {
         setPass(false);
+        setLoading(false);
+        return;
+      }
+
+      if (user) {
+        setPass(true);
         setLoading(false);
         return;
       }
@@ -40,7 +47,7 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
     };
 
     checkAuth();
-  }, [token, setUser]);
+  }, [token, user, setUser]);
 
   if (loading) return <LoadingToRedirect />;
   return pass ? element : <LoadingToRedirect />;

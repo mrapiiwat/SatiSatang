@@ -4,7 +4,8 @@ import type { SingleValue } from 'react-select';
 export interface ManualProps {
   onClose: () => void;
   onSuccess: () => void;
-  editData?: Transaction | null;
+  editData?: Transaction | DraftData | null;
+  onUpdateDraft?: (data: DraftData) => void;
 }
 
 export interface UploadProps {
@@ -14,10 +15,6 @@ export interface UploadProps {
 export interface BudgetProps {
   onClose: () => void;
   onSuccess?: () => void;
-}
-
-export interface GoalProps {
-  onClose: () => void;
 }
 
 export interface AddMenuProps {
@@ -40,7 +37,7 @@ export interface Transaction {
   type: 'INCOME' | 'EXPENSE';
   description: string;
   amount: number;
-  createdAt: string;
+  date: string;
   categoryId: number;
 }
 
@@ -88,10 +85,41 @@ export interface Category {
   name: string;
 }
 
+export interface PendingTransaction {
+  id: string;
+  fileIndex: number;
+  data: {
+    date: string;
+    description: string;
+    type: string;
+    categoryId: string;
+    amount: string;
+    fromAccount: string;
+    toAccount: string;
+  };
+}
+
+interface AIExctractedData {
+  date?: string;
+  description?: string;
+  type?: string;
+  categoryId?: string | number;
+  amount?: string | number;
+  fromAccount?: string;
+  toAccount?: string;
+}
+
+export interface UploadResult {
+  status: 'success' | 'error';
+  fileName: string;
+  data?: AIExctractedData;
+  error?: string;
+}
+
 export interface FileUploadProps {
-  selectedFile: File | null;
-  previewUrl: string | null;
+  files: File[];
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveFile: (index: number) => void;
 }
 
 export interface TransactionFormProps {
@@ -107,7 +135,6 @@ export interface TransactionFormProps {
   selectedTypeOption: OptionType | null;
   selectedCategoryOption: CategoryOptions | null;
   categories: CategoryOptions[];
-  formattedDate: string;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: string, option: SingleValue<OptionType | CategoryOptions>) => void;
   onSave: () => void;
@@ -133,6 +160,8 @@ export interface SatiProps {
   isMenuOpen: boolean;
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleMenuSelect: (type: string) => void;
+  onRefresh?: () => void;
+  onSwitchToSatang?: () => void;
 }
 
 export interface GoalTransaction {
@@ -181,3 +210,52 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
 }
+
+export interface DraftData {
+  type: 'INCOME' | 'EXPENSE';
+  amount: number;
+  date: string;
+  description: string;
+  category?: string;
+  categoryId: number;
+  isGoal?: boolean;
+}
+
+export interface CategoryType {
+  id: number;
+  name: string;
+  icon: string;
+}
+
+export type DraftStatus = 'pending' | 'confirmed' | 'cancelled';
+
+export interface BudgetDraftData {
+  id?: number;
+  amount: number;
+  categoryId: number;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+}
+
+export interface GoalDraftData {
+  name: string;
+  amount: number;
+  deadline?: string;
+  status?: DraftStatus;
+}
+
+export interface GoalProps {
+  onClose: () => void;
+  onSuccess?: () => void;
+  editData?: GoalDraftData;
+  onUpdateDraft?: (data: GoalDraftData) => Promise<void>;
+}
+
+export interface MessageContentData {
+  data: {
+    status?: DraftStatus;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export type EditingDraftType = DraftData | BudgetDraftData | GoalDraftData | null;

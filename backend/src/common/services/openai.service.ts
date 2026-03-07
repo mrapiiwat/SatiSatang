@@ -1,0 +1,543 @@
+import { and, eq, isNull } from "drizzle-orm";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { openai } from "@/common/config/openai";
+import { financialService } from "@/common/services/financial.service";
+import { RAGService } from "@/common/services/rag.service";
+import * as prompts from "@/common/utils/prompts";
+import {
+  SATANG_TOOLS,
+  SATI_TOOLS,
+  SLIP_EXTRACTION_TOOL,
+} from "@/common/utils/tools";
+import { db } from "@/db";
+import { goals } from "@/db/schema";
+import { BudgetService } from "@/modules/budget/budget.service";
+
+const ragService = new RAGService();
+
+export interface ChatHistoryItem {
+  role: "user" | "assistant" | "system" | string;
+  content: string | null;
+}
+
+export interface ChatMessage {
+  role: "user" | "assistant" | "system";
+  content: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  type: "INCOME" | "EXPENSE" | string;
+}
+
+export interface Icon {
+  id: number;
+  description: string | null;
+}
+
+export interface User {
+  name: string;
+}
+
+interface SatangToolArgs {
+  startDate?: string;
+  endDate?: string;
+  query?: string;
+  keyword?: string;
+  categoryName?: string;
+  limit?: number;
+  month?: number;
+  year?: number;
+}
+
+const budgetService = new BudgetService();
+const MODEL_NAME = "gpt-4o-mini";
+const EMBEDDING_MODEL = "text-embedding-3-small";
+
+export class OpenAIService {
+  async embedding(text: string): Promise<number[]> {
+    try {
+      if (!text || text.trim() === "") throw new Error("Input text is empty");
+
+      const res = await openai.embeddings.create({
+        model: EMBEDDING_MODEL,
+        input: text,
+      });
+
+      const embeddingData = res.data[0]?.embedding;
+      if (!embeddingData)
+        throw new Error("No embedding data returned from OpenAI");
+
+      return embeddingData;
+    } catch (error) {
+      console.error("[OpenAI] Embedding Error:", error);
+      throw new Error("Failed to generate embedding");
+    }
+  }
+
+  async checkSlipType(text: string): Promise<boolean> {
+    try {
+      const response = await openai.chat.completions.create({
+        model: MODEL_NAME,
+        messages: [
+          { role: "system", content: prompts.checkSlipTypePrompt },
+          { role: "user", content: text },
+        ],
+      });
+
+      const answer = response.choices[0].message?.content?.toLowerCase().trim();
+      return answer?.includes("yes") ?? false;
+    } catch (error) {
+      console.error("[OpenAI] checkSlipType Error:", error);
+      throw new Error("Failed to connect to OpenAI");
+    }
+  }
+
+  async extractTransactionData(
+    text: string,
+    categories: Category[],
+    user: User
+  ) {
+    try {
+      const categoryListText = categories
+        .map((c) => `${c.id}: ${c.name} (${c.type})`)
+        .join("\n");
+
+      const prompt = prompts.getExtractTransactionPrompt(
+        user.name,
+        categoryListText
+      );
+
+      const jsonResponse = await openai.chat.completions.create({
+        model: MODEL_NAME,
+        messages: [
+          { role: "system", content: prompt },
+          { role: "user", content: text },
+        ],
+        tools: [SLIP_EXTRACTION_TOOL],
+        tool_choice: {
+          type: "function",
+          function: { name: "extract_slip_data" },
+        },
+      });
+
+      const toolCall = jsonResponse.choices[0].message?.tool_calls?.[0];
+      if (!toolCall) throw new Error("No tool calls returned from OpenAI");
+
+      if (toolCall.type !== "function") {
+        throw new Error("Unexpected tool call type");
+      }
+
+      const content = toolCall.function.arguments;
+      const data = JSON.parse(content);
+
+      if (!data.date) {
+        data.date = new Date().toISOString();
+      }
+
+      return data;
+    } catch (error) {
+      console.error("[OpenAI] extractTransactionData Error:", error);
+      throw new Error("Failed to extract transaction data");
+    }
+  }
+
+  async isStockQuery(query: string): Promise<boolean> {
+    try {
+      const response = await openai.chat.completions.create({
+        model: MODEL_NAME,
+        messages: [
+          { role: "system", content: "คุณคือ classifier" },
+          {
+            role: "user",
+            content: `${prompts.isStockQueryPrompt}\n\nข้อความ: "${query}"`,
+          },
+        ],
+      });
+
+      const answer = response.choices[0].message.content?.trim().toLowerCase();
+      return answer === "true";
+    } catch (error) {
+      console.error("[OpenAI] isStockQuery Error:", error);
+      return false;
+    }
+  }
+
+  async processSatangToolCallsAndStream(
+    userId: number,
+    messages: ChatCompletionMessageParam[]
+  ) {
+    const decision = await openai.chat.completions.create({
+      model: MODEL_NAME,
+      messages: messages,
+      tools: SATANG_TOOLS,
+      tool_choice: "auto",
+    });
+
+    const aiMsg = decision.choices[0].message;
+
+    if (aiMsg.tool_calls) {
+      messages.push(aiMsg);
+
+      for (const tool of aiMsg.tool_calls) {
+        if (tool.type !== "function") continue;
+        const fnName = tool.function.name;
+
+        let args: SatangToolArgs = {};
+        try {
+          args = tool.function.arguments
+            ? (JSON.parse(tool.function.arguments) as SatangToolArgs)
+            : {};
+        } catch (e) {
+          console.error(
+            `[Satang] Error parsing tool arguments for ${fnName}:`,
+            e
+          );
+        }
+
+        let result = "";
+        console.log(`[Satang] Executing Tool: ${fnName}`, args);
+
+        if (fnName === "get_financial_summary") {
+          result = await financialService.getSummary(
+            userId,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "search_transactions" && args.query) {
+          const txs = await ragService.searchTransactions(
+            userId,
+            args.query,
+            args.startDate,
+            args.endDate
+          );
+          result = txs.length ? txs.join("\n") : "ไม่พบข้อมูลธุรกรรมในช่วงเวลานี้ครับ";
+        } else if (fnName === "search_stock_knowledge" && args.query) {
+          const stocks = await ragService.searchStock(args.query);
+          result = JSON.stringify(stocks);
+        } else if (fnName === "calculate_spending_by_keyword" && args.keyword) {
+          result = await financialService.getSpendingStats(
+            userId,
+            args.keyword,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "get_spending_by_category" && args.categoryName) {
+          result = await financialService.getSpendingByCategory(
+            userId,
+            args.categoryName,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "get_category_ranking") {
+          result = await financialService.getCategoryRanking(
+            userId,
+            args.startDate,
+            args.endDate
+          );
+        } else if (fnName === "get_top_expenses") {
+          result = await financialService.getTopExpenses(
+            userId,
+            args.limit,
+            args.startDate,
+            args.endDate,
+            args.categoryName
+          );
+        } else if (fnName === "get_detailed_transactions") {
+          result = await financialService.getDetailedTransactions(
+            userId,
+            args.limit,
+            args.startDate,
+            args.endDate,
+            args.categoryName
+          );
+        } else if (fnName === "compare_monthly_spending") {
+          result = await financialService.compareMonthlySpending(
+            userId,
+            args.month,
+            args.year
+          );
+        } else if (fnName === "get_goals_and_budgets") {
+          result = await financialService.getGoalsAndBudgets(userId);
+        }
+
+        messages.push({
+          role: "tool",
+          tool_call_id: tool.id,
+          content: typeof result === "string" ? result : JSON.stringify(result),
+        });
+      }
+    }
+
+    return await openai.chat.completions.create({
+      model: MODEL_NAME,
+      messages: messages,
+      stream: true,
+    });
+  }
+
+  async handleMessage(
+    userId: number,
+    content: string,
+    categories: (Category & { isGoal?: boolean })[],
+    history: ChatHistoryItem[] = []
+  ) {
+    try {
+      const normalCategories = categories.filter((c) => !c.isGoal);
+      const goalCategories = categories.filter((c) => c.isGoal);
+
+      const categoryListText = normalCategories
+        .map((c) => `ID ${c.id}: ${c.name} (${c.type})`)
+        .join("\n");
+
+      const goalListText = goalCategories
+        .map((g) => `GOAL_ID ${g.id}: ${g.name} (เป้าหมาย)`)
+        .join("\n");
+
+      const now = new Date();
+      const currentDateTH = now.toLocaleDateString("th-TH", {
+        timeZone: "Asia/Bangkok",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+      });
+      const currentYearAD = Number(
+        now.toLocaleDateString("en-US", {
+          timeZone: "Asia/Bangkok",
+          year: "numeric",
+        })
+      );
+
+      const currentDateISO = now.toLocaleDateString("en-CA", {
+        timeZone: "Asia/Bangkok",
+      });
+
+      const extendedSystemPrompt = prompts.getHandleMessagePrompt(
+        categoryListText,
+        goalListText,
+        currentDateTH,
+        currentYearAD,
+        currentDateISO
+      );
+
+      const historyMessages: ChatCompletionMessageParam[] = history.map(
+        (msg) => {
+          let cleanContent = msg.content || "";
+
+          try {
+            if (cleanContent.trim().startsWith("{")) {
+              const parsed = JSON.parse(cleanContent);
+              if (parsed.type === "create_transaction") {
+                cleanContent = `[COMPLETED TRANSACTION: ${parsed.data.description} amount ${parsed.data.amount}]`;
+              } else if (parsed.message) {
+                cleanContent = parsed.message;
+              }
+            }
+          } catch (e) {
+            console.log(e);
+          }
+
+          return {
+            role: msg.role === "user" ? "user" : "assistant",
+            content: cleanContent,
+          } as ChatCompletionMessageParam;
+        }
+      );
+
+      const messages: ChatCompletionMessageParam[] = [
+        { role: "system", content: extendedSystemPrompt },
+        ...historyMessages,
+        { role: "user", content },
+      ];
+
+      const response = await openai.chat.completions.create({
+        model: MODEL_NAME,
+        messages: messages,
+        tools: SATI_TOOLS,
+        tool_choice: "auto",
+      });
+
+      const choice = response.choices[0].message;
+
+      if (!choice.tool_calls || choice.tool_calls.length === 0) {
+        const textContent = choice.content || "ไม่เข้าใจคำสั่งครับ";
+
+        try {
+          let jsonStringToParse = textContent;
+
+          const markdownMatch = textContent.match(
+            /```(?:json)?\s*(\{[\s\S]*?\})\s*```/i
+          );
+          if (markdownMatch?.[1]) {
+            jsonStringToParse = markdownMatch[1];
+          } else {
+            const startIdx = textContent.indexOf("{");
+            const endIdx = textContent.lastIndexOf("}");
+            if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+              jsonStringToParse = textContent.substring(startIdx, endIdx + 1);
+            }
+          }
+
+          const parsedContent = JSON.parse(jsonStringToParse);
+
+          if (parsedContent?.type) {
+            return parsedContent;
+          }
+        } catch {}
+
+        return {
+          type: "message",
+          message: textContent,
+        };
+      }
+
+      const toolCall = choice.tool_calls[0];
+
+      if (toolCall.type !== "function") {
+        return { type: "unclassified", message: "Unsupported tool type" };
+      }
+
+      const fnName = toolCall.function.name;
+      const args = JSON.parse(toolCall.function.arguments);
+
+      if (fnName === "switch_to_satang") {
+        return {
+          type: "message_with_action",
+          message:
+            "โอ๊ะ! คำถามนี้เกินหน้าที่จดบันทึกของน้องสติแล้วครับ 😅 ถ้าเป็นเรื่องดูสรุปยอด ประวัติย้อนหลัง หรือวิเคราะห์ข้อมูล ต้องให้พี่สตางค์ช่วยดูให้แล้วล่ะครับ!",
+          action: {
+            label: "ไปคุยกับพี่สตางค์",
+            action_type: "switch_to_satang",
+          },
+        };
+      }
+
+      if (fnName === "manage_categories") {
+        return {
+          type: "message_with_action",
+          message:
+            "โอ๊ะ! ถ้าเป็นการเพิ่มหรือจัดการหมวดหมู่ใหม่ น้องสติยังทำเองไม่ได้ครับ 😅 เพื่อความถูกต้อง พี่สามารถกดไปจัดการเพิ่มหรือแก้ไขหมวดหมู่เองได้ที่ปุ่มด้านล่างนี้เลยครับ!",
+          action: {
+            label: "ไปจัดการหมวดหมู่",
+            action_type: "manage_categories",
+          },
+        };
+      }
+
+      if (fnName === "create_budget") {
+        try {
+          const targetCategory = await budgetService.getTargetCategory(
+            args.categoryId
+          );
+
+          if (targetCategory && targetCategory.type !== "EXPENSE") {
+            return {
+              type: "message",
+              message: `ปกติแล้วเราจะตั้งงบประมาณไว้คุม "รายจ่าย" ครับ รายการ "${targetCategory.name}" เป็นรายรับ ไม่ต้องตั้งงบก็ได้ครับ รวยๆ เฮงๆ ครับ! 🤑`,
+            };
+          }
+
+          const isDuplicate = await budgetService.checkDuplicate(
+            userId,
+            args.categoryId,
+            args.frequency
+          );
+
+          if (isDuplicate) {
+            const freqMap: Record<string, string> = {
+              DAILY: "รายวัน",
+              WEEKLY: "รายสัปดาห์",
+              MONTHLY: "รายเดือน",
+              YEARLY: "รายปี",
+            };
+            const freqTH = freqMap[args.frequency] || args.frequency;
+
+            return {
+              type: "message",
+              message: `ดูเหมือนว่าคุณตั้งงบหมวดนี้ในรอบ "${freqTH}" ไว้เรียบร้อยแล้วครับ ลองเปลี่ยนหมวดหรือรอบเวลาดูไหมครับ? 😊`,
+            };
+          }
+        } catch (err) {
+          console.error("Check duplicate error:", err);
+        }
+      }
+
+      if (fnName === "create_goal") {
+        if (args.deadline) {
+          if (args.deadline < currentDateISO) {
+            return {
+              type: "message",
+              message: `การตั้งเป้าหมายย้อนหลังทำไม่ได้นะครับ (ผมย้อนเวลาไม่ได้ 😅) รบกวนระบุเป็น "วันนี้" หรือ "วันในอนาคต" แทนนะครับ`,
+            };
+          }
+        }
+
+        if (!args.amount) {
+          return {
+            type: "message",
+            message: `คุณยังไม่ได้ระบุจำนวนเงินครับ รบกวนระบุจำนวนเงินที่ต้องการตั้งเป้าหมายด้วยนะครับ`,
+          };
+        }
+
+        try {
+          const existingGoals = await db.query.goals.findMany({
+            where: and(eq(goals.userId, userId), isNull(goals.deletedAt)),
+          });
+
+          const targetName = args.name.trim().toLowerCase();
+          const duplicate = existingGoals.find(
+            (g) => g.name.trim().toLowerCase() === targetName
+          );
+
+          const userConfirmKeywords = [
+            "ยืนยัน",
+            "สร้างเลย",
+            "เอาเลย",
+            "confirm",
+            "สร้างซ้ำ",
+          ];
+          const isUserConfirming = userConfirmKeywords.some((keyword) =>
+            content.toLowerCase().includes(keyword)
+          );
+
+          if (duplicate && !isUserConfirming) {
+            return {
+              type: "message",
+              message: `คุณมีเป้าหมายชื่อ "${duplicate.name}" อยู่แล้วนะครับ 🧐 \nถ้าต้องการสร้างซ้ำให้พิมพ์ว่า "ยืนยัน" หรือเปลี่ยนชื่อหน่อยมั้ยครับ?`,
+            };
+          }
+        } catch (err) {
+          console.error("Check goal duplicate error:", err);
+        }
+      }
+
+      if (fnName === "create_transaction") {
+        const amount = Number(args.amount);
+        if (!amount || amount === 0 || Number.isNaN(amount)) {
+          return {
+            type: "message",
+            message: `รายการ "${args.description || "นี้"}" ราคาเท่าไหร่ครับ?`,
+          };
+        }
+
+        const isGoalId = goalCategories.some(
+          (g) => String(g.id) === String(args.categoryId)
+        );
+
+        if (isGoalId) {
+          args.isGoal = true;
+        }
+      }
+
+      return {
+        type: fnName,
+        data: args,
+      };
+    } catch (error) {
+      console.error("[OpenAI] handleMessage Error:", error);
+      return { type: "message", message: "ระบบขัดข้องชั่วคราวครับ" };
+    }
+  }
+}

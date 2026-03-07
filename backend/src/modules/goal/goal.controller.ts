@@ -1,6 +1,8 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { cached } from "@/common/utils/cache";
+import { clearGoalCache, goalCache } from "./goal.cache";
 import * as goalSchema from "./goal.schema";
 import { GoalService } from "./goal.service";
 
@@ -12,8 +14,8 @@ export const goalController = new Elysia({ prefix: "/goal" })
     "/",
     async ({ body, user, set }) => {
       const userId = Number(user.id);
-
       const result = await goalService.createGoal(userId, body);
+      await clearGoalCache(userId);
 
       set.status = StatusCodes.CREATED;
       return {
@@ -29,14 +31,20 @@ export const goalController = new Elysia({ prefix: "/goal" })
     "/",
     async ({ query, user, set }) => {
       const userId = Number(user.id);
+      const cacheKey = goalCache.list(userId, query);
 
-      const result = await goalService.getGoals(userId, query);
+      const { data, status } = await cached(
+        cacheKey,
+        () => goalService.getGoals(userId, query),
+        "1h"
+      );
 
+      set.headers["X-Cache"] = status;
       set.status = StatusCodes.OK;
       return {
         message: "Goals summary fetched successfully",
-        data: result.data,
-        summary: result.summary,
+        data: data.data,
+        summary: data.summary,
       };
     },
     {
@@ -50,6 +58,7 @@ export const goalController = new Elysia({ prefix: "/goal" })
       const userId = Number(user.id);
 
       const result = await goalService.updateGoal(userId, Number(id), body);
+      await clearGoalCache(userId);
 
       set.status = StatusCodes.OK;
       return {
@@ -68,6 +77,7 @@ export const goalController = new Elysia({ prefix: "/goal" })
       const userId = Number(user.id);
 
       const result = await goalService.deleteGoal(Number(id), userId);
+      await clearGoalCache(userId);
 
       set.status = StatusCodes.OK;
       return result;

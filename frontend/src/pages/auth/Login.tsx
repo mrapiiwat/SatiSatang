@@ -13,17 +13,20 @@ import PageWrapper from '../../components/PageWrapper';
 import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
 import type { LoginForm } from '../../interface/auth';
+import type { ElysiaResponse } from '../../interface/error';
+import SATISATANG from '../../../public/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const API_URL = import.meta.env.VITE_API_URL;
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isUser, setIsUser] = useState<string>('Guest');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const actionLogin = useAuthStore((state) => state.actionLogin);
   const navigate = useNavigate();
@@ -33,10 +36,12 @@ const Login: React.FC = () => {
   }, []);
 
   const googleLogin = useCallback(() => {
+    const API_URL = import.meta.env.VITE_API_URL || '';
     window.location.href = `${API_URL}/api/google`;
   }, []);
 
   const facebookLogin = useCallback(() => {
+    const API_URL = import.meta.env.VITE_API_URL || '';
     window.location.href = `${API_URL}/api/facebook`;
   }, []);
 
@@ -47,6 +52,7 @@ const Login: React.FC = () => {
       if (isUser !== 'Guest') {
         setIsUser('Guest');
         setPassword('');
+        setConfirmPassword('');
         setName('');
         setError('');
       }
@@ -56,6 +62,10 @@ const Login: React.FC = () => {
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+  }, []);
+
+  const handleConfirmPasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value);
   }, []);
 
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,6 +79,25 @@ const Login: React.FC = () => {
     }
   }, []);
 
+  const isFormValid = (() => {
+    if (isUser === 'Guest') {
+      return validateEmail(email);
+    }
+    if (isUser === 'Login') {
+      return validateEmail(email) && password.length >= 6;
+    }
+    if (isUser === 'Register') {
+      return (
+        validateEmail(email) &&
+        password.length >= 6 &&
+        password === confirmPassword &&
+        name.trim() !== '' &&
+        acceptTerms
+      );
+    }
+    return false;
+  })();
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -78,7 +107,7 @@ const Login: React.FC = () => {
 
       if (isUser === 'Login') {
         try {
-          await actionLogin(LoginForm!);
+          actionLogin(LoginForm!);
           showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
           navigate('/user');
         } catch (error) {
@@ -92,11 +121,24 @@ const Login: React.FC = () => {
         if (isLoading) return;
         setIsLoading(true);
 
+        if (password !== confirmPassword) {
+          setError('รหัสผ่านไม่ตรงกัน');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!acceptTerms) {
+          setError('กรุณายอมรับข้อตกลงและเงื่อนไขการใช้งานทั้งหมดก่อนทำการลงทะเบียน');
+          setIsLoading(false);
+          return;
+        }
+
         try {
-          const res = await axios.post(`${API_URL}/api/register`, {
+          const res = await axios.post('/register', {
             email,
             password,
             name,
+            acceptTermsAndPrivacy: acceptTerms,
           });
 
           const userId = res.data.userId;
@@ -107,20 +149,21 @@ const Login: React.FC = () => {
 
           navigate(`/verify?userId=${userId}`);
         } catch (error: unknown) {
-          const axiosError = error as AxiosError;
-          const responseData = axiosError.response?.data as
-            | { errors?: { message?: string } }
-            | undefined;
+          const axiosError = error as AxiosError<ElysiaResponse>;
+          const responseData = axiosError.response?.data;
 
-          if (responseData?.errors?.message) {
-            try {
-              const zodErrors = JSON.parse(responseData.errors.message);
-              const errorMessage = zodErrors[0]?.message || 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล';
-              setError(errorMessage);
-            } catch (parseError) {
-              console.error('Error parsing Zod error:', parseError);
-              setError('เกิดข้อผิดพลาดในการตรวจสอบข้อมูล');
-            }
+          if (responseData) {
+            const customError = responseData?.errors?.find((e) => e.schema?.error);
+
+            const targetError = customError || responseData?.errors?.[0];
+
+            const errorMessage =
+              targetError?.schema?.error ||
+              targetError?.summary ||
+              responseData?.message ||
+              'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล';
+
+            setError(errorMessage);
           } else {
             setError('เกิดข้อผิดพลาดในการลงทะเบียน');
           }
@@ -144,7 +187,7 @@ const Login: React.FC = () => {
       setIsLoading(true);
 
       try {
-        const res = await axios.post(`${API_URL}/api/check-email`, { email });
+        const res = await axios.post('/check-email', { email });
         const message = res.data.message;
 
         if (message === 'SIGN IN') {
@@ -157,7 +200,7 @@ const Login: React.FC = () => {
           facebookLogin();
         } else if (message === 'PENDING VERIFICATION') {
           try {
-            const otpRes = await axios.post(`${API_URL}/api/resend-otp`, { email });
+            const otpRes = await axios.post('/resend-otp', { email });
             const userId = otpRes.data.userId;
 
             sessionStorage.setItem('pendingVerification', 'true');
@@ -196,6 +239,7 @@ const Login: React.FC = () => {
     [
       email,
       password,
+      confirmPassword,
       name,
       isUser,
       validateEmail,
@@ -204,8 +248,10 @@ const Login: React.FC = () => {
       isLoading,
       googleLogin,
       facebookLogin,
+      acceptTerms,
     ],
   );
+
   const handleResetPassword = async () => {
     if (!email) {
       showToastAlert('กรุณากรอกอีเมล', 'error');
@@ -226,91 +272,155 @@ const Login: React.FC = () => {
 
   return (
     <PageWrapper animation="scale-fade">
-      <div className="p-6">
-        <Link to="/" className="cursor-pointer">
-          <Logo />
-        </Link>
-
-        <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
-          <h1 className="text-xl font-medium text-center mb-2">สมัครเข้าใช้งานหรือเข้าสู่ระบบ</h1>
-
-          <div className="relative w-full">
-            <InputField
-              id="email"
-              type="email"
-              value={email}
-              onChange={handleEmailChange}
-              label="อีเมล"
-              autoComplete="email"
-            />
-          </div>
-
-          {isUser === 'Login' && (
-            <div className="relative w-full">
-              <InputField
-                id="password"
-                type="password"
-                value={password}
-                onChange={handlePasswordChange}
-                label="รหัสผ่าน"
-                autoComplete="current-password"
-              />
-            </div>
-          )}
-
-          {isUser === 'Register' && (
-            <div className="flex flex-col gap-5">
-              <div className="relative w-full">
-                <InputField
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                  label="รหัสผ่าน"
-                  autoComplete="new-password"
-                  minLength={6}
-                />
-              </div>
-
-              <div className="relative w-full">
-                <InputField
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={handleNameChange}
-                  label="ชื่อ"
-                  autoComplete="name"
-                />
-              </div>
-            </div>
-          )}
-
-          {isUser === 'Login' ? (
-            <div className="text-sky-700 text-sm text-center ">
-              ลืมรหัสผ่าน?{' '}
-              <a onClick={handleResetPassword} className="underline cursor-pointer">
-                คลิกที่นี่
-              </a>
-            </div>
-          ) : null}
-          {error && (
-            <div className="text-red-500 text-sm text-center mb-2" role="alert" aria-live="polite">
-              {error}
-            </div>
-          )}
-
-          <SubmitButton isLoading={isLoading} text="ดำเนินการต่อ" />
-        </form>
-
-        <div className="relative my-7 flex items-center">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-4 text-gray-500">หรือ</span>
-          <div className="flex-grow border-t border-gray-300"></div>
+      <div className="flex min-h-screen w-full">
+        <div className="hidden lg:flex lg:flex-col lg:w-1/2 bg-gray-50 items-center justify-center">
+          <img src={SATISATANG} alt="Logo SatiSatang" className="h-96 object-contain" />
         </div>
 
-        <div className="flex flex-col gap-5">
-          <OAuthButton onClick={googleLogin} label="ดำเนินการต่อด้วย Google" logo={Google} />
-          <OAuthButton onClick={facebookLogin} label="ดำเนินการต่อด้วย Facebook" logo={Facebook} />
+        <div className="w-full lg:w-1/2 flex flex-col justify-center">
+          <div className="p-6 w-full max-w-md mx-auto">
+            <Link to="/" className="cursor-pointer">
+              <Logo />
+            </Link>
+
+            <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
+              <h1 className="text-xl font-medium text-center mb-2">
+                สมัครเข้าใช้งานหรือเข้าสู่ระบบ
+              </h1>
+
+              <div className="relative w-full">
+                <InputField
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  label="อีเมล"
+                  autoComplete="email"
+                />
+              </div>
+
+              {isUser === 'Login' && (
+                <div className="relative w-full">
+                  <InputField
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    label="รหัสผ่าน"
+                    autoComplete="current-password"
+                  />
+                </div>
+              )}
+
+              {isUser === 'Register' && (
+                <div className="flex flex-col gap-5">
+                  <div className="relative w-full">
+                    <InputField
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      label="รหัสผ่าน"
+                      autoComplete="new-password"
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="relative w-full">
+                    <InputField
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                      label="ยืนยันรหัสผ่าน"
+                      autoComplete="new-password"
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="relative w-full">
+                    <InputField
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={handleNameChange}
+                      label="ชื่อ"
+                      autoComplete="name"
+                    />
+                  </div>
+
+                  <div className="flex flex-col justify-center items-center gap-3 mt-2">
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <div className="flex items-center h-5 shrink-0">
+                        <input
+                          type="checkbox"
+                          required
+                          checked={acceptTerms}
+                          onChange={(e) => setAcceptTerms(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                        />
+                      </div>
+                      <span className="text-sm leading-relaxed text-gray-600 group-hover:text-gray-800 transition-colors">
+                        ฉันได้อ่านและยอมรับ{' '}
+                        <Link
+                          to="/policies/terms-of-use"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 font-medium hover:underline"
+                        >
+                          ข้อตกลงการใช้งาน
+                        </Link>{' '}
+                        และ{' '}
+                        <Link
+                          to="/policies/privacy-policy"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 font-medium hover:underline"
+                        >
+                          นโยบายความเป็นส่วนตัว
+                        </Link>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {isUser === 'Login' ? (
+                <div className="text-sky-700 text-sm text-center ">
+                  ลืมรหัสผ่าน?{' '}
+                  <a onClick={handleResetPassword} className="underline cursor-pointer">
+                    คลิกที่นี่
+                  </a>
+                </div>
+              ) : null}
+              {error && (
+                <div className="text-red-500 text-sm text-center" role="alert" aria-live="polite">
+                  {error}
+                </div>
+              )}
+
+              <SubmitButton
+                isLoading={isLoading}
+                disabled={!isFormValid || isLoading}
+                text="ดำเนินการต่อ"
+              />
+            </form>
+
+            <div className="relative my-7 flex items-center">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="mx-4 text-gray-500">หรือ</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <div className="flex flex-col gap-5">
+              <OAuthButton onClick={googleLogin} label="ดำเนินการต่อด้วย Google" logo={Google} />
+              <OAuthButton
+                onClick={facebookLogin}
+                label="ดำเนินการต่อด้วย Facebook"
+                logo={Facebook}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </PageWrapper>

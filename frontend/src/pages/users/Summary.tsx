@@ -55,7 +55,7 @@ const Summary: React.FC = () => {
   }, [selectedMonth, selectedYear]);
 
   const filteredTransactions = transactions.filter((t) => {
-    const date = new Date(t.createdAt);
+    const date = new Date(t.date);
     return date.getMonth() + 1 === selectedMonth && date.getFullYear() === selectedYear;
   });
 
@@ -88,7 +88,7 @@ const Summary: React.FC = () => {
 
   return (
     <PageWrapper animation="scale-fade">
-      <div className="px-6 py-4 font-ibm text-black-900">
+      <div className="max-w-5xl mx-auto px-6 py-4 font-ibm text-black-900">
         <MonthHeader
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
@@ -175,7 +175,9 @@ const Summary: React.FC = () => {
                 ) : (
                   incomes.map((i) => (
                     <div key={i.id} className="flex justify-between text-sm mb-1">
-                      <span className="line-clamp-1 break-all">{i.description}</span>
+                      <span className="line-clamp-1 break-all w-3/5 max-w-1/2">
+                        {i.description}
+                      </span>
                       <span className="text-blue-600">฿{i.amount.toLocaleString()}</span>
                     </div>
                   ))

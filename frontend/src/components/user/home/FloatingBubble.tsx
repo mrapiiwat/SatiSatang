@@ -1,19 +1,44 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FaPlus } from 'react-icons/fa';
 import type { FloatingBubbleProps } from '../../../interface/home';
+import TrackingFace from '../satang/TrackingFace';
 
 const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   const BUBBLE_SIZE = 65;
-  const MARGIN = 15;
+  const SIDE_MARGIN = 20;
+  const VERTICAL_MARGIN = 20;
   const TOP_LIMIT_RATIO = 0.88;
+  const STORAGE_KEY = 'bubble_position';
 
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
   const getTopLimit = () => window.innerHeight * TOP_LIMIT_RATIO;
-  const getBottomLimit = () => window.innerHeight - BUBBLE_SIZE - MARGIN;
+  const getBottomLimit = () => window.innerHeight - BUBBLE_SIZE - VERTICAL_MARGIN;
 
-  const [position, setPosition] = useState({
-    x: window.innerWidth - BUBBLE_SIZE - MARGIN,
-    y: getBottomLimit(),
+  const [position, setPosition] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedPos = localStorage.getItem(STORAGE_KEY);
+      if (savedPos) {
+        try {
+          const parsed = JSON.parse(savedPos);
+          return {
+            x: clamp(parsed.x, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN),
+            y: clamp(
+              parsed.y,
+              window.innerHeight * TOP_LIMIT_RATIO,
+              window.innerHeight - BUBBLE_SIZE - VERTICAL_MARGIN,
+            ),
+          };
+        } catch (e) {
+          console.error('Failed to parse bubble position', e);
+        }
+      }
+
+      return {
+        x: window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN,
+        y: window.innerHeight - BUBBLE_SIZE - VERTICAL_MARGIN,
+      };
+    }
+
+    return { x: 0, y: 0 };
   });
 
   const [dragging, setDragging] = useState(false);
@@ -25,13 +50,19 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   const snapToEdge = useCallback(() => {
     const middle = window.innerWidth / 2;
     const snapX =
-      position.x + BUBBLE_SIZE / 2 > middle ? window.innerWidth - BUBBLE_SIZE - MARGIN : MARGIN;
+      position.x + BUBBLE_SIZE / 2 > middle
+        ? window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN
+        : SIDE_MARGIN;
+
+    const newX = clamp(snapX, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN);
+    const newY = clamp(position.y, getTopLimit(), getBottomLimit());
 
     setIsSnapping(true);
-    setPosition({
-      x: clamp(snapX, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN),
-      y: clamp(position.y, getTopLimit(), getBottomLimit()),
-    });
+
+    const newPos = { x: newX, y: newY };
+    setPosition(newPos);
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newPos));
 
     setTimeout(() => setIsSnapping(false), 300);
   }, [position.x, position.y]);
@@ -45,7 +76,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
         const newX = e.clientX - offset.x;
         const newY = e.clientY - offset.y;
         setPosition({
-          x: clamp(newX, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN),
+          x: clamp(newX, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN),
           y: clamp(newY, getTopLimit(), getBottomLimit()),
         });
       });
@@ -80,12 +111,10 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
         const newX = touch.clientX - offset.x;
         const newY = touch.clientY - offset.y;
         setPosition({
-          x: clamp(newX, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN),
+          x: clamp(newX, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN),
           y: clamp(newY, getTopLimit(), getBottomLimit()),
         });
       });
-
-      e.preventDefault();
     },
     [dragging, offset],
   );
@@ -97,20 +126,17 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   }, [dragging, snapToEdge]);
 
   useEffect(() => {
-    // Mouse
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-
-    // Touch
     window.addEventListener('touchstart', handleTouchStart);
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchend', handleTouchEnd);
 
     const handleResize = () => {
-      setPosition({
-        x: clamp(position.x, MARGIN, window.innerWidth - BUBBLE_SIZE - MARGIN),
-        y: clamp(position.y, getTopLimit(), getBottomLimit()),
-      });
+      const newX = clamp(position.x, SIDE_MARGIN, window.innerWidth - BUBBLE_SIZE - SIDE_MARGIN);
+      const newY = clamp(position.y, getTopLimit(), getBottomLimit());
+
+      setPosition({ x: newX, y: newY });
     };
     window.addEventListener('resize', handleResize);
 
@@ -140,7 +166,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
         startPos.current = { x: e.clientX, y: e.clientY };
         setIsSnapping(false);
       }}
-      className={`fixed rounded-full bg-blue-500 text-white flex items-center justify-center select-none shadow-lg cursor-grab active:cursor-grabbing ${
+      className={`fixed rounded-full bg-blue-500 text-black-900 flex items-center justify-center select-none shadow-lg cursor-grab active:cursor-grabbing ${
         isSnapping ? 'transition-all duration-300 ease-out' : ''
       }`}
       style={{
@@ -154,11 +180,15 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onClick?.();
+          const moveX = Math.abs(e.clientX - startPos.current.x);
+          const moveY = Math.abs(e.clientY - startPos.current.y);
+          if (moveX < 5 && moveY < 5) {
+            onClick?.();
+          }
         }}
         className="w-full h-full flex items-center justify-center"
       >
-        <FaPlus size={25} />
+        <TrackingFace mode="sati" />
       </button>
     </div>
   );

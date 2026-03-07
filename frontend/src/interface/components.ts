@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 
 export interface ImageProps {
   src: string;
@@ -31,6 +31,7 @@ export interface PageWrapperProps {
 
 export interface SubmitButtonProps {
   isLoading: boolean;
+  disabled?: boolean;
   text: string;
 }
 
@@ -49,4 +50,20 @@ export interface AlertProps {
   title?: string;
   icon?: 'success' | 'error' | 'warning' | 'info' | 'question';
   confirmText?: string;
+}
+
+export interface TooltipProps {
+  text: string | ReactNode;
+  children?: ReactNode;
+  position?: 'top' | 'bottom' | 'left' | 'right';
+  type?: 'info' | 'help';
+}
+
+export interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
 }

@@ -1,18 +1,26 @@
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { and, eq, gte, ilike, isNull, or, type SQL } from "drizzle-orm";
-import { BadRequestError, NotFoundError } from "@/common/errors";
+import { BUCKET_NAME, s3Client } from "@/common/config/s3";
+import { BadRequestError, NotFoundError } from "@/common/exceptions";
 import { db } from "@/db";
-import { category, goals } from "@/db/schema";
+import { budgets, category, goals } from "@/db/schema";
 import type * as categorySchema from "./category.schema";
 
 export class CategoriesService {
   async createCategory(userId: number, data: categorySchema.CategorySchema) {
     const existing = await db.query.category.findFirst({
-      where: and(eq(category.name, data.name), eq(category.userId, userId)),
+      where: and(
+        eq(category.name, data.name),
+        eq(category.userId, userId),
+        isNull(category.deletedAt)
+      ),
     });
 
     if (existing) {
       throw new BadRequestError("Category name already exists");
     }
+
     const [newCategory] = await db
       .insert(category)
       .values({
@@ -51,8 +59,11 @@ export class CategoriesService {
     }
 
     const categoriesData = await db.query.category.findMany({
-      where: and(...categoryFilters),
+      where: and(...categoryFilters, isNull(category.deletedAt)),
       orderBy: (table, { desc }) => [desc(table.createdAt)],
+      with: {
+        icon: true,
+      },
     });
 
     let goalsData: (typeof goals.$inferSelect)[] = [];
@@ -65,29 +76,55 @@ export class CategoriesService {
         where: and(
           eq(goals.userId, userId),
           eq(goals.finished, false),
-          or(gte(goals.deadline, today), isNull(goals.deadline))
+          or(gte(goals.deadline, today), isNull(goals.deadline)),
+          isNull(goals.deletedAt)
         ),
       });
     }
 
-    const combined: categorySchema.CombinedCategory[] = [
-      ...categoriesData.map((c) => ({
-        id: c.id,
-        name: c.name,
-        type: c.type as "INCOME" | "EXPENSE",
-        userId: c.userId,
-        icon: `${Bun.env.APP_BASE_URL}/api/icon/${c.iconId}`,
-        isGoal: false,
-      })),
-      ...goalsData.map((g) => ({
-        id: g.id,
-        name: g.name,
-        type: "EXPENSE" as const,
-        userId: g.userId,
-        isGoal: true,
-      })),
-    ];
+    const categoryResult = await Promise.all(
+      categoriesData.map(async (c) => {
+        let signedIconUrl: string | undefined;
 
+        if (c.icon?.url) {
+          try {
+            const command = new GetObjectCommand({
+              Bucket: BUCKET_NAME,
+              Key: c.icon.url,
+            });
+
+            signedIconUrl = await getSignedUrl(s3Client, command, {
+              expiresIn: 3600,
+            });
+          } catch (error) {
+            console.error(`Failed to sign url for category ${c.id}`, error);
+          }
+        }
+
+        return {
+          id: c.id,
+          name: c.name,
+          type: c.type as "INCOME" | "EXPENSE",
+          userId: c.userId,
+          iconId: c.iconId,
+          icon: signedIconUrl,
+          isGoal: false,
+        };
+      })
+    );
+
+    const goalResult = goalsData.map((g) => ({
+      id: g.id,
+      name: g.name,
+      type: "EXPENSE" as const,
+      userId: g.userId,
+      isGoal: true,
+    }));
+
+    const combined: categorySchema.CombinedCategory[] = [
+      ...categoryResult,
+      ...goalResult,
+    ];
     return { result: combined, includeGoals };
   }
 
@@ -97,7 +134,11 @@ export class CategoriesService {
     data: categorySchema.UpdateCategoryInput
   ) {
     const existing = await db.query.category.findFirst({
-      where: and(eq(category.id, categoryId), eq(category.userId, userId)),
+      where: and(
+        eq(category.id, categoryId),
+        eq(category.userId, userId),
+        isNull(category.deletedAt)
+      ),
     });
 
     if (!existing) {
@@ -121,7 +162,7 @@ export class CategoriesService {
     };
   }
 
-  async deleteCategory(categoryId: number, userId: number) {
+  async deleteCategory(userId: number, categoryId: number) {
     const existing = await db.query.category.findFirst({
       where: and(eq(category.id, categoryId), eq(category.userId, userId)),
     });
@@ -130,10 +171,28 @@ export class CategoriesService {
       throw new NotFoundError("Category not found");
     }
 
-    await db
-      .delete(category)
-      .where(and(eq(category.id, categoryId), eq(category.userId, userId)));
+    const now = new Date();
 
-    return { message: "Category deleted successfully" };
+    await db.transaction(async (tx) => {
+      await tx
+        .update(category)
+        .set({ deletedAt: now })
+        .where(
+          and(
+            eq(category.id, categoryId),
+            eq(category.userId, userId),
+            isNull(category.deletedAt)
+          )
+        );
+
+      await tx
+        .update(budgets)
+        .set({ deletedAt: now })
+        .where(
+          and(eq(budgets.categoryId, categoryId), isNull(budgets.deletedAt))
+        );
+    });
+
+    return { message: "Category and associated budgets deleted successfully" };
   }
 }

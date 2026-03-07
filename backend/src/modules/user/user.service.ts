@@ -1,13 +1,26 @@
-import { and, desc, eq, gte, lte, type SQL } from "drizzle-orm";
-import { BadRequestError, NotFoundError } from "@/common/errors";
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  lte,
+  type SQL,
+} from "drizzle-orm";
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from "@/common/exceptions";
 import { db } from "@/db";
-import { goals, transaction, user } from "@/db/schema";
+import { category, goals, oauthAccount, transaction, user } from "@/db/schema";
 import type * as userSchema from "./user.schema";
 
 export class UserService {
-  async me(userId: number) {
+  async me(userId: number, provider: string) {
     const userRecord = await db.query.user.findFirst({
-      where: eq(user.id, userId),
+      where: and(eq(user.id, userId), isNull(user.deletedAt)),
       with: {
         oauthAccounts: true,
       },
@@ -19,8 +32,8 @@ export class UserService {
       id: userRecord.id,
       email: userRecord.email,
       name: userRecord.name,
-      balance: userRecord.balance,
       oauthAccounts: userRecord.oauthAccounts,
+      currentLogin: provider,
     };
 
     return responseData;
@@ -28,7 +41,7 @@ export class UserService {
 
   async changePassword(userId: number, data: userSchema.password) {
     const userRecord = await db.query.user.findFirst({
-      where: eq(user.id, userId),
+      where: and(eq(user.id, userId), isNull(user.deletedAt)),
       columns: {
         id: true,
         password: true,
@@ -60,7 +73,7 @@ export class UserService {
     await db
       .update(user)
       .set({ password: hashedPassword })
-      .where(eq(user.id, userId));
+      .where(and(eq(user.id, userId), isNull(user.deletedAt)));
 
     return { message: "Password updated successfully" };
   }
@@ -69,10 +82,60 @@ export class UserService {
     const [updatedUser] = await db
       .update(user)
       .set({ name: data.name })
-      .where(eq(user.id, userId))
+      .where(and(eq(user.id, userId), isNull(user.deletedAt)))
       .returning();
 
     return updatedUser.name;
+  }
+
+  async deleteAccount(userId: number, data: userSchema.deleteAccount) {
+    const userRecord = await db.query.user.findFirst({
+      where: and(eq(user.id, userId), isNull(user.deletedAt)),
+      columns: { email: true },
+    });
+
+    if (!userRecord) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (data.confirm !== userRecord.email) {
+      throw new ForbiddenError("Confirmation email does not match");
+    }
+
+    return await db.transaction(async (tx) => {
+      const systemPresets = await tx
+        .select({ name: category.name })
+        .from(category)
+        .where(isNull(category.userId));
+
+      const presetNames = systemPresets.map((p) => p.name);
+      if (presetNames.length > 0) {
+        await tx
+          .delete(category)
+          .where(
+            and(
+              eq(category.userId, userId),
+              inArray(category.name, presetNames)
+            )
+          );
+      }
+
+      await tx
+        .update(user)
+        .set({
+          email: `deleted+${userId}@system.local`,
+          password: null,
+          name: `deleted+${userId}`,
+          balance: 0,
+          isEmailVerified: false,
+          deletedAt: new Date(),
+        })
+        .where(and(eq(user.id, userId), isNull(user.deletedAt)));
+
+      await tx.delete(oauthAccount).where(eq(oauthAccount.userId, userId));
+
+      return { message: "Account deleted successfully" };
+    });
   }
 
   async getSummary(userId: number, query: userSchema.getSummaryQuery) {
@@ -86,18 +149,18 @@ export class UserService {
       startDate = new Date(year, month - 1, 1);
       endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-      transactionConditions.push(gte(transaction.createdAt, startDate));
-      transactionConditions.push(lte(transaction.createdAt, endDate));
+      transactionConditions.push(gte(transaction.date, startDate));
+      transactionConditions.push(lte(transaction.date, endDate));
     }
 
     const transactionsData = await db.query.transaction.findMany({
-      where: and(...transactionConditions),
+      where: and(...transactionConditions, isNull(transaction.deletedAt)),
       with: { category: true },
-      orderBy: [desc(transaction.createdAt)],
+      orderBy: [desc(transaction.date)],
     });
 
     const goalsData = await db.query.goals.findMany({
-      where: eq(goals.userId, userId),
+      where: and(eq(goals.userId, userId), isNull(goals.deletedAt)),
       with: { goalTransactions: true },
       orderBy: [desc(goals.createdAt)],
     });
@@ -162,6 +225,23 @@ export class UserService {
       },
       transactions: formattedTransactions,
       goals: goalsWithCurrentAmount,
+    };
+  }
+
+  async getBalance(userId: number) {
+    const userRecord = await db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: {
+        balance: true,
+      },
+    });
+
+    if (!userRecord) {
+      throw new NotFoundError("User not found");
+    }
+
+    return {
+      balance: userRecord.balance || 0,
     };
   }
 }

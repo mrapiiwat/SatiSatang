@@ -1,5 +1,5 @@
 import { and, eq, gte, isNull, lte, or, sum } from "drizzle-orm";
-import { BadRequestError } from "@/common/errors";
+import { BadRequestError } from "@/common/exceptions";
 import { db } from "@/db";
 import { budgets, category, transaction } from "@/db/schema";
 import type * as budgetSchema from "./budget.schema";
@@ -48,8 +48,8 @@ export class BudgetService {
           eq(transaction.userId, userId),
           eq(transaction.categoryId, data.categoryId),
           eq(transaction.type, "EXPENSE"),
-          gte(transaction.createdAt, start),
-          lte(transaction.createdAt, end)
+          gte(transaction.date, start),
+          lte(transaction.date, end)
         )
       );
 
@@ -70,6 +70,33 @@ export class BudgetService {
     return newBudget;
   }
 
+  async checkDuplicate(
+    userId: number,
+    categoryId: number,
+    frequency: budgetSchema.Frequency
+  ) {
+    const { start, end } = getPeriodRangeByFrequency(frequency);
+
+    const existingBudget = await db.query.budgets.findFirst({
+      where: and(
+        eq(budgets.userId, userId),
+        eq(budgets.categoryId, categoryId),
+        eq(budgets.frequency, frequency),
+        gte(budgets.createdAt, start),
+        lte(budgets.createdAt, end)
+      ),
+    });
+
+    return !!existingBudget;
+  }
+
+  async getTargetCategory(categoryId: number) {
+    const targetCategory = await db.query.category.findFirst({
+      where: eq(category.id, categoryId),
+    });
+    return targetCategory;
+  }
+
   async getBudgets(userId: number, query: budgetSchema.getBudgetsQuery) {
     const { month, year, isOverDeadline } = query;
     const now = new Date();
@@ -88,7 +115,8 @@ export class BudgetService {
       where: and(
         eq(budgets.userId, userId),
         lte(budgets.createdAt, endDate),
-        or(gte(budgets.deadline, startDate), isNull(budgets.deadline))
+        or(gte(budgets.deadline, startDate), isNull(budgets.deadline)),
+        isNull(budgets.deletedAt)
       ),
       with: {
         category: true,
@@ -107,8 +135,9 @@ export class BudgetService {
               eq(transaction.userId, userId),
               eq(transaction.categoryId, budget.categoryId),
               eq(transaction.type, "EXPENSE"),
-              gte(transaction.createdAt, startDate),
-              lte(transaction.createdAt, endDate)
+              gte(transaction.date, startDate),
+              lte(transaction.date, endDate),
+              isNull(transaction.deletedAt)
             )
           );
 
@@ -119,7 +148,7 @@ export class BudgetService {
           .set({
             currentAmount: currentAmount,
           })
-          .where(eq(budgets.id, budget.id));
+          .where(and(eq(budgets.id, budget.id), isNull(budgets.deletedAt)));
 
         return {
           id: budget.id,
@@ -142,5 +171,64 @@ export class BudgetService {
     );
 
     return filteredBudgets;
+  }
+
+  async deleteBudget(userId: number, budgetId: number) {
+    const budget = await db.query.budgets.findFirst({
+      where: and(
+        eq(budgets.id, budgetId),
+        eq(budgets.userId, userId),
+        isNull(budgets.deletedAt)
+      ),
+    });
+
+    if (!budget) {
+      throw new BadRequestError("Budget not found");
+    }
+
+    await db
+      .update(budgets)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(
+          eq(budgets.id, budgetId),
+          eq(budgets.userId, userId),
+          isNull(budgets.deletedAt)
+        )
+      );
+  }
+
+  async updateBudget(
+    userId: number,
+    budgetId: number,
+    data: budgetSchema.updateBudget
+  ) {
+    const existingBudget = await db.query.budgets.findFirst({
+      where: and(
+        eq(budgets.id, budgetId),
+        eq(budgets.userId, userId),
+        isNull(budgets.deletedAt)
+      ),
+    });
+
+    if (!existingBudget) {
+      throw new BadRequestError("Budget not found");
+    }
+
+    const [updatedBudget] = await db
+      .update(budgets)
+      .set({
+        ...data,
+      })
+      .where(
+        and(
+          eq(budgets.id, budgetId),
+          eq(budgets.userId, userId),
+          isNull(budgets.deletedAt)
+        )
+      )
+      .returning();
+
+    return updatedBudget;
   }
 }

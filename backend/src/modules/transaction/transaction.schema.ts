@@ -6,16 +6,21 @@ export const getTransactionsQuery = t.Object({
   year: t.Optional(t.Numeric()),
   page: t.Optional(t.Numeric({ default: 1 })),
   limit: t.Optional(t.Numeric({ default: 10 })),
+  sortBy: t.Optional(
+    t.Union([t.Literal("date"), t.Literal("amount"), t.Literal("createdAt")])
+  ),
+  order: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
 });
 
 export type getTransactionsQuery = Static<typeof getTransactionsQuery>;
 
-export const getTotalExpenseQuery = t.Object({
+export const getTotalAmountQuery = t.Object({
   month: t.Optional(t.Numeric()),
   year: t.Optional(t.Numeric()),
+  type: t.Optional(t.Union([t.Literal("INCOME"), t.Literal("EXPENSE")])),
 });
 
-export type getTotalExpenseQuery = Static<typeof getTotalExpenseQuery>;
+export type getTotalAmountQuery = Static<typeof getTotalAmountQuery>;
 
 export enum TransactionType {
   INCOME = "INCOME",
@@ -29,6 +34,7 @@ export const createTransaction = t.Object({
   ]),
   description: t.Optional(t.String()),
   amount: t.Numeric(),
+  date: t.Optional(t.String()),
   categoryId: t.Numeric(),
   receipt: t.Optional(
     t.File({
@@ -44,9 +50,9 @@ export const createTransaction = t.Object({
 export type createTransaction = Static<typeof createTransaction>;
 
 export const uploadReceipt = t.Object({
-  receipt: t.File({
+  receipt: t.Files({
     maxSize: 5 * 1024 * 1024,
-    error: "Image must be less than 5MB",
+    minItems: 1,
   }),
 });
 
@@ -61,6 +67,7 @@ export const updateTransaction = t.Object({
   ),
   description: t.Optional(t.String()),
   amount: t.Optional(t.Numeric()),
+  date: t.Optional(t.String()),
   categoryId: t.Optional(t.Numeric()),
   receipt: t.Optional(t.File({ maxSize: 5 * 1024 * 1024 })),
   toAccount: t.Optional(t.String()),
@@ -69,6 +76,12 @@ export const updateTransaction = t.Object({
 });
 
 export type updateTransaction = Static<typeof updateTransaction>;
+
+export const predictCategory = t.Object({
+  description: t.String({ minLength: 1, error: "Description is required" }),
+});
+
+export type predictCategory = Static<typeof predictCategory>;
 
 export const paramsId = t.Object({
   id: t.Numeric(),

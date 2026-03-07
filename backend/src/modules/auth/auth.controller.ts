@@ -30,8 +30,16 @@ export const authController = new Elysia()
 
   .post(
     "/register",
-    async ({ body, set }) => {
-      const result = await authService.register(body);
+    async ({ body, set, headers }) => {
+      const userAgent = headers["user-agent"] || "unknown";
+      const ipAddress =
+        headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+      const result = await authService.register({
+        ...body,
+        userAgent,
+        ipAddress,
+      });
+
       set.status = StatusCodes.CREATED;
       return {
         userId: result,
@@ -47,13 +55,17 @@ export const authController = new Elysia()
     "/login",
     async ({ body, set, jwt, cookie: { refreshToken } }) => {
       const result = await authService.login(body);
-      const accessToken = await jwt.sign({ id: result.userId });
+      const accessToken = await jwt.sign({
+        id: result.userId,
+        provider: "local",
+      });
       const refreshRaw = await createRefreshToken(result.userId);
       refreshToken.set({
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: Bun.env.COOKIE_DOMAIN,
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -72,14 +84,18 @@ export const authController = new Elysia()
     "/verify-email",
     async ({ body, set, jwt, cookie: { refreshToken } }) => {
       const result = await authService.verifyEmail(body);
-      const accessToken = await jwt.sign({ id: result.userId });
+      const accessToken = await jwt.sign({
+        id: result.userId,
+        provider: "local",
+      });
       const refreshRaw = await createRefreshToken(result.userId);
 
       refreshToken.set({
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: Bun.env.COOKIE_DOMAIN,
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -102,17 +118,17 @@ export const authController = new Elysia()
       return { error: "No refresh token" };
     }
 
-    const { userId, newRefreshToken } = await authService.refreshToken(
-      raw as string
-    );
+    const { userId, newRefreshToken, provider } =
+      await authService.refreshToken(raw as string);
 
-    const accessToken = await jwt.sign({ id: userId });
+    const accessToken = await jwt.sign({ id: userId, provider: provider });
 
     refreshToken.set({
       value: newRefreshToken,
       httpOnly: true,
       secure: Bun.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+      domain: Bun.env.COOKIE_DOMAIN,
       maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
       path: "/",
     });
@@ -261,14 +277,15 @@ export const authController = new Elysia()
         expiresAt: accessTokenExpiresAt,
       });
 
-      const newAccessToken = await jwt.sign({ id: userId });
-      const refreshRaw = await createRefreshToken(userId);
+      const newAccessToken = await jwt.sign({ id: userId, provider: "google" });
+      const refreshRaw = await createRefreshToken(userId, "google");
 
       cookie.refreshToken.set({
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: Bun.env.COOKIE_DOMAIN,
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -354,14 +371,18 @@ export const authController = new Elysia()
         refreshToken: null,
       });
 
-      const newAccessToken = await jwt.sign({ id: userId });
-      const refreshRaw = await createRefreshToken(userId);
+      const newAccessToken = await jwt.sign({
+        id: userId,
+        provider: "facebook",
+      });
+      const refreshRaw = await createRefreshToken(userId, "facebook");
 
       cookie.refreshToken.set({
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
+        domain: Bun.env.COOKIE_DOMAIN,
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -386,7 +407,12 @@ export const authController = new Elysia()
         await authService.logout(rawRefreshToken);
       }
 
-      refreshToken.remove();
+      refreshToken.set({
+        value: "",
+        expires: new Date(0),
+        path: "/",
+        domain: Bun.env.COOKIE_DOMAIN,
+      });
 
       set.status = StatusCodes.OK;
       return { message: "Logged out" };

@@ -1,9 +1,12 @@
-import { and, desc, eq, ilike, lt, sql } from "drizzle-orm";
-import { NotFoundError } from "@/common/errors";
-import { OpenAIService } from "@/common/service/openai";
-import { RAGService } from "@/common/service/rag.service";
+import { and, desc, eq, gte, ilike, isNull, lt, or } from "drizzle-orm";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { NotFoundError } from "@/common/exceptions";
+import { OpenAIService } from "@/common/services/openai.service";
+import { RAGService } from "@/common/services/rag.service";
+import { SatangSystemPrompt } from "@/common/utils/prompts";
 import { db } from "@/db";
-import { category, chatMessage, chatSession, icon, user } from "@/db/schema";
+import { category, chatMessage, chatSession, goals, user } from "@/db/schema";
+import type * as chatSchema from "./chat.schema";
 import { BotType } from "./chat.schema";
 
 const ragService = new RAGService();
@@ -102,19 +105,91 @@ export class ChatService {
   }
 
   async processSatiMessage(userId: number, content: string) {
+    const { id: sessionId } = await this.getOrCreateSession(
+      userId,
+      BotType.Sati
+    );
+
+    await db.insert(chatMessage).values({
+      sessionId,
+      userId,
+      role: "user",
+      content,
+    });
+
     const categories = await db.query.category.findMany({
-      where: eq(category.userId, userId),
+      where: and(eq(category.userId, userId), isNull(category.deletedAt)),
     });
 
-    const icons = await db.query.icon.findMany({
-      where: sql`${icon.userId} IS NULL OR ${icon.userId} = ${userId}`,
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const userGoals = await db.query.goals.findMany({
+      where: and(
+        eq(goals.userId, userId),
+        eq(goals.finished, false),
+        isNull(goals.deletedAt),
+        or(gte(goals.deadline, today), isNull(goals.deadline))
+      ),
     });
 
-    return await openAIService.handleMessage(content, categories, icons);
+    const allCategoriesForAI = [
+      ...categories.map((c) => ({
+        ...c,
+        isGoal: false,
+      })),
+      ...userGoals.map((g) => ({
+        id: g.id,
+        name: g.name,
+        type: "EXPENSE",
+        userId: g.userId,
+        isGoal: true,
+      })),
+    ];
+
+    const rawHistory = await db.query.chatMessage.findMany({
+      where: eq(chatMessage.sessionId, sessionId),
+      orderBy: [desc(chatMessage.createdAt)],
+      limit: 5,
+    });
+
+    const history = rawHistory.reverse();
+
+    const result = await openAIService.handleMessage(
+      userId,
+      content,
+      allCategoriesForAI,
+      history
+    );
+
+    await db.insert(chatMessage).values({
+      sessionId,
+      userId,
+      role: "assistant",
+      content: JSON.stringify(result),
+    });
+
+    return result;
+  }
+
+  async chatWithSati(userId: number, data: chatSchema.satiLog) {
+    const { id: sessionId } = await this.getOrCreateSession(
+      userId,
+      BotType.Sati
+    );
+
+    await db.insert(chatMessage).values({
+      sessionId,
+      userId,
+      role: data.role,
+      content: data.content,
+    });
+
+    return { success: true };
   }
 
   async *chatWithSatang(userId: number, content: string) {
-    const { id: sessionId, messages: history } = await this.getOrCreateSession(
+    const { id: sessionId } = await this.getOrCreateSession(
       userId,
       BotType.Satang
     );
@@ -126,59 +201,72 @@ export class ChatService {
       content,
     });
 
-    const contextHistory = history.slice(-4).map((m) => ({
+    const memories = await ragService.searchMemory(userId, content);
+
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+
+    const currentUser = await db.query.user.findFirst({
+      where: eq(user.id, userId),
+      columns: { name: true, balance: true },
+    });
+
+    const userName = currentUser?.name?.split(" ")[0] || "พี่";
+    const currentBalance = currentUser?.balance || 0;
+
+    const systemPrompt = SatangSystemPrompt(
+      userName,
+      userId,
+      currentBalance,
+      todayStr,
+      today,
+      memories
+    );
+
+    const history = await db.query.chatMessage.findMany({
+      where: eq(chatMessage.sessionId, sessionId),
+      orderBy: [desc(chatMessage.createdAt)],
+      limit: 6,
+    });
+
+    const chatHistory = history.reverse().map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     }));
 
-    const smartQuery = await ragService.contextualizeQuery(
-      content,
-      contextHistory
-    );
-
-    const [memories, stocks] = await Promise.all([
-      ragService.searchMemory(userId, smartQuery),
-      ragService.searchStock(smartQuery),
-    ]);
-
-    const contextBlock = `
-    [Chat Memory]:
-    ${memories.length ? memories.map((m) => `- ${m}`).join("\n") : "- No relevant memory."}
-
-    [Stock Knowledge]:
-    ${stocks.length ? JSON.stringify(stocks) : "- No stock data found."}
-    `;
-
-    const systemPrompt = `You are "Satang" (สตางค์), an investment assistant.
-    Answer based ONLY on the context below. If unsure, say "ไม่พบข้อมูลครับ" or provide general investment advice explicitly stating it is general knowledge.
-    
-    Context:
-    ${contextBlock}`;
-
-    void ragService.addMemory(userId, content, "user");
-
-    const stream = openAIService.chatStream([
+    const messages = [
       { role: "system", content: systemPrompt },
-      ...contextHistory,
+      ...chatHistory,
       { role: "user", content },
-    ]);
+    ] as ChatCompletionMessageParam[];
+
+    const stream = await openAIService.processSatangToolCallsAndStream(
+      userId,
+      messages
+    );
 
     let fullReply = "";
 
     for await (const chunk of stream) {
-      if (chunk) {
-        fullReply += chunk;
-        yield chunk;
+      const text = chunk.choices[0]?.delta?.content || "";
+      if (text) {
+        fullReply += text;
+        yield text;
       }
     }
 
-    await db.insert(chatMessage).values({
-      sessionId,
-      userId,
-      role: "assistant",
-      content: fullReply,
-    });
-
+    await db
+      .insert(chatMessage)
+      .values({ sessionId, userId, role: "assistant", content: fullReply });
     void ragService.addMemory(userId, fullReply, "assistant");
+  }
+
+  async updateMessage(messageId: number, content: string) {
+    await db
+      .update(chatMessage)
+      .set({ content })
+      .where(eq(chatMessage.id, messageId));
+
+    return { success: true };
   }
 }

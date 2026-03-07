@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 import PageWrapper from '../components/PageWrapper';
+import GitHub from '../assets/Github.svg';
 
 const Home: React.FC = () => {
   return (
@@ -109,11 +110,7 @@ const Home: React.FC = () => {
             </div>
 
             <a href="https://github.com/mrapiiwat/SatiSatang" className="flex flex-col items-start">
-              <img
-                src="/Github.svg"
-                alt="GitHub Logo"
-                className="w-[32px] h-[32px] object-contain"
-              />
+              <img src={GitHub} alt="GitHub Logo" className="w-[32px] h-[32px] object-contain" />
             </a>
 
             <p className="text-sm text-gray-300 mt-6">© 2025 สติสตางค์ สงวนลิขสิทธิ์</p>

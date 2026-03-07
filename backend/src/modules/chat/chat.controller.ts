@@ -66,6 +66,34 @@ export const chatController = new Elysia()
   )
 
   .post(
+    "/sati/log",
+    async ({ body, user, set }) => {
+      const userId = Number(user.id);
+      const result = await chatService.chatWithSati(userId, body);
+
+      set.status = StatusCodes.CREATED;
+      return result;
+    },
+    {
+      body: chatSchema.satiLog,
+    }
+  )
+
+  .put(
+    "/sati/message/:id",
+    async ({ params, body, set }) => {
+      const result = await chatService.updateMessage(params.id, body.content);
+
+      set.status = StatusCodes.OK;
+      return result;
+    },
+    {
+      body: chatSchema.chatMessage,
+      params: chatSchema.paramsId,
+    }
+  )
+
+  .post(
     "/satang",
     async function* ({ body, user }) {
       const stream = chatService.chatWithSatang(Number(user.id), body.content);

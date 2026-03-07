@@ -11,8 +11,8 @@ export interface userSchema {
   id: string;
   email: string;
   name: string;
-  balance: string;
   oauthAccounts?: OAuthAccount[];
+  currentLogin: string;
 }
 
 export interface formLogin {

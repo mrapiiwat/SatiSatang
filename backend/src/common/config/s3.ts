@@ -1,7 +1,7 @@
 import { S3Client } from "@aws-sdk/client-s3";
 
 export const s3Client = new S3Client({
-  region: "us-east-1",
+  region: Bun.env.AWS_REGION,
   endpoint: Bun.env.MINIO_ENDPOINT,
   credentials: {
     accessKeyId: Bun.env.MINIO_ROOT_USER!,

@@ -16,13 +16,18 @@ export type CategoriesType = {
   id: number;
   name: string;
   type: 'INCOME' | 'EXPENSE';
+  iconId: number;
   icon: string;
+  deletedAt: string | null;
 };
 
 export interface CategoryListProps {
   categories: CategoriesType[];
   setCategories: React.Dispatch<React.SetStateAction<CategoriesType[]>>;
   onAddClick: () => void;
+  refresh?: () => void;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
 }
 
 export interface Transaction {

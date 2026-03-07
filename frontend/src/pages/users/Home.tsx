@@ -16,7 +16,7 @@ import Budget from '../../components/user/home/Budget';
 import Goal from '../../components/user/home/Goal';
 import Sati from '../../components/user/home/Sati';
 import DeadlineDisplay from '../../components/user/home/DeadlineDisplay';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 
 const Home = () => {
   const today = new Date();
@@ -47,7 +47,8 @@ const Home = () => {
   const [now, setNow] = useState(new Date());
   const [showFrequency, setShowFrequency] = useState(true);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [editData, setEditData] = useState<Transaction | null>(null);
+  const [editData, setEditData] = useState<Transaction | MyBudget | MyGoal | null>(null);
+  const [isExpense, setIsExpense] = useState(true);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -103,13 +104,14 @@ const Home = () => {
   const fetchTotalExpense = useCallback(async () => {
     try {
       const res = await axios.get(
-        `/transaction/total-expense?month=${selectedMonth}&year=${selectedYear}`,
+        `/transaction/total-amount?month=${selectedMonth}&year=${selectedYear}&type=${isExpense ? 'EXPENSE' : 'INCOME'}`,
       );
-      setTotalExpense(res.data.totalExpense || 0);
+
+      setTotalExpense(res.data.totalAmount || 0);
     } catch (err) {
       console.error(err);
     }
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, isExpense]);
 
   const handleOpenEdit = (transaction: Transaction) => {
     setEditData(transaction);
@@ -231,7 +233,7 @@ const Home = () => {
   };
 
   const groupedByDate = transactions.reduce<Record<number, Transaction[]>>((acc, t) => {
-    const dateKey = new Date(t.createdAt).getDate();
+    const dateKey = new Date(t.date).getDate();
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(t);
     return acc;
@@ -286,15 +288,44 @@ const Home = () => {
           onMonthChange={handleMonthChange}
         />
         <div className="text-center mb-6">
-          <p className="text-sm mb-4">ยอดใช้จ่าย</p>
-          <h1
-            className={`${getFontSize(totalExpense)} mb-2 font-semibold leading-none transition-all`}
+          <div className="h-[20px] mb-4 overflow-hidden">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.p
+                key={isExpense ? 'exp' : 'inc'}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-sm"
+              >
+                {isExpense ? 'ยอดใช้จ่าย' : 'รายรับ'}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+
+          <motion.h1
+            layout
+            onClick={() => setIsExpense(!isExpense)}
+            className={`${getFontSize(totalExpense)} mb-2 font-semibold cursor-pointer leading-none select-none text-black`}
+            transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.5 }}
           >
-            {totalExpense.toLocaleString()}
-          </h1>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={isExpense ? 'exp-val' : 'inc-val'}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.15 }}
+                className="inline-block"
+              >
+                {totalExpense.toLocaleString()}
+              </motion.span>
+            </AnimatePresence>
+          </motion.h1>
+
           <button
             onClick={handleGoToSummary}
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-black-50 font-semibold text-[14px] rounded-[100px] w-[121px] h-[40px] transform transition-transform duration-200 ease-in-out hover:scale-105 mx-auto"
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[14px] rounded-[100px] w-[121px] h-[40px] transform transition-transform duration-200 ease-in-out hover:scale-105 mx-auto"
           >
             <PiChartPieSliceLight size={20} />
             ดูสรุป
@@ -307,18 +338,42 @@ const Home = () => {
           </div>
         ) : (
           <>
-            <div className="flex flex-col md:max-w-[80%] md:flex-col lg:flex-row lg:justify-center lg:gap-4 mb-6 w-full lg:w-4/5 mx-auto">
+            <div className="flex flex-col md:max-w-[80%] md:flex-col lg:flex-row lg:min-w-[700px] lg:justify-center lg:gap-4 mb-6 w-full lg:w-7/12 mx-auto">
               {budgets.length > 0 && budgetIndex < budgets.length && (
-                <div
-                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col"
+                <motion.div
+                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_e, info: PanInfo) => {
+                    const swipeThreshold = 50;
+                    if (info.offset.x < -swipeThreshold) {
+                      setBudgetIndex((prev) => (prev + 1) % budgets.length);
+                    } else if (info.offset.x > swipeThreshold) {
+                      setBudgetIndex((prev) => (prev - 1 + budgets.length) % budgets.length);
+                    }
+                  }}
+                  onClick={() => {
+                    if (budgets[budgetIndex]) {
+                      setEditData({
+                        ...budgets[budgetIndex],
+                        categoryId: budgets[budgetIndex].category.id,
+                      } as unknown as MyBudget);
+                      setActivePopup('budget');
+                    }
+                  }}
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold text-base">งบที่ตั้งไว้</h4>
+                  <div className="flex justify-between items-center mb-2 pointer-events-none">
+                    {' '}
+                    <h4 className="font-semibold text-base pointer-events-auto">งบที่ตั้งไว้</h4>
                     <p
-                      className="text-xs text-black-500 cursor-pointer"
-                      onClick={() => setShowFrequency(!showFrequency)}
+                      className="text-xs text-black-500 cursor-pointer pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowFrequency(!showFrequency);
+                      }}
                     >
                       <AnimatePresence mode="wait">
                         {showFrequency ? (
@@ -354,11 +409,11 @@ const Home = () => {
                     </p>
                   </div>
 
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-sm text-black">
+                  <div className="flex justify-between items-start mb-1 pointer-events-none">
+                    <span className="text-sm text-black pointer-events-auto">
                       {budgets[budgetIndex]?.category?.name || 'ไม่ระบุหมวดหมู่'}
                     </span>
-                    <div className="text-xs text-gray-700">
+                    <div className="text-xs text-gray-700 pointer-events-auto">
                       <span className="text-purple-300 font-semibold">
                         ฿ {budgets[budgetIndex]?.currentAmount?.toLocaleString() || 0}
                       </span>
@@ -369,7 +424,7 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1">
+                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1 pointer-events-none">
                     <div
                       className="bg-purple-300 h-1.5 rounded-full transition-all"
                       style={{
@@ -383,7 +438,10 @@ const Home = () => {
                     />
                   </div>
 
-                  <div className="flex justify-center gap-1 mt-3">
+                  <div
+                    className="flex justify-center gap-1 mt-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {budgets.length > 1 &&
                       budgets
                         .slice(
@@ -399,7 +457,10 @@ const Home = () => {
                           return (
                             <span
                               key={realIndex}
-                              onClick={() => setBudgetIndex(realIndex)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setBudgetIndex(realIndex);
+                              }}
                               className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
                                 budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
                               }`}
@@ -407,48 +468,71 @@ const Home = () => {
                           );
                         })}
                   </div>
-                </div>
+                </motion.div>
               )}
 
-              {goals.length > 0 && (
-                <div
-                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg flex flex-col"
+              {goals.length > 0 && goalIndex < goals.length && (
+                <motion.div
+                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_e, info: PanInfo) => {
+                    const swipeThreshold = 50;
+                    if (info.offset.x < -swipeThreshold) {
+                      setGoalIndex((prev) => (prev + 1) % goals.length);
+                    } else if (info.offset.x > swipeThreshold) {
+                      setGoalIndex((prev) => (prev - 1 + goals.length) % goals.length);
+                    }
+                  }}
+                  onClick={() => {
+                    if (goals[goalIndex]) {
+                      setEditData(goals[goalIndex]);
+                      setActivePopup('goal');
+                    }
+                  }}
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold text-base">เป้าหมาย</h4>
-                    <p className="text-xs text-black-500">
+                  <div className="flex justify-between items-center mb-2 pointer-events-none">
+                    <h4 className="font-semibold text-base pointer-events-auto">เป้าหมาย</h4>
+                    <p className="text-xs text-black-500 pointer-events-auto">
                       <DeadlineDisplay deadline={goals[goalIndex]?.deadline} now={now} />
                     </p>
                   </div>
 
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-sm text-black">{goals[goalIndex].name}</span>
-                    <div className="text-xs text-gray-700">
+                  <div className="flex justify-between items-start mb-1 pointer-events-none">
+                    <span className="text-sm text-black pointer-events-auto">
+                      {goals[goalIndex]?.name}
+                    </span>
+                    <div className="text-xs text-gray-700 pointer-events-auto">
                       <span className="text-green-600 font-semibold">
-                        ฿ {goals[goalIndex].totalAmount.toLocaleString()}
+                        ฿ {goals[goalIndex]?.totalAmount?.toLocaleString() || 0}
                       </span>
                       <span className="text-gray-500">
                         {' '}
-                        / ฿ {goals[goalIndex].amount.toLocaleString()}
+                        / ฿ {goals[goalIndex]?.amount?.toLocaleString() || 0}
                       </span>
                     </div>
                   </div>
 
-                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1">
+                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1 pointer-events-none">
                     <div
                       className="bg-green-600 h-1.5 rounded-full transition-all"
                       style={{
                         width: `${Math.min(
-                          (goals[goalIndex].totalAmount / goals[goalIndex].amount) * 100,
+                          ((goals[goalIndex]?.totalAmount || 0) / (goals[goalIndex]?.amount || 1)) *
+                            100,
                           100,
                         )}%`,
                       }}
                     />
                   </div>
 
-                  <div className="flex justify-center gap-1 mt-3">
+                  <div
+                    className="flex justify-center gap-1 mt-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {goals.length > 1 &&
                       goals
                         .slice(
@@ -464,7 +548,10 @@ const Home = () => {
                           return (
                             <span
                               key={realIndex}
-                              onClick={() => setGoalIndex(realIndex)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setGoalIndex(realIndex);
+                              }}
                               className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
                                 goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
                               }`}
@@ -472,11 +559,11 @@ const Home = () => {
                           );
                         })}
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
 
-            <div className="flex flex-row md:flex md:justify-center">
+            <div className="flex flex-row justify-center md:flex md:justify-center">
               <div className="w-1/6 md:w-[7%]">
                 {sortedDates.map((date) => {
                   const dayTransactions = groupedByDate[date];
@@ -484,10 +571,8 @@ const Home = () => {
                   const transactionHeight =
                     dayTransactions.length === 0 ? 64 : dayTransactions.length * 64;
                   const totalHeight = headerHeight + transactionHeight;
-                  const transaction = transactions.find(
-                    (t) => new Date(t.createdAt).getDate() === date,
-                  );
-                  const transactionDate = new Date(transaction?.createdAt || '');
+                  const transaction = transactions.find((t) => new Date(t.date).getDate() === date);
+                  const transactionDate = new Date(transaction?.date || '');
                   const isToday = transactionDate.toDateString() === today.toDateString();
                   const dayLabel = isToday
                     ? 'วันนี้'
@@ -577,6 +662,7 @@ const Home = () => {
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
           handleMenuSelect={handleMenuSelect}
+          onRefresh={handleRefreshAll}
         />
       )}
 
@@ -587,11 +673,24 @@ const Home = () => {
             <Manual
               onClose={handleClosePopupAndRefetch}
               onSuccess={fetchTransactions}
-              editData={editData}
+              editData={editData as Transaction}
             />
           )}
-          {activePopup === 'budget' && <Budget onClose={handleClosePopupAndRefetch} />}
-          {activePopup === 'goal' && <Goal onClose={handleClosePopupAndRefetch} />}
+          {activePopup === 'budget' && (
+            <Budget
+              onClose={handleClosePopupAndRefetch}
+              onSuccess={handleRefreshAll}
+              editData={editData as MyBudget & { categoryId: number }}
+            />
+          )}
+
+          {activePopup === 'goal' && (
+            <Goal
+              onClose={handleClosePopupAndRefetch}
+              onSuccess={handleRefreshAll}
+              editData={editData as MyGoal}
+            />
+          )}
         </div>
       </Modal>
     </PageWrapper>

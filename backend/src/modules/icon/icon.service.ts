@@ -3,10 +3,11 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { and, desc, eq, ilike, isNull, or } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { BUCKET_NAME, s3Client } from "@/common/config/s3";
-import { NotFoundError } from "@/common/errors";
+import { NotFoundError } from "@/common/exceptions";
 import { db } from "@/db";
 import { icon } from "@/db/schema";
 import type * as iconSchema from "./icon.schema";
@@ -17,6 +18,7 @@ export class IconService {
 
     const ext = file.name.split(".").pop();
     const filename = `${uuidv4()}.${ext}`;
+    const s3Key = `icons/${filename}`;
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
@@ -24,7 +26,7 @@ export class IconService {
     await s3Client.send(
       new PutObjectCommand({
         Bucket: BUCKET_NAME,
-        Key: filename,
+        Key: s3Key,
         Body: buffer,
         ContentType: file.type,
       })
@@ -33,7 +35,7 @@ export class IconService {
     const [newIcon] = await db
       .insert(icon)
       .values({
-        url: filename,
+        url: s3Key,
         description: data.description || null,
         userId: userId,
       })
@@ -65,41 +67,26 @@ export class IconService {
 
     if (icons.length === 0) throw new NotFoundError("No icons found");
 
-    const iconsWithUrl = icons.map((i) => ({
-      id: i.id,
-      url: `${Bun.env.APP_BASE_URL}/api/icon/${i.id}`,
-      description: i.description,
-    }));
+    const iconsWithUrl = await Promise.all(
+      icons.map(async (i) => {
+        const command = new GetObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: i.url,
+        });
+
+        const signedUrl = await getSignedUrl(s3Client, command, {
+          expiresIn: 3600,
+        });
+
+        return {
+          id: i.id,
+          url: signedUrl,
+          description: i.description,
+        };
+      })
+    );
 
     return iconsWithUrl;
-  }
-
-  async downloadIcon(iconId: number) {
-    const iconRecord = await db.query.icon.findFirst({
-      where: eq(icon.id, iconId),
-    });
-
-    if (!iconRecord) {
-      throw new NotFoundError("Icon not found");
-    }
-
-    try {
-      const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: iconRecord.url,
-      });
-
-      const s3Item = await s3Client.send(command);
-
-      return {
-        stream: s3Item.Body,
-        contentType: s3Item.ContentType,
-        filename: iconRecord.url,
-      };
-    } catch (error) {
-      console.error("S3 Error:", error);
-      throw new NotFoundError("File not found in storage");
-    }
   }
 
   async updateIcon(iconId: number, data: iconSchema.updateIcon) {
@@ -117,6 +104,7 @@ export class IconService {
       const file = data.url;
       const ext = file.name.split(".").pop();
       const filename = `${uuidv4()}.${ext}`;
+      const s3Key = `icons/${filename}`;
 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = new Uint8Array(arrayBuffer);
@@ -124,7 +112,7 @@ export class IconService {
       await s3Client.send(
         new PutObjectCommand({
           Bucket: BUCKET_NAME,
-          Key: filename,
+          Key: s3Key,
           Body: buffer,
           ContentType: file.type,
         })
@@ -143,7 +131,7 @@ export class IconService {
         }
       }
 
-      newStoragePath = filename;
+      newStoragePath = s3Key;
     }
 
     const [updatedIcon] = await db

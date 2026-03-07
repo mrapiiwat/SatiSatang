@@ -18,13 +18,17 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
   const { token: rawToken, actionSetToken, actionClearAuth } = useAuthStore.getState();
   const token = rawToken ?? undefined;
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+  const targetUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+
   const headers = new Headers(options.headers || {});
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
   const fetchWithToken = async (customToken?: string) => {
     const newHeaders = new Headers(options.headers || {});
     if (customToken) newHeaders.set('Authorization', `Bearer ${customToken}`);
-    return await fetch(url, { ...options, headers: newHeaders, credentials: 'include' });
+
+    return await fetch(targetUrl, { ...options, headers: newHeaders, credentials: 'include' });
   };
 
   let response = await fetchWithToken(token);
@@ -49,7 +53,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
 
   isRefreshing = true;
   try {
-    const refreshResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/refreshToken`, {
+    const refreshResponse = await fetch(`${API_BASE_URL}/api/refreshToken`, {
       method: 'GET',
       credentials: 'include',
     });

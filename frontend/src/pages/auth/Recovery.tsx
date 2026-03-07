@@ -6,6 +6,7 @@ import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
 import { IoMailOutline } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import type { ElysiaResponse } from '../../interface/error';
 
 const Recovery: React.FC = () => {
   const navigate = useNavigate();
@@ -44,8 +45,15 @@ const Recovery: React.FC = () => {
       setSent(true);
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
-        const axiosError = error as AxiosError<{ message?: string }>;
-        showToastAlert(axiosError.response?.data?.message || 'เกิดข้อผิดพลาด', 'error');
+        const axiosError = error as AxiosError<ElysiaResponse>;
+        const data = axiosError.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+
+        const errorMessage =
+          customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
+
+        showToastAlert(errorMessage, 'error');
       } else {
         showToastAlert('เกิดข้อผิดพลาด', 'error');
       }

@@ -50,3 +50,17 @@ export class TooManyRequestsError extends AppError {
     };
   }
 }
+
+export class ForbiddenError extends AppError {
+  statusCode = StatusCodes.FORBIDDEN;
+  serialize() {
+    return { success: false, error: "FORBIDDEN", message: this.message };
+  }
+}
+
+export class ConflictError extends AppError {
+  statusCode = StatusCodes.CONFLICT;
+  serialize() {
+    return { success: false, error: "CONFLICT", message: this.message };
+  }
+}

@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, isNull, lte, or } from "drizzle-orm";
-import { BadRequestError, NotFoundError } from "@/common/errors";
+import { BadRequestError, NotFoundError } from "@/common/exceptions";
 import { db } from "@/db";
 import { goals } from "@/db/schema";
 import type * as goalSchema from "./goal.schema";
@@ -49,7 +49,8 @@ export class GoalService {
       where: and(
         eq(goals.userId, userId),
         lte(goals.createdAt, endDate),
-        or(gte(goals.deadline, startDate), isNull(goals.deadline))
+        or(gte(goals.deadline, startDate), isNull(goals.deadline)),
+        isNull(goals.deletedAt)
       ),
       with: {
         goalTransactions: true,
@@ -71,6 +72,16 @@ export class GoalService {
           })
           .reduce((sum, gt) => sum + Number(gt.amount), 0);
 
+        const totalAmountBeforeStartDate = goal.goalTransactions
+          .filter((gt) => {
+            const date = new Date(gt.createdAt);
+            return date < startDate;
+          })
+          .reduce((sum, gt) => sum + Number(gt.amount), 0);
+
+        const wasFinishedBeforeThisMonth =
+          totalAmountBeforeStartDate >= Number(goal.amount);
+
         let isGoalFinished = goal.finished;
 
         if (!isGoalFinished && totalAmount >= Number(goal.amount)) {
@@ -88,13 +99,18 @@ export class GoalService {
           amount: Number(goal.amount),
           totalAmount,
           currentAmount,
+          wasFinishedBeforeThisMonth,
         };
       })
     );
 
-    const filteredGoals = goalsWithAmounts.filter((goal) =>
-      isFinished === undefined ? true : goal.finished === isFinished
-    );
+    const filteredGoals = goalsWithAmounts.filter((goal) => {
+      if (isFinished === undefined) {
+        return !goal.wasFinishedBeforeThisMonth;
+      }
+
+      return goal.finished === isFinished;
+    });
 
     const totalGoalAmount = filteredGoals.reduce((sum, g) => sum + g.amount, 0);
     const totalCurrentAmount = filteredGoals.reduce(
@@ -149,7 +165,7 @@ export class GoalService {
 
     return updatedGoal;
   }
-  async deleteGoal(userId: number, goalId: number) {
+  async deleteGoal(goalId: number, userId: number) {
     const existingGoal = await db.query.goals.findFirst({
       where: and(eq(goals.id, goalId), eq(goals.userId, userId)),
     });
@@ -158,7 +174,16 @@ export class GoalService {
       throw new NotFoundError("Goal not found");
     }
 
-    await db.delete(goals).where(eq(goals.id, goalId));
+    await db
+      .update(goals)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(
+          eq(goals.id, goalId),
+          eq(goals.userId, userId),
+          isNull(goals.deletedAt)
+        )
+      );
 
     return { message: "Goal deleted successfully" };
   }

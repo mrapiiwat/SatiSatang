@@ -7,6 +7,7 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { showToastAlert } from '../../store/toastStore';
 import Logo from '../../components/Logo';
 import { IoCheckmarkCircle } from 'react-icons/io5';
+import type { ElysiaResponse } from '../../interface/error';
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -80,10 +81,16 @@ const ResetPassword: React.FC = () => {
       setIsReset(true);
     } catch (err: unknown) {
       let message = 'เกิดข้อผิดพลาด';
+
       if (err && typeof err === 'object' && 'response' in err) {
-        const axiosErr = err as AxiosError<{ message?: string }>;
-        message = axiosErr.response?.data?.message ?? message;
+        const axiosErr = err as AxiosError<ElysiaResponse>;
+        const data = axiosErr.response?.data;
+
+        const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
+
+        message = customError || data?.errors?.[0]?.summary || data?.message || message;
       }
+
       showToastAlert(message, 'error');
     } finally {
       setLoading(false);

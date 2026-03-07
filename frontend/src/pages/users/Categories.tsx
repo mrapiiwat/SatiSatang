@@ -28,11 +28,20 @@ const Categories = () => {
     <PageWrapper animation="scale-fade">
       <div className="px-6 py-8 text-black-900">
         <CategoryHeader selectedType={selectedType} setSelectedType={setSelectedType} />
+
         <CategoryList
           categories={categories}
           setCategories={setCategories}
           onAddClick={() => setIsModalOpen(true)}
+          refresh={fetchCategories}
+          onSwipeLeft={() => {
+            if (selectedType === 'INCOME') setSelectedType('EXPENSE');
+          }}
+          onSwipeRight={() => {
+            if (selectedType === 'EXPENSE') setSelectedType('INCOME');
+          }}
         />
+
         <CategoryModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}

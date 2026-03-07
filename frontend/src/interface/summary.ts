@@ -3,7 +3,7 @@ export interface Transaction {
   type: 'INCOME' | 'EXPENSE';
   description: string;
   amount: number;
-  createdAt: string;
+  date: string;
   category: {
     id: number;
     name: string;

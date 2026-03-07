@@ -8,7 +8,6 @@ export interface ChatMessage {
 }
 
 export interface SatangTextModeProps {
-  toggleVoiceMode: () => void;
   text: string;
   setText: React.Dispatch<React.SetStateAction<string>>;
   sendMessage: (text: string) => void;
@@ -16,10 +15,15 @@ export interface SatangTextModeProps {
   isTyping: boolean;
   loadMore: () => Promise<void>;
   hasMore: boolean;
+  isLoadingHistory: boolean;
 }
 
 export interface SatangVoiceModeProps {
   toggleMic: () => void;
   toggleVoiceMode: () => void;
   isMicOn: boolean;
+}
+
+export interface TrackingFaceProps {
+  mode: 'sati' | 'satang';
 }

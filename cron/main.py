@@ -2,6 +2,7 @@ import os
 import time
 import uuid
 from datetime import datetime
+import schedule
 
 import yfinance as yf
 from dotenv import load_dotenv
@@ -19,7 +20,6 @@ QDRANT_PORT = os.getenv("QDRANT_PORT")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-
 MAX_RETRIES = 5
 RETRY_DELAY = 5
 
@@ -27,6 +27,7 @@ for attempt in range(MAX_RETRIES):
     try:
         qdrant_client = QdrantClient(host=QDRANT_HOST, port=int(QDRANT_PORT))
         qdrant_client.get_collections()
+        print("Connected to Qdrant successfully.")
         break
     except Exception as e:
         print(f"Qdrant not ready (attempt {attempt+1}): {e}")
@@ -34,8 +35,6 @@ for attempt in range(MAX_RETRIES):
 else:
     raise RuntimeError("Qdrant not ready after retries")
 
-
-qdrant_client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 existing_collections = [c.name for c in qdrant_client.get_collections().collections]
@@ -52,106 +51,132 @@ def get_embedding(text: str):
     return res.data[0].embedding
 
 
-with get_conn() as conn:
-    result = conn.execute(text('SELECT "symbol" FROM "Stock"'))
-    symbols = [row["symbol"] for row in result.mappings()]
+def process_stock_data():
+    print(f"[{datetime.now()}] Starting Job: Updating Stock Data...")
 
-    for symbol in symbols:
-        try:
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
-            now = datetime.utcnow()
-            description = info.get("longBusinessSummary") or ""
-            
-            data = {
-                "symbol": symbol,
-                "name": info.get("shortName") or info.get("longName") or "",
-                "quoteType": info.get("quoteType") or "",
-                "currency": info.get("currency") or "THB",
-                "market": info.get("exchange") or "SET",
-                "regularMarketPrice": info.get("regularMarketPrice") or 0.0,
-                "regularMarketOpen": info.get("regularMarketOpen") or 0.0,
-                "regularMarketHigh": info.get("regularMarketDayHigh") or 0.0,
-                "regularMarketLow": info.get("regularMarketDayLow") or 0.0,
-                "previousClose": info.get("previousClose") or 0.0,
-                "dayHigh": info.get("dayHigh") or 0.0,
-                "dayLow": info.get("dayLow") or 0.0,
-                "volume": info.get("volume") or 0,
-                "averageVolume": info.get("averageVolume") or 0,
-                "fiftyDayAverage": info.get("fiftyDayAverage") or 0.0,
-                "twoHundredDayAverage": info.get("twoHundredDayAverage") or 0.0,
-                "fiftyTwoWeekLow": info.get("fiftyTwoWeekLow") or 0.0,
-                "fiftyTwoWeekHigh": info.get("fiftyTwoWeekHigh") or 0.0,
-                "fiftyTwoWeekChangePercent": info.get("52WeekChange") or 0.0,
-                "regularMarketChange": info.get("regularMarketChange") or 0.0,
-                "regularMarketChangePercent": info.get("regularMarketChangePercent")
-                or 0.0,
-                "marketState": info.get("marketState") or "",
-                "tradeable": info.get("tradeable") or False,
-                "lastUpdated": now,
-                "createdAt": now,
-                "updatedAt": now,
-                "description": description
-            }
+    try:
+        with get_conn() as conn:
+            result = conn.execute(text("SELECT symbol FROM stocks"))
+            symbols = [row.symbol for row in result.mappings()]
 
-            query = text(
-                """
-            INSERT INTO "Stock" (
-                "symbol", "name", "quoteType", "currency", "market",
-                "regularMarketPrice", "regularMarketOpen", "regularMarketHigh", "regularMarketLow",
-                "previousClose", "dayHigh", "dayLow", "volume", "averageVolume",
-                "fiftyDayAverage", "twoHundredDayAverage", "fiftyTwoWeekLow", "fiftyTwoWeekHigh",
-                "fiftyTwoWeekChangePercent", "regularMarketChange", "regularMarketChangePercent",
-                "marketState", "tradeable", "lastUpdated", "createdAt", "updatedAt", "description"
-            ) VALUES (
-                :symbol, :name, :quoteType, :currency, :market,
-                :regularMarketPrice, :regularMarketOpen, :regularMarketHigh, :regularMarketLow,
-                :previousClose, :dayHigh, :dayLow, :volume, :averageVolume,
-                :fiftyDayAverage, :twoHundredDayAverage, :fiftyTwoWeekLow, :fiftyTwoWeekHigh,
-                :fiftyTwoWeekChangePercent, :regularMarketChange, :regularMarketChangePercent,
-                :marketState, :tradeable, :lastUpdated, :createdAt, :updatedAt, :description
-            )
-            ON CONFLICT ("symbol") DO UPDATE SET
-                "name" = EXCLUDED."name",
-                "quoteType" = EXCLUDED."quoteType",
-                "currency" = EXCLUDED."currency",
-                "market" = EXCLUDED."market",
-                "regularMarketPrice" = EXCLUDED."regularMarketPrice",
-                "regularMarketOpen" = EXCLUDED."regularMarketOpen",
-                "regularMarketHigh" = EXCLUDED."regularMarketHigh",
-                "regularMarketLow" = EXCLUDED."regularMarketLow",
-                "previousClose" = EXCLUDED."previousClose",
-                "dayHigh" = EXCLUDED."dayHigh",
-                "dayLow" = EXCLUDED."dayLow",
-                "volume" = EXCLUDED."volume",
-                "averageVolume" = EXCLUDED."averageVolume",
-                "fiftyDayAverage" = EXCLUDED."fiftyDayAverage",
-                "twoHundredDayAverage" = EXCLUDED."twoHundredDayAverage",
-                "fiftyTwoWeekLow" = EXCLUDED."fiftyTwoWeekLow",
-                "fiftyTwoWeekHigh" = EXCLUDED."fiftyTwoWeekHigh",
-                "fiftyTwoWeekChangePercent" = EXCLUDED."fiftyTwoWeekChangePercent",
-                "regularMarketChange" = EXCLUDED."regularMarketChange",
-                "regularMarketChangePercent" = EXCLUDED."regularMarketChangePercent",
-                "marketState" = EXCLUDED."marketState",
-                "tradeable" = EXCLUDED."tradeable",
-                "lastUpdated" = EXCLUDED."lastUpdated",
-                "updatedAt" = EXCLUDED."updatedAt",
-                "description" = EXCLUDED."description"
-            """
-            )
-            conn.execute(query, data)
-            conn.commit()
-            print(f"Inserted/Updated in PostgreSQL: {symbol}")
+            for symbol in symbols:
+                try:
+                    ticker = yf.Ticker(symbol)
+                    info = ticker.info
+                    now = datetime.utcnow()
+                    description = info.get("longBusinessSummary") or ""
 
-            text_for_embedding = f"Symbol: {data['symbol']} | Name: {data['name']} | Business Description: {description}"
-            vector = get_embedding(text_for_embedding)
+                    data = {
+                        "symbol": symbol,
+                        "name": info.get("shortName") or info.get("longName") or "",
+                        "quote_type": info.get("quoteType") or "",
+                        "currency": info.get("currency") or "THB",
+                        "market": info.get("exchange") or "SET",
+                        "regular_market_price": info.get("regularMarketPrice") or 0.0,
+                        "regular_market_open": info.get("regularMarketOpen") or 0.0,
+                        "regular_market_high": info.get("regularMarketDayHigh") or 0.0,
+                        "regular_market_low": info.get("regularMarketDayLow") or 0.0,
+                        "previous_close": info.get("previousClose") or 0.0,
+                        "day_high": info.get("dayHigh") or 0.0,
+                        "day_low": info.get("dayLow") or 0.0,
+                        "volume": info.get("volume") or 0,
+                        "average_volume": info.get("averageVolume") or 0,
+                        "fifty_day_average": info.get("fiftyDayAverage") or 0.0,
+                        "two_hundred_day_average": info.get("twoHundredDayAverage")
+                        or 0.0,
+                        "fifty_two_week_low": info.get("fiftyTwoWeekLow") or 0.0,
+                        "fifty_two_week_high": info.get("fiftyTwoWeekHigh") or 0.0,
+                        "fifty_two_week_change_percent": info.get("52WeekChange")
+                        or 0.0,
+                        "regular_market_change": info.get("regularMarketChange") or 0.0,
+                        "regular_market_change_percent": info.get(
+                            "regularMarketChangePercent"
+                        )
+                        or 0.0,
+                        "market_state": info.get("marketState") or "",
+                        "tradeable": info.get("tradeable") or False,
+                        "last_updated": now,
+                        "created_at": now,
+                        "updated_at": now,
+                        "description": description,
+                    }
 
-            point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, symbol))
+                    query = text(
+                        """
+                        INSERT INTO stocks (
+                            symbol, name, quote_type, currency, market,
+                            regular_market_price, regular_market_open, regular_market_high, regular_market_low,
+                            previous_close, day_high, day_low, volume, average_volume,
+                            fifty_day_average, two_hundred_day_average, fifty_two_week_low, fifty_two_week_high,
+                            fifty_two_week_change_percent, regular_market_change, regular_market_change_percent,
+                            market_state, tradeable, last_updated, created_at, updated_at, description
+                        ) VALUES (
+                            :symbol, :name, :quote_type, :currency, :market,
+                            :regular_market_price, :regular_market_open, :regular_market_high, :regular_market_low,
+                            :previous_close, :day_high, :day_low, :volume, :average_volume,
+                            :fifty_day_average, :two_hundred_day_average, :fifty_two_week_low, :fifty_two_week_high,
+                            :fifty_two_week_change_percent, :regular_market_change, :regular_market_change_percent,
+                            :market_state, :tradeable, :last_updated, :created_at, :updated_at, :description
+                        )
+                        ON CONFLICT (symbol) DO UPDATE SET
+                            name = EXCLUDED.name,
+                            quote_type = EXCLUDED.quote_type,
+                            currency = EXCLUDED.currency,
+                            market = EXCLUDED.market,
+                            regular_market_price = EXCLUDED.regular_market_price,
+                            regular_market_open = EXCLUDED.regular_market_open,
+                            regular_market_high = EXCLUDED.regular_market_high,
+                            regular_market_low = EXCLUDED.regular_market_low,
+                            previous_close = EXCLUDED.previous_close,
+                            day_high = EXCLUDED.day_high,
+                            day_low = EXCLUDED.day_low,
+                            volume = EXCLUDED.volume,
+                            average_volume = EXCLUDED.average_volume,
+                            fifty_day_average = EXCLUDED.fifty_day_average,
+                            two_hundred_day_average = EXCLUDED.two_hundred_day_average,
+                            fifty_two_week_low = EXCLUDED.fifty_two_week_low,
+                            fifty_two_week_high = EXCLUDED.fifty_two_week_high,
+                            fifty_two_week_change_percent = EXCLUDED.fifty_two_week_change_percent,
+                            regular_market_change = EXCLUDED.regular_market_change,
+                            regular_market_change_percent = EXCLUDED.regular_market_change_percent,
+                            market_state = EXCLUDED.market_state,
+                            tradeable = EXCLUDED.tradeable,
+                            last_updated = EXCLUDED.last_updated,
+                            updated_at = EXCLUDED.updated_at,
+                            description = EXCLUDED.description
+                    """
+                    )
+                    conn.execute(query, data)
+                    conn.commit()
+                    print(f"Inserted/Updated in PostgreSQL: {symbol}")
 
-            point = PointStruct(id=point_id, vector=vector, payload=data)
-            qdrant_client.upsert(collection_name=COLLECTION_NAME, points=[point])
-            print(f"Upserted in Qdrant: {symbol}")
+                    text_for_embedding = f"Symbol: {data['symbol']} | Name: {data['name']} | Business Description: {description}"
+                    vector = get_embedding(text_for_embedding)
 
-        except Exception as e:
-            conn.rollback()
-            print(f"Error fetching/updating {symbol}: {e}")
+                    point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, symbol))
+
+                    point = PointStruct(id=point_id, vector=vector, payload=data)
+                    qdrant_client.upsert(
+                        collection_name=COLLECTION_NAME, points=[point]
+                    )
+                    print(f"Upserted in Qdrant: {symbol}")
+
+                except Exception as e:
+                    conn.rollback()
+                    print(f"Error processing symbol {symbol}: {e}")
+
+    except Exception as main_e:
+        print(f"Critical Error in Job: {main_e}")
+
+    print(f"[{datetime.now()}] Job Finished.")
+
+
+process_stock_data()
+
+schedule.every(15).minutes.do(process_stock_data)
+
+print("Scheduler started. Waiting for next job...")
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)

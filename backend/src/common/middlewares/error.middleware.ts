@@ -7,7 +7,7 @@ import {
   NotFoundError,
   UnauthorizedError,
   ValidationError,
-} from "@/common/errors";
+} from "@/common/exceptions";
 
 export const errorMiddleware = (app: Elysia) =>
   app.onError(({ code, error, set }) => {

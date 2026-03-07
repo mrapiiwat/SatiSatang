@@ -1,10 +1,21 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { cached } from "@/common/utils/cache";
+import { clearBudgetCache } from "../budget/budget.cache";
+import { clearGoalCache } from "../goal/goal.cache";
+import { clearTransactionCache, transactionCache } from "./transaction.cache";
 import * as transactionSchema from "./transaction.schema";
 import { TransactionService } from "./transaction.service";
 
 const transactionService = new TransactionService();
+const invalidateAllFinancialData = async (userId: number) => {
+  await Promise.all([
+    clearTransactionCache(userId),
+    clearBudgetCache(userId),
+    clearGoalCache(userId),
+  ]);
+};
 
 export const transactionController = new Elysia({ prefix: "/transaction" })
   .use(authenticateJWT)
@@ -12,42 +23,57 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
     "/",
     async ({ query, user, set }) => {
       const userId = Number(user.id);
+      const cacheKey = transactionCache.list(userId, query);
 
-      const result = await transactionService.getTransactions(userId, query);
+      const { data, status } = await cached(
+        cacheKey,
+        () => transactionService.getTransactions(userId, query),
+        "30m"
+      );
 
+      set.headers["X-Cache"] = status;
       set.status = StatusCodes.OK;
       return {
         message: "Transactions fetched successfully",
-        ...result,
+        ...data,
       };
     },
     {
       query: transactionSchema.getTransactionsQuery,
     }
   )
+
   .get(
-    "/total-expense",
+    "/total-amount",
     async ({ query, user, set }) => {
       const userId = Number(user.id);
+      const cacheKey = transactionCache.total(userId, query);
 
-      const result = await transactionService.getTotalExpense(userId, query);
+      const { data, status } = await cached(
+        cacheKey,
+        () => transactionService.getTotalAmount(userId, query),
+        "10m"
+      );
 
+      set.headers["X-Cache"] = status;
       set.status = StatusCodes.OK;
       return {
-        message: "Total expense calculated successfully",
-        ...result,
+        message: "Total amount calculated successfully",
+        ...data,
       };
     },
     {
-      query: transactionSchema.getTotalExpenseQuery,
+      query: transactionSchema.getTotalAmountQuery,
     }
   )
+
   .post(
     "/",
     async ({ body, user, set }) => {
       const userId = Number(user.id);
 
       const result = await transactionService.createTransaction(body, userId);
+      await invalidateAllFinancialData(userId);
 
       set.status = StatusCodes.CREATED;
 
@@ -63,27 +89,70 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
       body: transactionSchema.createTransaction,
     }
   )
+
+  .post(
+    "/predict-category",
+    async ({ body, user, set }) => {
+      const userId = Number(user.id);
+      const result = await transactionService.predictCategory(
+        body.description,
+        userId
+      );
+
+      set.status = StatusCodes.OK;
+
+      return result;
+    },
+    {
+      body: transactionSchema.predictCategory,
+    }
+  )
+
+  .get(
+    "/receipt/:id",
+    async ({ params: { id }, set }) => {
+      const txnId = Number(id);
+      const cacheKey = transactionCache.receipt(txnId);
+
+      const { data, status } = await cached(
+        cacheKey,
+        () => transactionService.getReceiptUrl(txnId),
+        "50m"
+      );
+
+      set.headers["X-Cache"] = status;
+      set.status = StatusCodes.OK;
+      return data;
+    },
+    {
+      params: transactionSchema.paramsId,
+    }
+  )
+
   .post(
     "/upload",
     async ({ body, user, set }) => {
       const userId = Number(user.id);
 
-      const result = await transactionService.transactionByUpload(
+      const results = await transactionService.transactionByUpload(
         body.receipt,
         userId
       );
 
       set.status = StatusCodes.OK;
 
+      const successCount = results.filter((r) => r.status === "success").length;
+
       return {
-        message: "OCR และการแปลงข้อมูลสำเร็จ",
-        transactionData: result,
+        message: `ประมวลผลเสร็จสิ้น สำเร็จ ${successCount} จาก ${results.length} รายการ`,
+        results: results,
       };
     },
     {
       body: transactionSchema.uploadReceipt,
     }
   )
+
   .put(
     "/:id",
     async ({ params: { id }, body, user, set }) => {
@@ -94,6 +163,7 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
         body,
         userId
       );
+      await invalidateAllFinancialData(userId);
 
       set.status = StatusCodes.OK;
 
@@ -107,11 +177,13 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
       body: transactionSchema.updateTransaction,
     }
   )
+
   .delete(
     "/:id",
     async ({ params: { id }, user, set }) => {
       const userId = Number(user.id);
       const result = await transactionService.deleteTransaction(id, userId);
+      await invalidateAllFinancialData(userId);
 
       set.status = StatusCodes.OK;
       return result;

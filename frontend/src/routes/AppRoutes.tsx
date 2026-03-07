@@ -14,9 +14,12 @@ import Account from '../pages/users/Account';
 import Categories from '../pages/users/Categories';
 import Satang from '../pages/users/Satang';
 import Summary from '../pages/users/Summary';
-import Stock, { StockDetail } from '../pages/users/Stock';
 import ResetPassword from '../pages/auth/ResetPassword';
 import Recovery from '../pages/auth/Recovery';
+import Feedback from '../pages/users/Feedback';
+import Terms from '../pages/policies/Terms';
+import Privacy from '../pages/policies/Privacy';
+import LayoutPolicies from '../pages/policies/Layout';
 
 const router = createBrowserRouter([
   {
@@ -41,9 +44,16 @@ const router = createBrowserRouter([
       { path: 'categories', element: <Categories /> },
       { path: 'satang', element: <Satang /> },
       { path: 'summary', element: <Summary /> },
-      { path: 'stock', element: <Stock /> },
-      { path: 'stock-detail', element: <StockDetail /> },
+      { path: 'feedback', element: <Feedback /> },
       { path: '*', element: <NotFound /> },
+    ],
+  },
+  {
+    path: '/policies',
+    element: <LayoutPolicies />,
+    children: [
+      { path: 'terms-of-use', element: <Terms /> },
+      { path: 'privacy-policy', element: <Privacy /> },
     ],
   },
 ]);

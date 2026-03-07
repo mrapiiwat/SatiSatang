@@ -14,20 +14,14 @@ export const logger = new Elysia({ name: "logger" })
   .onRequest(({ request }) => {
     const url = new URL(request.url);
     const fullPath = `${url.pathname}${url.search}`;
-
-    log.info({ method: request.method, path: fullPath }, "Incoming Request");
+    log.info(`[${request.method}] ${fullPath} - Incoming Request`);
   })
   .onAfterResponse(({ request, set }) => {
     const url = new URL(request.url);
     const fullPath = `${url.pathname}${url.search}`;
 
     log.info(
-      {
-        method: request.method,
-        path: fullPath,
-        status: set.status,
-      },
-      "Request Processed"
+      `[${request.method}] ${fullPath} - Processed (Status: ${set.status})`
     );
   })
   .onError(({ request, error, set }) => {
@@ -35,12 +29,6 @@ export const logger = new Elysia({ name: "logger" })
     const fullPath = `${url.pathname}${url.search}`;
 
     log.error(
-      {
-        method: request.method,
-        path: fullPath,
-        status: set.status,
-        error: error,
-      },
-      "Request Failed"
+      `[${request.method}] ${fullPath} - Failed (Status: ${set.status}) | Error: ${error}`
     );
   });
