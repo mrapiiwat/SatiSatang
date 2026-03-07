@@ -15,7 +15,7 @@ services:
   frontend:
     build:
       context: ../frontend
-      dockerfile: dockerfile
+      dockerfile: dockerfile.dev
     env_file: ../frontend/.env
     volumes:
       - ../frontend:/app
@@ -28,7 +28,7 @@ services:
   backend:
     build:
       context: ../backend
-      dockerfile: dockerfile
+      dockerfile: dockerfile.dev
     env_file: ../backend/.env
     volumes:
       - ../backend:/app
@@ -109,4 +109,4 @@ volumes:
   satisatang_postgres_data:
   satisatang_minio_data:
   satisatang_qdrant_data:
-  satisatang_redis_data:
+  satisatang_redis_data:refactor: separate Docker builds into dedicated development and production Dockerfiles, updating `docker-compose.dev.yaml` accordingly.
