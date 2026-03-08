@@ -64,8 +64,7 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
-        domain: Bun.env.COOKIE_DOMAIN,
+        sameSite: "lax",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -94,8 +93,7 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
-        domain: Bun.env.COOKIE_DOMAIN,
+        sameSite: "lax",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -127,8 +125,7 @@ export const authController = new Elysia()
       value: newRefreshToken,
       httpOnly: true,
       secure: Bun.env.NODE_ENV === "production",
-      sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
-      domain: Bun.env.COOKIE_DOMAIN,
+      sameSite: "lax",
       maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
       path: "/",
     });
@@ -216,6 +213,7 @@ export const authController = new Elysia()
       value: state,
       path: "/",
       secure: Bun.env.NODE_ENV === "production",
+      sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
     });
@@ -223,6 +221,7 @@ export const authController = new Elysia()
       value: codeVerifier,
       path: "/",
       secure: Bun.env.NODE_ENV === "production",
+      sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
     });
@@ -284,8 +283,7 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
-        domain: Bun.env.COOKIE_DOMAIN,
+        sameSite: "lax",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -315,6 +313,7 @@ export const authController = new Elysia()
       value: state,
       path: "/",
       secure: Bun.env.NODE_ENV === "production",
+      sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
     });
@@ -381,8 +380,7 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: Bun.env.NODE_ENV === "production" ? "none" : "lax",
-        domain: Bun.env.COOKIE_DOMAIN,
+        sameSite: "lax",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -411,7 +409,8 @@ export const authController = new Elysia()
         value: "",
         expires: new Date(0),
         path: "/",
-        domain: Bun.env.COOKIE_DOMAIN,
+        secure: Bun.env.NODE_ENV === "production",
+        sameSite: "lax",
       });
 
       set.status = StatusCodes.OK;

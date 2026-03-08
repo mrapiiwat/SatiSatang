@@ -36,13 +36,11 @@ const Login: React.FC = () => {
   }, []);
 
   const googleLogin = useCallback(() => {
-    const API_URL = import.meta.env.VITE_API_URL || '';
-    window.location.href = `${API_URL}/api/google`;
+    window.location.href = '/api/google';
   }, []);
 
   const facebookLogin = useCallback(() => {
-    const API_URL = import.meta.env.VITE_API_URL || '';
-    window.location.href = `${API_URL}/api/facebook`;
+    window.location.href = '/api/facebook';
   }, []);
 
   const handleEmailChange = useCallback(
