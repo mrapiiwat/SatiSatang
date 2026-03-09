@@ -1,47 +1,5 @@
 name: SatiSatang
 services:
-  web:
-    build:
-      context: ../frontend
-      dockerfile: dockerfile.prod
-    env_file:
-      - ../frontend/.env
-    ports:
-      - "80:80"
-    restart: unless-stopped
-    depends_on:
-      - backend
-    networks:
-      - satisatang-network
-
-  backend:
-    build:
-      context: ../backend
-      dockerfile: dockerfile
-    env_file:
-      - ../backend/.env
-    restart: unless-stopped
-    depends_on:
-      - db
-      - qdrant
-      - redis
-      - minio
-    networks:
-      - satisatang-network
-
-  cron-job:
-    build:
-      context: ../cron
-      dockerfile: dockerfile
-    container_name: cron-job
-    restart: unless-stopped
-    env_file: ../cron/.env
-    depends_on:
-      - db
-      - qdrant
-    networks:
-      - satisatang-network
-
   db:
     build:
       context: ../db
@@ -66,6 +24,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_SERVER_URL: ${MINIO_SERVER_URL}
     ports:
       - "${MINIO_CONSOLE_PORT_BIND}:9001"
     command: server /data --console-address ":9001"
