@@ -7,14 +7,18 @@ import type { AuthStore, formLogin } from '../interface/store';
 const authStore: StateCreator<AuthStore> = (set) => ({
   user: null,
   token: null,
+  isConsentAccepted: false,
   actionSetUser: (user) => {
     set({ user });
   },
   actionSetToken: (token) => {
     set({ token });
   },
+  actionSetConsent: (status) => {
+    set({ isConsentAccepted: status });
+  },
   actionClearAuth: () => {
-    set({ user: null, token: null });
+    set({ user: null, token: null, isConsentAccepted: false });
     useAuthStore.persist.clearStorage();
   },
   actionLogin: async (form: formLogin) => {
