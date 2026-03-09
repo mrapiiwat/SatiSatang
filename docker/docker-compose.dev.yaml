@@ -43,6 +43,21 @@ services:
     networks:
       - satisatang-network
 
+  cron-job:
+    build:
+      context: ../cron
+      dockerfile: dockerfile
+    container_name: cron-job
+    restart: unless-stopped
+    env_file: ../cron/.env
+    depends_on:
+      - db
+      - redis
+      - qdrant
+      - minio
+    networks:
+      - satisatang-network
+
   db:
     build:
       context: ../db
@@ -109,4 +124,4 @@ volumes:
   satisatang_postgres_data:
   satisatang_minio_data:
   satisatang_qdrant_data:
-  satisatang_redis_data:refactor: separate Docker builds into dedicated development and production Dockerfiles, updating `docker-compose.dev.yaml` accordingly.
+  satisatang_redis_data:
