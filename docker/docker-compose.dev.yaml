@@ -15,7 +15,7 @@ services:
   frontend:
     build:
       context: ../frontend
-      dockerfile: dockerfile
+      dockerfile: dockerfile.dev
     env_file: ../frontend/.env
     volumes:
       - ../frontend:/app
@@ -28,13 +28,28 @@ services:
   backend:
     build:
       context: ../backend
-      dockerfile: dockerfile
+      dockerfile: dockerfile.dev
     env_file: ../backend/.env
     volumes:
       - ../backend:/app
       - /app/node_modules
     extra_hosts:
       - "localhost:host-gateway"
+    depends_on:
+      - db
+      - redis
+      - qdrant
+      - minio
+    networks:
+      - satisatang-network
+
+  cron-job:
+    build:
+      context: ../cron
+      dockerfile: dockerfile
+    container_name: cron-job
+    restart: unless-stopped
+    env_file: ../cron/.env
     depends_on:
       - db
       - redis
