@@ -18,23 +18,6 @@ services:
     networks:
       - satisatang-network
 
-  minio:
-    image: minio/minio
-    container_name: satisatang-minio
-    restart: unless-stopped
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_SERVER_URL: ${MINIO_SERVER_URL}
-    ports:
-      - "${MINIO_PORT}:9000"
-      - "${MINIO_CONSOLE_PORT}:9001"
-    command: server /data --console-address ":9001"
-    volumes:
-      - satisatang_minio_data:/data
-    networks:
-      - satisatang-network
-
   qdrant:
     image: qdrant/qdrant:v1.3.0
     container_name: satisatang-qdrant
@@ -65,7 +48,6 @@ networks:
     driver: bridge
 
 volumes:
-  satisatang_minio_data:
   satisatang_qdrant_data:
   satisatang_redis_data:
   satisatang_postgres_data:
