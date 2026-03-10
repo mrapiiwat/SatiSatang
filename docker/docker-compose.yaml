@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
     ports:
-      - "${DATABASE_PORT_BIND}:5432"
+      - "${DATABASE_PORT}:5432"
     volumes:
       - satisatang_postgres_data:/var/lib/postgresql
     networks:
@@ -27,7 +27,8 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_SERVER_URL: ${MINIO_SERVER_URL}
     ports:
-      - "${MINIO_CONSOLE_PORT_BIND}:9001"
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
     command: server /data --console-address ":9001"
     volumes:
       - satisatang_minio_data:/data
@@ -39,6 +40,8 @@ services:
     container_name: satisatang-qdrant
     volumes:
       - satisatang_qdrant_data:/qdrant/storage
+    ports:
+      - "${QDRANT_PORT}:6333"
     restart: unless-stopped
     networks:
       - satisatang-network
@@ -51,7 +54,7 @@ services:
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - satisatang_redis_data:/data
     networks:
