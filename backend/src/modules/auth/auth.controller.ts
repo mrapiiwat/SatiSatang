@@ -209,7 +209,6 @@ export const authController = new Elysia()
       sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
-      domain: Bun.env.COOKIE_DOMAIN,
     });
     cookie.oauth_code_verifier.set({
       value: codeVerifier,
@@ -218,7 +217,6 @@ export const authController = new Elysia()
       sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
-      domain: Bun.env.COOKIE_DOMAIN,
     });
 
     return redirect(url.toString());
@@ -280,7 +278,6 @@ export const authController = new Elysia()
         secure: Bun.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
-        domain: Bun.env.COOKIE_DOMAIN,
         path: "/",
       });
 
@@ -312,7 +309,6 @@ export const authController = new Elysia()
       sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
-      domain: Bun.env.COOKIE_DOMAIN,
     });
 
     return redirect(url.toString());
@@ -380,7 +376,6 @@ export const authController = new Elysia()
         sameSite: "lax",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
-        domain: Bun.env.COOKIE_DOMAIN,
       });
 
       return redirect(
