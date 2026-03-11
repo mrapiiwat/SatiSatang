@@ -35,13 +35,11 @@ const Login: React.FC = () => {
   }, []);
 
   const googleLogin = useCallback(() => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost';
-    window.location.href = `${baseUrl}/api/google`;
+    window.location.href = '/api/google';
   }, []);
 
   const facebookLogin = useCallback(() => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost';
-    window.location.href = `${baseUrl}/api/facebook`;
+    window.location.href = '/api/facebook';
   }, []);
 
   const handleEmailChange = useCallback(
