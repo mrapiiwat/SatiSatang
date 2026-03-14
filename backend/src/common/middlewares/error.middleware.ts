@@ -44,7 +44,7 @@ export const errorMiddleware = (app: Elysia) =>
     }
 
     if (error instanceof Error) {
-      set.status = StatusCodes.BAD_REQUEST;
+      set.status = StatusCodes.INTERNAL_SERVER_ERROR;
       return {
         message: "Something went wrong!",
         errors: error.message,
