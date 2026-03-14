@@ -237,7 +237,7 @@ CREATE TABLE public.user_settings (
     app_language public.language_enum DEFAULT 'th',
     ai_language public.language_enum DEFAULT 'th',
     theme public.theme_enum DEFAULT 'system',
-    is_notification_enabled BOOLEAN DEFAULT false,
+    is_notification_enabled BOOLEAN DEFAULT true,
     budget_start_date SMALLINT DEFAULT 1 CHECK (budget_start_date >= 1 AND budget_start_date <= 31),
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE

@@ -26,6 +26,7 @@ import {
   passwordResetToken,
   refreshToken,
   user,
+  userSettings,
 } from "@/db/schema";
 import type * as authSchema from "./auth.schema";
 
@@ -68,6 +69,10 @@ export class AuthService {
           name: data.name,
         })
         .returning({ id: user.id, email: user.email });
+
+      await tx.insert(userSettings).values({
+        userId: newUser.id,
+      });
 
       const presetCategories = await tx
         .select()
@@ -350,7 +355,12 @@ export class AuthService {
             isEmailVerified: true,
           })
           .returning();
+
         userRecord = newUser;
+
+        await tx.insert(userSettings).values({
+          userId: newUser.id,
+        });
       }
 
       await tx

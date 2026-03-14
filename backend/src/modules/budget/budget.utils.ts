@@ -1,16 +1,52 @@
 import {
   endOfDay,
-  endOfMonth,
   endOfWeek,
   endOfYear,
   startOfDay,
-  startOfMonth,
   startOfWeek,
   startOfYear,
 } from "date-fns";
 import { Frequency } from "./budget.schema";
 
-export const getPeriodRangeByFrequency = (frequency: string) => {
+export const getCustomMonthRange = (now: Date, budgetStartDate: number) => {
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentDate = now.getDate();
+
+  let startYear = currentYear;
+  let startMonth = currentMonth;
+
+  if (currentDate < budgetStartDate) {
+    startMonth = currentMonth - 1;
+    if (startMonth < 0) {
+      startMonth = 11;
+      startYear--;
+    }
+  }
+
+  const maxDaysInStartMonth = new Date(startYear, startMonth + 1, 0).getDate();
+  const actualStartDate = Math.min(budgetStartDate, maxDaysInStartMonth);
+  const start = new Date(startYear, startMonth, actualStartDate, 0, 0, 0, 0);
+
+  let endYear = startYear;
+  let endMonth = startMonth + 1;
+  if (endMonth > 11) {
+    endMonth = 0;
+    endYear++;
+  }
+
+  const maxDaysInEndMonth = new Date(endYear, endMonth + 1, 0).getDate();
+  const actualEndDate = Math.min(budgetStartDate, maxDaysInEndMonth);
+
+  const end = new Date(endYear, endMonth, actualEndDate - 1, 23, 59, 59, 999);
+
+  return { start, end };
+};
+
+export const getPeriodRangeByFrequency = (
+  frequency: string,
+  budgetStartDate: number = 1
+) => {
   const now = new Date();
   let start: Date;
   let end: Date;
@@ -25,9 +61,7 @@ export const getPeriodRangeByFrequency = (frequency: string) => {
       end = endOfWeek(now, { weekStartsOn: 1 });
       break;
     case Frequency.MONTHLY:
-      start = startOfMonth(now);
-      end = endOfMonth(now);
-      break;
+      return getCustomMonthRange(now, budgetStartDate);
     case Frequency.YEARLY:
       start = startOfYear(now);
       end = endOfYear(now);
@@ -39,8 +73,11 @@ export const getPeriodRangeByFrequency = (frequency: string) => {
   return { start, end };
 };
 
-export const getDeadlineFromFrequency = (frequency: string): Date => {
-  const { end } = getPeriodRangeByFrequency(frequency);
+export const getDeadlineFromFrequency = (
+  frequency: string,
+  budgetStartDate: number = 1
+): Date => {
+  const { end } = getPeriodRangeByFrequency(frequency, budgetStartDate);
   return end;
 };
 

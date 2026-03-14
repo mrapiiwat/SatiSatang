@@ -527,7 +527,7 @@ export const userSettings = pgTable(
     aiLanguage: languageEnum("ai_language").default("th").notNull(),
     theme: themeEnum("theme").default("system").notNull(),
     isNotificationEnabled: boolean("is_notification_enabled")
-      .default(false)
+      .default(true)
       .notNull(),
     budgetStartDate: integer("budget_start_date").default(1).notNull(),
     updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })

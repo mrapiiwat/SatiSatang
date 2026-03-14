@@ -1,7 +1,7 @@
 import { and, eq, gte, isNull, lte, or, sum } from "drizzle-orm";
 import { BadRequestError } from "@/common/exceptions";
 import { db } from "@/db";
-import { budgets, category, transaction } from "@/db/schema";
+import { budgets, category, transaction, userSettings } from "@/db/schema";
 import type * as budgetSchema from "./budget.schema";
 import {
   getDeadlineFromFrequency,
@@ -20,7 +20,16 @@ export class BudgetService {
       );
     }
 
-    const { start, end } = getPeriodRangeByFrequency(data.frequency);
+    const setting = await db.query.userSettings.findFirst({
+      where: eq(userSettings.userId, userId),
+    });
+
+    const userBudgetStartDate = setting?.budgetStartDate ?? 1;
+
+    const { start, end } = getPeriodRangeByFrequency(
+      data.frequency,
+      userBudgetStartDate
+    );
 
     const existingBudget = await db.query.budgets.findFirst({
       where: and(
@@ -36,7 +45,10 @@ export class BudgetService {
       throw new BadRequestError("มีงบประเภทนี้ในรอบเวลาเดียวกันแล้ว");
     }
 
-    const deadline = getDeadlineFromFrequency(data.frequency);
+    const deadline = getDeadlineFromFrequency(
+      data.frequency,
+      userBudgetStartDate
+    );
 
     const [aggregateResult] = await db
       .select({
