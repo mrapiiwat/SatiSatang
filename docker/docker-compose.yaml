@@ -1,5 +1,26 @@
 name: SatiSatang
 services:
+  db:
+    build:
+      context: ../db
+      dockerfile: dockerfile
+    container_name: satisatang-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - "${DATABASE_PORT}:5432"
+    volumes:
+      - satisatang_postgres_data:/var/lib/postgresql
+    networks:
+      - satisatang-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME:-sati-satang}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   qdrant:
     image: qdrant/qdrant:v1.3.0
@@ -13,7 +34,7 @@ services:
       - satisatang-network
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
     container_name: satisatang-redis
     restart: unless-stopped
     command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}" ]
@@ -33,5 +54,7 @@ networks:
 volumes:
   satisatang_qdrant_data:
   satisatang_redis_data:
+  satisatang_postgres_data:
+
 
 

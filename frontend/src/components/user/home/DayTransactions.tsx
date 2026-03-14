@@ -123,7 +123,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                     onClick={() => setSelectedTransaction(transaction)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-black-900 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                      <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center overflow-hidden">
                         {categoryMap[transaction.categoryId] ? (
                           <Image
                             src={categoryMap[transaction.categoryId]}

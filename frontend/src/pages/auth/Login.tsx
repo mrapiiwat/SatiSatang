@@ -26,7 +26,6 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isUser, setIsUser] = useState<string>('Guest');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const actionLogin = useAuthStore((state) => state.actionLogin);
   const navigate = useNavigate();
@@ -89,8 +88,7 @@ const Login: React.FC = () => {
         validateEmail(email) &&
         password.length >= 6 &&
         password === confirmPassword &&
-        name.trim() !== '' &&
-        acceptTerms
+        name.trim() !== ''
       );
     }
     return false;
@@ -125,18 +123,11 @@ const Login: React.FC = () => {
           return;
         }
 
-        if (!acceptTerms) {
-          setError('กรุณายอมรับข้อตกลงและเงื่อนไขการใช้งานทั้งหมดก่อนทำการลงทะเบียน');
-          setIsLoading(false);
-          return;
-        }
-
         try {
           const res = await axios.post('/register', {
             email,
             password,
             name,
-            acceptTermsAndPrivacy: acceptTerms,
           });
 
           const userId = res.data.userId;
@@ -246,7 +237,6 @@ const Login: React.FC = () => {
       isLoading,
       googleLogin,
       facebookLogin,
-      acceptTerms,
     ],
   );
 
@@ -347,38 +337,24 @@ const Login: React.FC = () => {
                     />
                   </div>
 
-                  <div className="flex flex-col justify-center items-center gap-3 mt-2">
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <div className="flex items-center h-5 shrink-0">
-                        <input
-                          type="checkbox"
-                          required
-                          checked={acceptTerms}
-                          onChange={(e) => setAcceptTerms(e.target.checked)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                        />
-                      </div>
-                      <span className="text-sm leading-relaxed text-gray-600 group-hover:text-gray-800 transition-colors">
-                        ฉันได้อ่านและยอมรับ{' '}
-                        <Link
-                          to="/policies/terms-of-use"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 font-medium hover:underline"
-                        >
-                          ข้อตกลงการใช้งาน
-                        </Link>{' '}
-                        และ{' '}
-                        <Link
-                          to="/policies/privacy-policy"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 font-medium hover:underline"
-                        >
-                          นโยบายความเป็นส่วนตัว
-                        </Link>
-                      </span>
-                    </label>
+                  <div className="text-xs text-gray-500 text-center mt-2 px-2 leading-relaxed">
+                    เมื่อคลิกปุ่มดำเนินการต่อ ระบบจะนำท่านไปสู่หน้าต่างเพื่ออ่านและยอมรับ
+                    <Link
+                      to="/policies/terms-of-use"
+                      target="_blank"
+                      className="text-blue-600 hover:underline mx-1"
+                    >
+                      ข้อตกลงการใช้งาน
+                    </Link>
+                    และ
+                    <Link
+                      to="/policies/privacy-policy"
+                      target="_blank"
+                      className="text-blue-600 hover:underline mx-1"
+                    >
+                      นโยบายความเป็นส่วนตัว
+                    </Link>
+                    ในขั้นตอนถัดไป
                   </div>
                 </div>
               )}
