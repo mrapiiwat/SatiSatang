@@ -1,5 +1,4 @@
 import { and, count, eq, gt, isNull } from "drizzle-orm";
-import { POLICY_VERSIONS } from "@/common/constants/policy";
 import {
   BadRequestError,
   NotFoundError,
@@ -27,7 +26,6 @@ import {
   passwordResetToken,
   refreshToken,
   user,
-  userConsents,
 } from "@/db/schema";
 import type * as authSchema from "./auth.schema";
 
@@ -59,9 +57,7 @@ export class AuthService {
     return { message: "PENDING VERIFICATION" };
   }
 
-  async register(
-    data: authSchema.registerSchema & { ipAddress: string; userAgent: string }
-  ) {
+  async register(data: authSchema.registerSchema) {
     const hashPassword = await Bun.password.hash(data.password);
     return await db.transaction(async (tx) => {
       const [newUser] = await tx
@@ -72,29 +68,6 @@ export class AuthService {
           name: data.name,
         })
         .returning({ id: user.id, email: user.email });
-
-      const consents = [];
-
-      if (data.acceptTermsAndPrivacy) {
-        consents.push({
-          userId: newUser.id,
-          policyType: "TERMS_OF_SERVICE" as const,
-          version: POLICY_VERSIONS.TERMS_OF_SERVICE,
-          ipAddress: data.ipAddress,
-          userAgent: data.userAgent,
-        });
-        consents.push({
-          userId: newUser.id,
-          policyType: "PRIVACY_POLICY" as const,
-          version: POLICY_VERSIONS.PRIVACY_POLICY,
-          ipAddress: data.ipAddress,
-          userAgent: data.userAgent,
-        });
-      }
-
-      if (consents.length > 0) {
-        await tx.insert(userConsents).values(consents);
-      }
 
       const presetCategories = await tx
         .select()
