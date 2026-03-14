@@ -52,7 +52,7 @@ instance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await instance.get<{ accessToken: string }>('/api/refreshToken', {
+        const res = await axios.get<{ accessToken: string }>('/api/refreshToken', {
           withCredentials: true,
         });
 

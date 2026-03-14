@@ -20,7 +20,6 @@ import Feedback from '../pages/users/Feedback';
 import Terms from '../pages/policies/Terms';
 import Privacy from '../pages/policies/Privacy';
 import LayoutPolicies from '../pages/policies/Layout';
-import ConsentInterceptor from '../components/ConsentInterceptor';
 
 const router = createBrowserRouter([
   {
@@ -38,15 +37,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/user',
-    element: (
-      <ProtectRoute
-        element={
-          <ConsentInterceptor>
-            <LayoutUser />
-          </ConsentInterceptor>
-        }
-      />
-    ),
+    element: <ProtectRoute element={<LayoutUser />} />,
     children: [
       { index: true, element: <HomeUsers /> },
       { path: 'account', element: <Account /> },

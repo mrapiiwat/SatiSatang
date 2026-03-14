@@ -30,8 +30,15 @@ export const authController = new Elysia()
 
   .post(
     "/register",
-    async ({ body, set }) => {
-      const result = await authService.register(body);
+    async ({ body, set, headers }) => {
+      const userAgent = headers["user-agent"] || "unknown";
+      const ipAddress =
+        headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+      const result = await authService.register({
+        ...body,
+        userAgent,
+        ipAddress,
+      });
 
       set.status = StatusCodes.CREATED;
       return {
@@ -57,7 +64,7 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "strict",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -86,7 +93,7 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "strict",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -118,7 +125,7 @@ export const authController = new Elysia()
       value: newRefreshToken,
       httpOnly: true,
       secure: Bun.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
       path: "/",
     });
@@ -206,7 +213,6 @@ export const authController = new Elysia()
       value: state,
       path: "/",
       secure: Bun.env.NODE_ENV === "production",
-      sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
     });
@@ -214,7 +220,6 @@ export const authController = new Elysia()
       value: codeVerifier,
       path: "/",
       secure: Bun.env.NODE_ENV === "production",
-      sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
     });
@@ -276,7 +281,7 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "strict",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -306,7 +311,6 @@ export const authController = new Elysia()
       value: state,
       path: "/",
       secure: Bun.env.NODE_ENV === "production",
-      sameSite: "lax",
       httpOnly: true,
       maxAge: 600,
     });
@@ -373,7 +377,7 @@ export const authController = new Elysia()
         value: refreshRaw,
         httpOnly: true,
         secure: Bun.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "strict",
         maxAge: Number(Bun.env.REFRESH_EXPIRES_DAYS || 30) * 86400,
         path: "/",
       });
@@ -398,13 +402,7 @@ export const authController = new Elysia()
         await authService.logout(rawRefreshToken);
       }
 
-      refreshToken.set({
-        value: "",
-        expires: new Date(0),
-        path: "/",
-        secure: Bun.env.NODE_ENV === "production",
-        sameSite: "lax",
-      });
+      refreshToken.remove();
 
       set.status = StatusCodes.OK;
       return { message: "Logged out" };
