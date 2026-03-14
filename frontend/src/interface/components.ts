@@ -67,3 +67,7 @@ export interface BeforeInstallPromptEvent extends Event {
   }>;
   prompt(): Promise<void>;
 }
+
+export interface ConsentInterceptorProps {
+  children: React.ReactNode;
+}

@@ -3,6 +3,7 @@ import { authController } from "./auth/auth.controller";
 import { budgetController } from "./budget/budget.controller";
 import { categoryController } from "./category/category.controller";
 import { chatController } from "./chat/chat.controller";
+import { consentController } from "./consent/consent.controller";
 import { goalController } from "./goal/goal.controller";
 import { iconController } from "./icon/icon.controller";
 import { stockController } from "./stock/stock.controller";
@@ -18,6 +19,7 @@ const modules = new Elysia({ prefix: "/api" })
   .use(budgetController)
   .use(transactionController)
   .use(chatController)
+  .use(consentController)
   .use(stockController);
 
 export default modules;

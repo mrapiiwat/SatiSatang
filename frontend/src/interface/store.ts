@@ -23,9 +23,11 @@ export interface formLogin {
 export interface AuthStore {
   user: userSchema | null;
   token: string | null;
+  isConsentAccepted: boolean;
   actionSetUser: (user: userSchema | null) => void;
   actionSetToken: (token: string) => void;
   actionClearAuth: () => void;
   actionLogin: (form: formLogin) => void;
   actionLogout: () => void;
+  actionSetConsent: (status: boolean) => void;
 }

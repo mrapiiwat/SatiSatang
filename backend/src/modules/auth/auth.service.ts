@@ -135,12 +135,15 @@ export class AuthService {
     const [users] = await db
       .select()
       .from(user)
-      .where(eq(user.email, data.email))
+      .where(eq(user.email, data.email.toLocaleLowerCase().trim()))
       .limit(1);
 
     if (!users || !users.password) {
       throw new UnauthorizedError("Invalid credentials");
     }
+
+    if (!users.isEmailVerified)
+      throw new UnauthorizedError("Please verify your email first.");
 
     const isPasswordValid = await Bun.password.verify(
       data.password,
@@ -252,13 +255,13 @@ export class AuthService {
       const otpHash = await Bun.password.hash(otp);
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-      await sendVerificationEmail(emailLower, otp);
-
       await tx.insert(emailVerification).values({
         userId: userRecord.id,
         otpHash: otpHash,
         expiresAt: expiresAt,
       });
+
+      await sendVerificationEmail(emailLower, otp);
 
       return userRecord.id;
     });
