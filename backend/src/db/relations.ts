@@ -14,6 +14,7 @@ import {
   transaction,
   user,
   userConsents,
+  userSettings,
 } from "./schema";
 
 export const oauthAccountRelations = relations(oauthAccount, ({ one }) => ({
@@ -23,7 +24,7 @@ export const oauthAccountRelations = relations(oauthAccount, ({ one }) => ({
   }),
 }));
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   oauthAccounts: many(oauthAccount),
   passwordResetTokens: many(passwordResetToken),
   refreshTokens: many(refreshToken),
@@ -36,6 +37,7 @@ export const userRelations = relations(user, ({ many }) => ({
   chatSessions: many(chatSession),
   chatMessages: many(chatMessage),
   userConsents: many(userConsents),
+  userSetting: one(userSettings),
 }));
 
 export const passwordResetTokenRelations = relations(
@@ -148,6 +150,13 @@ export const chatMessageRelations = relations(chatMessage, ({ one }) => ({
 export const userConsentsRelations = relations(userConsents, ({ one }) => ({
   user: one(user, {
     fields: [userConsents.userId],
+    references: [user.id],
+  }),
+}));
+
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(user, {
+    fields: [userSettings.userId],
     references: [user.id],
   }),
 }));

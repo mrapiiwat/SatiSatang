@@ -35,6 +35,10 @@ export const policyTypeEnum = pgEnum("policy_type_enum", [
   "AI_DISCLAIMER",
 ]);
 
+export const languageEnum = pgEnum("language_enum", ["th", "en"]);
+
+export const themeEnum = pgEnum("theme_enum", ["light", "dark", "system"]);
+
 export const stock = pgTable(
   "stocks",
   {
@@ -509,6 +513,33 @@ export const chatMessage = pgTable(
       columns: [table.userId],
       foreignColumns: [user.id],
       name: "chat_messages_user_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
+  ]
+);
+
+export const userSettings = pgTable(
+  "user_settings",
+  {
+    userId: integer("user_id").primaryKey().notNull(),
+    appLanguage: languageEnum("app_language").default("th").notNull(),
+    aiLanguage: languageEnum("ai_language").default("th").notNull(),
+    theme: themeEnum("theme").default("system").notNull(),
+    isNotificationEnabled: boolean("is_notification_enabled")
+      .default(false)
+      .notNull(),
+    budgetStartDate: integer("budget_start_date").default(1).notNull(),
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [user.id],
+      name: "user_settings_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),

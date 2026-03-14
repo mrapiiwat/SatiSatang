@@ -6,6 +6,10 @@ CREATE TYPE public.provider_enum AS ENUM ('local', 'google', 'facebook');
 
 CREATE TYPE public.policy_type_enum AS ENUM ('TERMS_OF_SERVICE', 'PRIVACY_POLICY', 'AI_DISCLAIMER');
 
+CREATE TYPE public.language_enum AS ENUM ('th', 'en');
+
+CREATE TYPE public.theme_enum AS ENUM ('light', 'dark', 'system');
+
 CREATE
 OR REPLACE FUNCTION update_updated_at_column () RETURNS TRIGGER AS $$
 BEGIN
@@ -228,6 +232,17 @@ CREATE TABLE
     FOREIGN KEY (session_id) REFERENCES public.chat_sessions (id) ON DELETE CASCADE
   );
 
+CREATE TABLE public.user_settings (
+    user_id INT PRIMARY KEY,
+    app_language public.language_enum DEFAULT 'th',
+    ai_language public.language_enum DEFAULT 'th',
+    theme public.theme_enum DEFAULT 'system',
+    is_notification_enabled BOOLEAN DEFAULT false,
+    budget_start_date SMALLINT DEFAULT 1 CHECK (budget_start_date >= 1 AND budget_start_date <= 31),
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
+  );
+
 CREATE TRIGGER update_users_updated_at BEFORE
 UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column ();
 
@@ -254,3 +269,6 @@ UPDATE ON public.chat_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_c
 
 CREATE TRIGGER update_chat_messages_updated_at BEFORE
 UPDATE ON public.chat_messages FOR EACH ROW EXECUTE FUNCTION update_updated_at_column ();
+
+CREATE TRIGGER update_user_settings_updated_at BEFORE
+UPDATE ON public.user_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column ();
