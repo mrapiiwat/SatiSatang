@@ -21,6 +21,7 @@ import Terms from '../pages/policies/Terms';
 import Privacy from '../pages/policies/Privacy';
 import LayoutPolicies from '../pages/policies/Layout';
 import ConsentInterceptor from '../components/ConsentInterceptor';
+import Setting from '../pages/users/Setting';
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,7 @@ const router = createBrowserRouter([
       { path: 'satang', element: <Satang /> },
       { path: 'summary', element: <Summary /> },
       { path: 'feedback', element: <Feedback /> },
+      { path: 'setting', element: <Setting /> },
       { path: '*', element: <NotFound /> },
     ],
   },

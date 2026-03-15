@@ -3,6 +3,7 @@ import type { StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import axios from '../api/axios';
 import type { AuthStore, formLogin } from '../interface/store';
+import useSettingStore from './settingStore';
 
 const authStore: StateCreator<AuthStore> = (set) => ({
   user: null,
@@ -36,6 +37,7 @@ const authStore: StateCreator<AuthStore> = (set) => ({
       token: null,
     });
     useAuthStore.persist.clearStorage();
+    useSettingStore.getState().actionClearSettings();
     return res;
   },
 });

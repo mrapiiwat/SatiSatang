@@ -62,6 +62,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 รายงานปัญหา
               </Link>
               <Link
+                to="/user/setting"
+                onClick={onClose}
+                className="py-2 font-semibold text-lg cursor-pointer"
+              >
+                การตั้งค่า
+              </Link>
+              <Link
                 to="/user/account"
                 onClick={onClose}
                 className="py-2 font-semibold text-lg cursor-pointer"
