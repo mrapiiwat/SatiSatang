@@ -45,9 +45,10 @@ export const getCustomMonthRange = (now: Date, budgetStartDate: number) => {
 
 export const getPeriodRangeByFrequency = (
   frequency: string,
-  budgetStartDate: number = 1
+  budgetStartDate: number = 1,
+  baseDate: Date = new Date()
 ) => {
-  const now = new Date();
+  const now = baseDate;
   let start: Date;
   let end: Date;
 
@@ -75,9 +76,14 @@ export const getPeriodRangeByFrequency = (
 
 export const getDeadlineFromFrequency = (
   frequency: string,
-  budgetStartDate: number = 1
+  budgetStartDate: number = 1,
+  baseDate: Date = new Date()
 ): Date => {
-  const { end } = getPeriodRangeByFrequency(frequency, budgetStartDate);
+  const { end } = getPeriodRangeByFrequency(
+    frequency,
+    budgetStartDate,
+    baseDate
+  );
   return end;
 };
 

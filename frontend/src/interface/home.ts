@@ -239,7 +239,7 @@ export interface BudgetDraftData {
 export interface GoalDraftData {
   name: string;
   amount: number;
-  deadline?: string;
+  deadline?: string | null;
   status?: DraftStatus;
 }
 

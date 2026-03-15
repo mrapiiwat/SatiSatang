@@ -244,7 +244,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
       const deadline =
         hasDeadline && year && month && day
           ? `${year.value}-${month.value.padStart(2, '0')}-${day.value.padStart(2, '0')}`
-          : undefined;
+          : null;
 
       const payload: GoalDraftData = {
         name: goalName,

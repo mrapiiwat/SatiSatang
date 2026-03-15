@@ -334,5 +334,9 @@
   "not_received_code": "Didn't receive the verification code?",
   "resend_code": "Resend verification code",
   "resend_in_seconds": "Resend in {{count}} seconds",
-  "date_locale": "en-US"
+  "date_locale": "en-US",
+  "no_deadline": "No deadline",
+  "deadline_reached": "Expired",
+  "days_left": "{{count}} days left",
+  "countdown_format": "{{hours}}h {{minutes}}m {{seconds}}s"
 }

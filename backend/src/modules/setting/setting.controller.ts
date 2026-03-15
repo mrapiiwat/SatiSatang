@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
 import { cached } from "@/common/utils/cache";
+import { clearBudgetCache } from "../budget/budget.cache";
 import { clearSettingCache, settingCache } from "./setting.cache";
 import * as settingSchema from "./setting.schema";
 import { SettingService } from "./setting.service";
@@ -34,6 +35,7 @@ export const settingController = new Elysia({ prefix: "/setting" })
 
       const result = await settingService.updateSettings(userId, body);
       await clearSettingCache(userId);
+      await clearBudgetCache(userId);
 
       set.status = StatusCodes.OK;
       return {

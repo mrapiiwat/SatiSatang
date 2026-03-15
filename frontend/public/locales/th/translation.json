@@ -335,5 +335,9 @@
   "not_received_code": "ไม่ได้รับรหัสยืนยัน?",
   "resend_code": "ส่งรหัสยืนยันใหม่",
   "resend_in_seconds": "ส่งอีกครั้งใน {{count}} วินาที",
-  "date_locale": "th-TH"
+  "date_locale": "th-TH",
+  "no_deadline": "ไม่มีระยะเวลากำหนด",
+  "deadline_reached": "ครบกำหนด",
+  "days_left": "อีก {{count}} วัน",
+  "countdown_format": "{{hours}} ชม. {{minutes}} นาที {{seconds}} วินาที"
 }
