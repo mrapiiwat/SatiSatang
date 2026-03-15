@@ -52,13 +52,9 @@ const Setting: React.FC = () => {
   const actionUpdateSetting = useSettingStore((s) => s.actionUpdateSetting);
 
   const handleLogout = async () => {
-    try {
-      await axios.post('/logout');
-    } finally {
-      actionLogout();
-      navigate('/login');
-      showToastAlert('ออกจากระบบแล้ว', 'success');
-    }
+    actionLogout();
+    navigate('/login');
+    showToastAlert('ออกจากระบบแล้ว', 'success');
   };
 
   const accountRows: SettingRow[] = [
@@ -95,9 +91,8 @@ const Setting: React.FC = () => {
     <button
       key={row.label}
       onClick={row.onClick}
-      className={`w-full flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-gray-50 active:bg-gray-100 ${
-        row.danger ? 'text-red-500' : 'text-black-900'
-      } ${index < arr.length - 1 ? 'border-b border-gray-100' : ''}`}
+      className={`w-full flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-gray-50 active:bg-gray-100 ${row.danger ? 'text-red-500' : 'text-black-900'
+        } ${index < arr.length - 1 ? 'border-b border-gray-100' : ''}`}
     >
       <span className={`shrink-0 ${row.danger ? 'text-red-500' : 'text-black-700'}`}>
         {row.icon}
@@ -137,11 +132,10 @@ const Setting: React.FC = () => {
                 <button
                   key={opt.value}
                   onClick={() => actionUpdateSetting({ appLanguage: opt.value })}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                    appLanguage === opt.value
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${appLanguage === opt.value
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                    }`}
                 >
                   {opt.label}
                 </button>
@@ -158,11 +152,10 @@ const Setting: React.FC = () => {
                 <button
                   key={opt.value}
                   onClick={() => actionUpdateSetting({ aiLanguage: opt.value })}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                    aiLanguage === opt.value
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${aiLanguage === opt.value
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                    }`}
                 >
                   {opt.label}
                 </button>
@@ -179,11 +172,10 @@ const Setting: React.FC = () => {
                 <button
                   key={opt.value}
                   onClick={() => actionUpdateSetting({ theme: opt.value })}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                    theme === opt.value
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${theme === opt.value
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                    }`}
                 >
                   {opt.label}
                 </button>
@@ -198,14 +190,12 @@ const Setting: React.FC = () => {
             <span className="text-sm font-medium flex-1">การแจ้งเตือน</span>
             <button
               onClick={() => actionUpdateSetting({ isNotificationEnabled: !isNotificationEnabled })}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                isNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300'
-              }`}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${isNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                  isNotificationEnabled ? 'translate-x-5' : 'translate-x-0'
-                }`}
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isNotificationEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
               />
             </button>
           </div>
@@ -250,7 +240,7 @@ const Setting: React.FC = () => {
               danger: true,
             },
             0,
-            [{ icon: null, label: '', onClick: () => {} }],
+            [{ icon: null, label: '', onClick: () => { } }],
           )}
         </div>
 
