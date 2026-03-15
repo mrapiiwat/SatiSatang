@@ -86,6 +86,7 @@ const Setting: React.FC = () => {
     {
       icon: <IoShieldCheckmarkOutline size={20} />,
       label: 'นโยบายความเป็นส่วนตัว',
+      description: 'รายละเอียดการปกป้องข้อมูลของคุณ',
       onClick: () => navigate('/policies/privacy-policy'),
     },
   ];

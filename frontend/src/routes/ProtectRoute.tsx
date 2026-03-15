@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { me } from '../api/auth';
 import useAuthStore from '../store/authStore';
 import LoadingToRedirect from './LoadingToRedirect';
@@ -13,12 +13,12 @@ interface ProtectRouteProps {
 const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
   const [loading, setLoading] = useState(true);
   const [pass, setPass] = useState(false);
+  const fetchedSettings = useRef(false);
 
   const token = useAuthStore((state) => state.token);
   const setUser = useAuthStore((state) => state.actionSetUser);
   const user = useAuthStore((state) => state.user);
   const actionSetSettings = useSettingStore((state) => state.actionSetSettings);
-  const appLanguage = useSettingStore((state) => state.appLanguage);
 
   useEffect(() => {
     let isMounted = true;
@@ -38,13 +38,14 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
           setUser(resUser.data);
         }
 
-        if (!appLanguage) {
+        if (!fetchedSettings.current) {
           const resSetting = await axios.get('/setting');
 
           if (resSetting.data?.data) {
             actionSetSettings(resSetting.data.data);
             console.log('Fetched Settings from API');
           }
+          fetchedSettings.current = true;
         }
 
         if (isMounted) setPass(true);
@@ -65,7 +66,7 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
     return () => {
       isMounted = false;
     };
-  }, [token, user, setUser, actionSetSettings, appLanguage]);
+  }, [token, user, setUser, actionSetSettings]);
 
   if (loading) return <LoadingToRedirect />;
   return pass ? element : <LoadingToRedirect />;
