@@ -166,7 +166,8 @@ export class OpenAIService {
 
   async processSatangToolCallsAndStream(
     userId: number,
-    messages: ChatCompletionMessageParam[]
+    messages: ChatCompletionMessageParam[],
+    aiLang: "th" | "en" = "th"
   ) {
     const decision = await openai.chat.completions.create({
       model: MODEL_NAME,
@@ -212,7 +213,14 @@ export class OpenAIService {
             args.startDate,
             args.endDate
           );
-          result = txs.length ? txs.join("\n") : "ไม่พบข้อมูลธุรกรรมในช่วงเวลานี้ครับ";
+          if (txs.length) {
+            result = txs.join("\n");
+          } else {
+            result =
+              aiLang === "en"
+                ? "No transactions found for this period."
+                : "ไม่พบข้อมูลธุรกรรมในช่วงเวลานี้ครับ";
+          }
         } else if (fnName === "search_stock_knowledge" && args.query) {
           const stocks = await ragService.searchStock(args.query);
           result = JSON.stringify(stocks);
@@ -281,7 +289,8 @@ export class OpenAIService {
     userId: number,
     content: string,
     categories: (Category & { isGoal?: boolean })[],
-    history: ChatHistoryItem[] = []
+    history: ChatHistoryItem[] = [],
+    aiLang: "th" | "en" = "th"
   ) {
     try {
       const normalCategories = categories.filter((c) => !c.isGoal);
@@ -319,7 +328,8 @@ export class OpenAIService {
         goalListText,
         currentDateTH,
         currentYearAD,
-        currentDateISO
+        currentDateISO,
+        aiLang
       );
 
       const historyMessages: ChatCompletionMessageParam[] = history.map(
@@ -400,141 +410,176 @@ export class OpenAIService {
       }
 
       const fnName = toolCall.function.name;
-      const args = JSON.parse(toolCall.function.arguments);
 
-      if (fnName === "switch_to_satang") {
-        return {
-          type: "message_with_action",
-          message:
-            "โอ๊ะ! คำถามนี้เกินหน้าที่จดบันทึกของน้องสติแล้วครับ 😅 ถ้าเป็นเรื่องดูสรุปยอด ประวัติย้อนหลัง หรือวิเคราะห์ข้อมูล ต้องให้พี่สตางค์ช่วยดูให้แล้วล่ะครับ!",
-          action: {
-            label: "ไปคุยกับพี่สตางค์",
-            action_type: "switch_to_satang",
-          },
-        };
-      }
-
-      if (fnName === "manage_categories") {
-        return {
-          type: "message_with_action",
-          message:
-            "โอ๊ะ! ถ้าเป็นการเพิ่มหรือจัดการหมวดหมู่ใหม่ น้องสติยังทำเองไม่ได้ครับ 😅 เพื่อความถูกต้อง พี่สามารถกดไปจัดการเพิ่มหรือแก้ไขหมวดหมู่เองได้ที่ปุ่มด้านล่างนี้เลยครับ!",
-          action: {
-            label: "ไปจัดการหมวดหมู่",
-            action_type: "manage_categories",
-          },
-        };
-      }
-
-      if (fnName === "create_budget") {
-        try {
-          const targetCategory = await budgetService.getTargetCategory(
-            args.categoryId
-          );
-
-          if (targetCategory && targetCategory.type !== "EXPENSE") {
-            return {
-              type: "message",
-              message: `ปกติแล้วเราจะตั้งงบประมาณไว้คุม "รายจ่าย" ครับ รายการ "${targetCategory.name}" เป็นรายรับ ไม่ต้องตั้งงบก็ได้ครับ รวยๆ เฮงๆ ครับ! 🤑`,
-            };
-          }
-
-          const isDuplicate = await budgetService.checkDuplicate(
-            userId,
-            args.categoryId,
-            args.frequency
-          );
-
-          if (isDuplicate) {
-            const freqMap: Record<string, string> = {
-              DAILY: "รายวัน",
-              WEEKLY: "รายสัปดาห์",
-              MONTHLY: "รายเดือน",
-              YEARLY: "รายปี",
-            };
-            const freqTH = freqMap[args.frequency] || args.frequency;
-
-            return {
-              type: "message",
-              message: `ดูเหมือนว่าคุณตั้งงบหมวดนี้ในรอบ "${freqTH}" ไว้เรียบร้อยแล้วครับ ลองเปลี่ยนหมวดหรือรอบเวลาดูไหมครับ? 😊`,
-            };
-          }
-        } catch (err) {
-          console.error("Check duplicate error:", err);
-        }
-      }
-
-      if (fnName === "create_goal") {
-        if (args.deadline) {
-          if (args.deadline < currentDateISO) {
-            return {
-              type: "message",
-              message: `การตั้งเป้าหมายย้อนหลังทำไม่ได้นะครับ (ผมย้อนเวลาไม่ได้ 😅) รบกวนระบุเป็น "วันนี้" หรือ "วันในอนาคต" แทนนะครับ`,
-            };
-          }
-        }
-
-        if (!args.amount) {
+      try {
+        const args = JSON.parse(toolCall.function.arguments);
+        if (fnName === "switch_to_satang") {
           return {
-            type: "message",
-            message: `คุณยังไม่ได้ระบุจำนวนเงินครับ รบกวนระบุจำนวนเงินที่ต้องการตั้งเป้าหมายด้วยนะครับ`,
+            type: "message_with_action",
+            message:
+              aiLang === "en"
+                ? "Oh! This question is beyond my recording duties. 😅 For summaries or financial analysis, let's talk to Satang!"
+                : "โอ๊ะ! คำถามนี้เกินหน้าที่จดบันทึกของน้องสติแล้วครับ 😅 ถ้าเป็นเรื่องสรุปยอดหรือวิเคราะห์ข้อมูล ต้องให้พี่สตางค์ช่วยดูให้แล้วล่ะครับ!",
+            action: {
+              label: aiLang === "en" ? "Talk to Satang" : "ไปคุยกับพี่สตางค์",
+              action_type: "switch_to_satang",
+            },
           };
         }
 
-        try {
-          const existingGoals = await db.query.goals.findMany({
-            where: and(eq(goals.userId, userId), isNull(goals.deletedAt)),
-          });
-
-          const targetName = args.name.trim().toLowerCase();
-          const duplicate = existingGoals.find(
-            (g) => g.name.trim().toLowerCase() === targetName
-          );
-
-          const userConfirmKeywords = [
-            "ยืนยัน",
-            "สร้างเลย",
-            "เอาเลย",
-            "confirm",
-            "สร้างซ้ำ",
-          ];
-          const isUserConfirming = userConfirmKeywords.some((keyword) =>
-            content.toLowerCase().includes(keyword)
-          );
-
-          if (duplicate && !isUserConfirming) {
-            return {
-              type: "message",
-              message: `คุณมีเป้าหมายชื่อ "${duplicate.name}" อยู่แล้วนะครับ 🧐 \nถ้าต้องการสร้างซ้ำให้พิมพ์ว่า "ยืนยัน" หรือเปลี่ยนชื่อหน่อยมั้ยครับ?`,
-            };
-          }
-        } catch (err) {
-          console.error("Check goal duplicate error:", err);
-        }
-      }
-
-      if (fnName === "create_transaction") {
-        const amount = Number(args.amount);
-        if (!amount || amount === 0 || Number.isNaN(amount)) {
+        if (fnName === "manage_categories") {
           return {
-            type: "message",
-            message: `รายการ "${args.description || "นี้"}" ราคาเท่าไหร่ครับ?`,
+            type: "message_with_action",
+            message:
+              aiLang === "en"
+                ? "Oops! I can't manage categories by myself yet. 😅 To ensure accuracy, you can add or edit categories by clicking the button below!"
+                : "โอ๊ะ! ถ้าเป็นการเพิ่มหรือจัดการหมวดหมู่ใหม่ น้องสติยังทำเองไม่ได้ครับ 😅 เพื่อความถูกต้อง พี่สามารถกดไปจัดการเพิ่มหรือแก้ไขหมวดหมู่เองได้ที่ปุ่มด้านล่างนี้เลยครับ!",
+            action: {
+              label: aiLang === "en" ? "Manage Categories" : "ไปจัดการหมวดหมู่",
+              action_type: "manage_categories",
+            },
           };
         }
 
-        const isGoalId = goalCategories.some(
-          (g) => String(g.id) === String(args.categoryId)
-        );
+        if (fnName === "create_budget") {
+          try {
+            const targetCategory = await budgetService.getTargetCategory(
+              args.categoryId
+            );
 
-        if (isGoalId) {
-          args.isGoal = true;
+            if (targetCategory && targetCategory.type !== "EXPENSE") {
+              return {
+                type: "message",
+                message:
+                  aiLang === "en"
+                    ? `Normally, we set budgets for "Expenses". Since "${targetCategory.name}" is an income category, there's no need to set a budget. Stay wealthy! 🤑`
+                    : `ปกติแล้วเราจะตั้งงบประมาณไว้คุม "รายจ่าย" ครับ รายการ "${targetCategory.name}" เป็นรายรับ ไม่ต้องตั้งงบก็ได้ครับ รวยๆ เฮงๆ ครับ! 🤑`,
+              };
+            }
+
+            const isDuplicate = await budgetService.checkDuplicate(
+              userId,
+              args.categoryId,
+              args.frequency
+            );
+
+            if (isDuplicate) {
+              const freqMap: Record<string, { th: string; en: string }> = {
+                DAILY: { th: "รายวัน", en: "Daily" },
+                WEEKLY: { th: "รายสัปดาห์", en: "Weekly" },
+                MONTHLY: { th: "รายเดือน", en: "Monthly" },
+                YEARLY: { th: "รายปี", en: "Yearly" },
+              };
+
+              const freq = freqMap[args.frequency] || {
+                th: args.frequency,
+                en: args.frequency,
+              };
+
+              return {
+                type: "message",
+                message:
+                  aiLang === "en"
+                    ? `It looks like you've already set a "${freq.en}" budget for this category. Would you like to try a different category or frequency? 😊`
+                    : `ดูเหมือนว่าพี่ตั้งงบหมวดนี้ในรอบ "${freq.th}" ไว้เรียบร้อยแล้วครับ ลองเปลี่ยนหมวดหรือรอบเวลาดูไหมครับ? 😊`,
+              };
+            }
+          } catch (err) {
+            console.error("Check duplicate error:", err);
+          }
         }
-      }
 
-      return {
-        type: fnName,
-        data: args,
-      };
+        if (fnName === "create_goal") {
+          if (args.deadline) {
+            if (args.deadline < currentDateISO) {
+              return {
+                type: "message",
+                message:
+                  aiLang === "en"
+                    ? "Setting a goal in the past is impossible (I can't time travel yet! 😅). Please select today or a future date."
+                    : "การตั้งเป้าหมายย้อนหลังทำไม่ได้นะครับ (ผมย้อนเวลาไม่ได้ 😅) รบกวนระบุเป็น 'วันนี้' หรือ 'วันในอนาคต' แทนนะครับ",
+              };
+            }
+          }
+
+          if (!args.amount) {
+            return {
+              type: "message",
+              message:
+                aiLang === "en"
+                  ? "You haven't specified the amount yet. Please let me know the target amount for this goal."
+                  : "คุณยังไม่ได้ระบุจำนวนเงินครับ รบกวนระบุจำนวนเงินที่ต้องการตั้งเป้าหมายด้วยนะครับ",
+            };
+          }
+
+          try {
+            const existingGoals = await db.query.goals.findMany({
+              where: and(eq(goals.userId, userId), isNull(goals.deletedAt)),
+            });
+
+            const targetName = args.name.trim().toLowerCase();
+            const duplicate = existingGoals.find(
+              (g) => g.name.trim().toLowerCase() === targetName
+            );
+
+            const userConfirmKeywords =
+              aiLang === "en"
+                ? ["confirm", "yes", "do it", "create anyway", "sure"]
+                : ["ยืนยัน", "สร้างเลย", "เอาเลย", "สร้างซ้ำ", "เอาอันนี้แหละ"];
+
+            const isUserConfirming = userConfirmKeywords.some((keyword) =>
+              content.toLowerCase().includes(keyword)
+            );
+
+            if (duplicate && !isUserConfirming) {
+              return {
+                type: "message",
+                message:
+                  aiLang === "en"
+                    ? `You already have a goal named "${duplicate.name}" 🧐. \nIf you'd like to create a duplicate, please type "confirm" or try a different name.`
+                    : `พี่มีเป้าหมายชื่อ "${duplicate.name}" อยู่แล้วนะครับ 🧐 \nถ้าต้องการสร้างซ้ำให้พิมพ์ว่า "ยืนยัน" หรือเปลี่ยนชื่อหน่อยมั้ยครับ?`,
+              };
+            }
+          } catch (err) {
+            console.error("Check goal duplicate error:", err);
+          }
+        }
+
+        if (fnName === "create_transaction") {
+          const amount = Number(args.amount);
+          if (!amount || amount === 0 || Number.isNaN(amount)) {
+            return {
+              type: "message",
+              message:
+                aiLang === "en"
+                  ? `How much was the "${args.description || "item"}"?`
+                  : `รายการ "${args.description || "นี้"}" ราคาเท่าไหร่ครับ?`,
+            };
+          }
+
+          const isGoalId = goalCategories.some(
+            (g) => String(g.id) === String(args.categoryId)
+          );
+
+          if (isGoalId) {
+            args.isGoal = true;
+          }
+        }
+
+        return {
+          type: fnName,
+          data: args,
+        };
+      } catch (e) {
+        console.error(`[Sati] JSON Parse Error for ${fnName}:`, e);
+        return {
+          type: "message",
+          message:
+            aiLang === "en"
+              ? "Sorry, I'm having trouble processing that request. Could you try again?"
+              : "ขออภัยครับ น้องสติประมวลผลข้อมูลผิดพลาด รบกวนพี่ลองพิมพ์ใหม่อีกครั้งนะครับ",
+        };
+      }
     } catch (error) {
       console.error("[OpenAI] handleMessage Error:", error);
       return { type: "message", message: "ระบบขัดข้องชั่วคราวครับ" };

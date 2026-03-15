@@ -5,7 +5,14 @@ import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { SatangSystemPrompt } from "@/common/utils/prompts";
 import { db } from "@/db";
-import { category, chatMessage, chatSession, goals, user } from "@/db/schema";
+import {
+  category,
+  chatMessage,
+  chatSession,
+  goals,
+  user,
+  userSettings,
+} from "@/db/schema";
 import type * as chatSchema from "./chat.schema";
 import { BotType } from "./chat.schema";
 
@@ -51,6 +58,11 @@ export class ChatService {
     }
 
     if (shouldCreate) {
+      const setting = await db.query.userSettings.findFirst({
+        where: eq(userSettings.userId, userId),
+      });
+      const aiLang = setting?.aiLanguage ?? "th";
+
       const [newSession] = await db
         .insert(chatSession)
         .values({
@@ -68,10 +80,18 @@ export class ChatService {
       });
       const firstName = userData?.name.split(" ")[0] || "พี่";
 
-      const welcomeText =
-        botType === BotType.Sati
-          ? "สวัสดีครับผม! น้องสติยินดีให้บริการครับ พี่อยากให้ผมช่วยอะไรบอกได้เลยนะครับผม น้องสติยินดีช่วยเสมอครับ!"
-          : `สวัสดีครับ ${firstName} สตางค์ พร้อมแนะนำเคล็ดลับการลงทุนง่าย ๆ ให้พี่เริ่มต้นได้อย่างมั่นใจครับ!`;
+      let welcomeText = "";
+      if (aiLang === "en") {
+        welcomeText =
+          botType === BotType.Sati
+            ? "Hello! I'm Sati, your financial assistant. How can I help you today?"
+            : `Hello ${firstName}, I'm Satang. I'm ready to give you investment advice and financial insights!`;
+      } else {
+        welcomeText =
+          botType === BotType.Sati
+            ? "สวัสดีครับผม! น้องสติยินดีให้บริการครับ พี่อยากให้ผมช่วยอะไรบอกได้เลยนะครับผม!"
+            : `สวัสดีครับ ${firstName} สตางค์ พร้อมแนะนำเคล็ดลับการลงทุนให้พี่แล้วครับ!`;
+      }
 
       await db.insert(chatMessage).values({
         sessionId,
@@ -155,11 +175,17 @@ export class ChatService {
 
     const history = rawHistory.reverse();
 
+    const setting = await db.query.userSettings.findFirst({
+      where: eq(userSettings.userId, userId),
+    });
+    const aiLang = setting?.aiLanguage ?? "th";
+
     const result = await openAIService.handleMessage(
       userId,
       content,
       allCategoriesForAI,
-      history
+      history,
+      aiLang
     );
 
     await db.insert(chatMessage).values({
@@ -203,6 +229,11 @@ export class ChatService {
 
     const memories = await ragService.searchMemory(userId, content);
 
+    const setting = await db.query.userSettings.findFirst({
+      where: eq(userSettings.userId, userId),
+    });
+    const aiLang = setting?.aiLanguage ?? "th";
+
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
 
@@ -220,7 +251,8 @@ export class ChatService {
       currentBalance,
       todayStr,
       today,
-      memories
+      memories,
+      aiLang
     );
 
     const history = await db.query.chatMessage.findMany({
@@ -242,7 +274,8 @@ export class ChatService {
 
     const stream = await openAIService.processSatangToolCallsAndStream(
       userId,
-      messages
+      messages,
+      aiLang
     );
 
     let fullReply = "";
