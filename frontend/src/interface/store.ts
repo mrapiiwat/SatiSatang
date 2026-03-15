@@ -38,6 +38,7 @@ export interface SettingState {
   theme: 'light' | 'dark' | 'system';
   isNotificationEnabled: boolean;
   budgetStartDate: number;
+  userId: string | null;
 }
 
 export interface SettingStore extends SettingState {

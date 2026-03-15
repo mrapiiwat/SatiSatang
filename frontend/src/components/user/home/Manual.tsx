@@ -1,10 +1,11 @@
 import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { GoCalendar } from 'react-icons/go';
 import { RxCross2 } from 'react-icons/rx';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 import type { SingleValue } from 'react-select';
 import Select from 'react-select';
+import { useTranslation } from 'react-i18next';
 import axios from '../../../api/axios';
 import type {
   CategoryOption,
@@ -16,29 +17,42 @@ import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 import { isAxiosError, type AxiosError } from 'axios';
 
-const options: OptionType[] = [
-  { value: 'INCOME', label: 'รายรับ' },
-  { value: 'EXPENSE', label: 'รายจ่าย' },
-];
-
-const monthsThai = [
-  'มกราคม',
-  'กุมภาพันธ์',
-  'มีนาคม',
-  'เมษายน',
-  'พฤษภาคม',
-  'มิถุนายน',
-  'กรกฎาคม',
-  'สิงหาคม',
-  'กันยายน',
-  'ตุลาคม',
-  'พฤศจิกายน',
-  'ธันวาคม',
-];
-
-const daysThai = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
-
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
+  const { t, i18n } = useTranslation();
+
+  const options: OptionType[] = useMemo(
+    () => [
+      { value: 'INCOME', label: t('income', 'รายรับ') },
+      { value: 'EXPENSE', label: t('expense', 'รายจ่าย') },
+    ],
+    [t],
+  );
+
+  const monthsThai = [
+    t('month_jan', 'มกราคม'),
+    t('month_feb', 'กุมภาพันธ์'),
+    t('month_mar', 'มีนาคม'),
+    t('month_apr', 'เมษายน'),
+    t('month_may', 'พฤษภาคม'),
+    t('month_jun', 'มิถุนายน'),
+    t('month_jul', 'กรกฎาคม'),
+    t('month_aug', 'สิงหาคม'),
+    t('month_sep', 'กันยายน'),
+    t('month_oct', 'ตุลาคม'),
+    t('month_nov', 'พฤศจิกายน'),
+    t('month_dec', 'ธันวาคม'),
+  ];
+
+  const daysThai = [
+    t('day_sun_short', 'อา'),
+    t('day_mon_short', 'จ'),
+    t('day_tue_short', 'อ'),
+    t('day_wed_short', 'พ'),
+    t('day_thu_short', 'พฤ'),
+    t('day_fri_short', 'ศ'),
+    t('day_sat_short', 'ส'),
+  ];
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -51,16 +65,22 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
 
   const datePickerRef = useRef<HTMLDivElement>(null);
 
-  const formattedDate = selectedDate
-    .toLocaleDateString('th-TH', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
-    .replace('วัน', '')
-    .replace('ที่', '')
-    .replace('พ.ศ. ', '');
+  const isThai = i18n.language === 'th';
+  const localeStr = isThai ? 'th-TH' : 'en-US';
+
+  let formattedDate = selectedDate.toLocaleDateString(localeStr, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  if (isThai) {
+    formattedDate = formattedDate
+      .replace(t('date_word_day', 'วัน'), '')
+      .replace(t('date_word_at', 'ที่'), '')
+      .replace(t('date_word_be', 'พ.ศ. '), '');
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -117,7 +137,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
         setViewDate(d);
       }
     }
-  }, [editData]);
+  }, [editData, options]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -179,7 +199,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
       }
     }, 800);
     return () => clearTimeout(timeoutId);
-  }, [detail, editData]);
+  }, [detail, editData, options]);
 
   const isModified = () => {
     if (!editData || !('id' in editData)) return true;
@@ -200,10 +220,10 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedType || !selectedCategory || !amount || !detail) {
-      return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      return showToastAlert(t('manual_error_fill_all', 'กรุณากรอกข้อมูลให้ครบถ้วน'), 'error');
     }
     if (Number(amount) < 0) {
-      return showToastAlert('จำนวนเงินต้องมากกว่า 0', 'error');
+      return showToastAlert(t('manual_error_amount_gt_0', 'จำนวนเงินต้องมากกว่า 0'), 'error');
     }
     const offsetDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
     const payload = {
@@ -224,10 +244,10 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
     try {
       if (editData && 'id' in editData) {
         await axios.put(`/transaction/${editData.id}`, payload);
-        showToastAlert('แก้ไขข้อมูลสำเร็จ', 'success');
+        showToastAlert(t('edit_success', 'แก้ไขข้อมูลสำเร็จ'), 'success');
       } else {
         await axios.post('/transaction', payload);
-        showToastAlert('บันทึกสำเร็จ', 'success');
+        showToastAlert(t('save_success', 'บันทึกสำเร็จ'), 'success');
       }
       onSuccess();
       onClose();
@@ -236,10 +256,17 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
         const axiosError = err as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
-        const msg = customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
+        const msg =
+          customError ||
+          data?.errors?.[0]?.summary ||
+          data?.message ||
+          t('error_default', 'เกิดข้อผิดพลาด');
         showToastAlert(msg, 'error');
       } else {
-        showToastAlert(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert(
+          err instanceof Error ? err.message : t('unknown_error', 'เกิดข้อผิดพลาดไม่ทราบชนิด'),
+          'error',
+        );
       }
     }
   };
@@ -249,7 +276,9 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
       <div className="bg-white w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8 relative">
         <div className="flex justify-between items-center mb-5">
           <h4 className="font-medium">
-            {editData && 'id' in editData ? 'แก้ไขรายการ' : 'บันทึกรายรับรายจ่าย'}
+            {editData && 'id' in editData
+              ? t('edit_transaction', 'แก้ไขรายการ')
+              : t('save_transaction', 'บันทึกรายรับรายจ่าย')}
           </h4>
           <div
             onClick={onClose}
@@ -283,7 +312,8 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
                   <IoIosArrowBack size={14} />
                 </button>
                 <span className="font-bold text-sm">
-                  {monthsThai[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
+                  {monthsThai[viewDate.getMonth()]}{' '}
+                  {viewDate.getFullYear() + (i18n.language === 'th' ? 543 : 0)}
                 </span>
                 <button
                   onClick={handleNextMonth}
@@ -343,7 +373,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
 
         <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <label htmlFor="detail">รายละเอียด</label>
+            <label htmlFor="detail">{t('detail_label', 'รายละเอียด')}</label>
             <input
               id="detail"
               type="text"
@@ -354,7 +384,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           </div>
 
           <div className="flex flex-col gap-2">
-            <label>ประเภทรายการ</label>
+            <label>{t('type_label', 'ประเภทรายการ')}</label>
             <Select<OptionType, false>
               options={options}
               value={selectedType}
@@ -376,7 +406,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           </div>
 
           <div className="flex flex-col gap-2">
-            <label>หมวด</label>
+            <label>{t('category', 'หมวด')}</label>
             <Select<CategoryOption, false>
               options={categories}
               value={selectedCategory}
@@ -398,7 +428,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="amount">จำนวนเงิน</label>
+            <label htmlFor="amount">{t('amount_label', 'จำนวนเงิน')}</label>
             <input
               id="amount"
               type="number"
@@ -415,7 +445,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
                 canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
               } w-full px-6 py-3 rounded-xl text-white text-sm font-semibold transition-colors`}
             >
-              บันทึก
+              {t('save_btn', 'บันทึก')}
             </button>
           </div>
         </form>

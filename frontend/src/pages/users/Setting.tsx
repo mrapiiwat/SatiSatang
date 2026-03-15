@@ -5,7 +5,8 @@ import PageWrapper from '../../components/PageWrapper';
 import useAuthStore from '../../store/authStore';
 import useSettingStore from '../../store/settingStore';
 import { showToastAlert } from '../../store/toastStore';
-import axios from '../../api/axios';
+import { useTranslation } from 'react-i18next';
+
 import {
   IoPersonOutline,
   IoGridOutline,
@@ -15,7 +16,7 @@ import {
   IoChevronForwardOutline,
   IoLanguageOutline,
   IoSparklesOutline,
-  IoContrastOutline,
+  // IoContrastOutline,
   IoNotificationsOutline,
   IoCalendarOutline,
 } from 'react-icons/io5';
@@ -33,20 +34,21 @@ const LANGUAGE_OPTIONS = [
   { value: 'en', label: 'English' },
 ] as const;
 
-const THEME_OPTIONS = [
-  { value: 'system', label: 'ตามระบบ' },
-  { value: 'light', label: 'สว่าง' },
-  { value: 'dark', label: 'มืด' },
-] as const;
+// const THEME_OPTIONS = [
+//   { value: 'system', label: 'ตามระบบ' },
+//   { value: 'light', label: 'สว่าง' },
+//   { value: 'dark', label: 'มืด' },
+// ] as const;
 
 const Setting: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const actionLogout = useAuthStore((state) => state.actionLogout);
 
   const appLanguage = useSettingStore((s) => s.appLanguage);
   const aiLanguage = useSettingStore((s) => s.aiLanguage);
-  const theme = useSettingStore((s) => s.theme);
+  // const theme = useSettingStore((s) => s.theme);
   const isNotificationEnabled = useSettingStore((s) => s.isNotificationEnabled);
   const budgetStartDate = useSettingStore((s) => s.budgetStartDate);
   const actionUpdateSetting = useSettingStore((s) => s.actionUpdateSetting);
@@ -54,20 +56,20 @@ const Setting: React.FC = () => {
   const handleLogout = async () => {
     actionLogout();
     navigate('/login');
-    showToastAlert('ออกจากระบบแล้ว', 'success');
+    showToastAlert(t('logout_success', 'ออกจากระบบแล้ว'), 'success');
   };
 
   const accountRows: SettingRow[] = [
     {
       icon: <IoPersonOutline size={20} />,
-      label: 'บัญชีผู้ใช้',
+      label: t('account_label', 'บัญชีผู้ใช้'),
       description: user?.name || user?.email || '',
       onClick: () => navigate('/user/account'),
     },
     {
       icon: <IoGridOutline size={20} />,
-      label: 'หมวดหมู่',
-      description: 'จัดการหมวดหมู่รายรับ-รายจ่าย',
+      label: t('category_label', 'หมวดหมู่'),
+      description: t('category_desc', 'จัดการหมวดหมู่รายรับ-รายจ่าย'),
       onClick: () => navigate('/user/categories'),
     },
   ];
@@ -75,14 +77,14 @@ const Setting: React.FC = () => {
   const supportRows: SettingRow[] = [
     {
       icon: <IoChatbubblesOutline size={20} />,
-      label: 'ส่งความคิดเห็น',
-      description: 'ช่วยเราพัฒนาแอปให้ดียิ่งขึ้น',
+      label: t('feedback_label', 'ส่งความคิดเห็น'),
+      description: t('feedback_desc', 'ช่วยเราพัฒนาแอปให้ดียิ่งขึ้น'),
       onClick: () => navigate('/user/feedback'),
     },
     {
       icon: <IoShieldCheckmarkOutline size={20} />,
-      label: 'นโยบายความเป็นส่วนตัว',
-      description: 'รายละเอียดการปกป้องข้อมูลของคุณ',
+      label: t('privacy_label', 'นโยบายความเป็นส่วนตัว'),
+      description: t('privacy_desc', 'รายละเอียดการปกป้องข้อมูลของคุณ'),
       onClick: () => navigate('/policies/privacy-policy'),
     },
   ];
@@ -91,8 +93,9 @@ const Setting: React.FC = () => {
     <button
       key={row.label}
       onClick={row.onClick}
-      className={`w-full flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-gray-50 active:bg-gray-100 ${row.danger ? 'text-red-500' : 'text-black-900'
-        } ${index < arr.length - 1 ? 'border-b border-gray-100' : ''}`}
+      className={`w-full flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-gray-50 active:bg-gray-100 ${
+        row.danger ? 'text-red-500' : 'text-black-900'
+      } ${index < arr.length - 1 ? 'border-b border-gray-100' : ''}`}
     >
       <span className={`shrink-0 ${row.danger ? 'text-red-500' : 'text-black-700'}`}>
         {row.icon}
@@ -111,33 +114,37 @@ const Setting: React.FC = () => {
     <PageWrapper animation="fade">
       <BackButton />
       <div className="px-6 py-4 font-ibm text-black-900 max-w-md mx-auto">
-        <h1 className="text-center font-semibold mb-8">ตั้งค่า</h1>
+        <h1 className="text-center font-semibold mb-8">{t('setting_title', 'ตั้งค่า')}</h1>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2 px-1">
-          บัญชี
+          {t('account_section', 'บัญชี')}
         </p>
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-6">
           {accountRows.map((row, i, arr) => renderRow(row, i, arr))}
         </div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2 px-1">
-          การตั้งค่าแอป
+          {t('app_setting_section', 'การตั้งค่าแอป')}
         </p>
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-6">
           <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
             <span className="shrink-0 text-black-700">
               <IoLanguageOutline size={20} />
             </span>
-            <span className="text-sm font-medium flex-1">ภาษาแอป</span>
+            <span className="text-sm font-medium flex-1">{t('app_language', 'ภาษาแอป')}</span>
             <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
               {LANGUAGE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => actionUpdateSetting({ appLanguage: opt.value })}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${appLanguage === opt.value
+                  onClick={() => {
+                    actionUpdateSetting({ appLanguage: opt.value });
+                    i18n.changeLanguage(opt.value);
+                  }}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                    appLanguage === opt.value
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                  }`}
                 >
-                  {opt.label}
+                  {t(`language_${opt.value}`, opt.label)}
                 </button>
               ))}
             </div>
@@ -146,56 +153,62 @@ const Setting: React.FC = () => {
             <span className="shrink-0 text-black-700">
               <IoSparklesOutline size={20} />
             </span>
-            <span className="text-sm font-medium flex-1">ภาษา AI</span>
+            <span className="text-sm font-medium flex-1">{t('ai_language', 'ภาษา AI')}</span>
             <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
               {LANGUAGE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => actionUpdateSetting({ aiLanguage: opt.value })}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${aiLanguage === opt.value
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                    aiLanguage === opt.value
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                  }`}
                 >
-                  {opt.label}
+                  {t(`language_${opt.value}`, opt.label)}
                 </button>
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
+          {/* <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
             <span className="shrink-0 text-black-700">
               <IoContrastOutline size={20} />
             </span>
-            <span className="text-sm font-medium flex-1">ธีม</span>
+            <span className="text-sm font-medium flex-1">{t('theme_label', 'ธีม')}</span>
             <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
               {THEME_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => actionUpdateSetting({ theme: opt.value })}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${theme === opt.value
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                    theme === opt.value
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
-                    }`}
+                  }`}
                 >
-                  {opt.label}
+                  {t(`theme_${opt.value}`, opt.label)}
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
             <span className="shrink-0 text-black-700">
               <IoNotificationsOutline size={20} />
             </span>
-            <span className="text-sm font-medium flex-1">การแจ้งเตือน</span>
+            <span className="text-sm font-medium flex-1">
+              {t('notification_label', 'การแจ้งเตือน')}
+            </span>
             <button
               onClick={() => actionUpdateSetting({ isNotificationEnabled: !isNotificationEnabled })}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${isNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                isNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${isNotificationEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                  isNotificationEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
               />
             </button>
           </div>
@@ -205,9 +218,14 @@ const Setting: React.FC = () => {
               <IoCalendarOutline size={20} />
             </span>
             <div className="flex flex-col flex-1">
-              <span className="text-sm font-medium">วันเริ่มต้นรอบงบประมาณ</span>
+              <span className="text-sm font-medium">
+                {t('budget_start_date', 'วันเริ่มต้นรอบงบประมาณ')}
+              </span>
               <span className="text-xs text-gray-400">
-                ทุกเดือนจะรีเซ็ตในวันที่ {budgetStartDate}
+                {t('budget_reset_desc', {
+                  date: budgetStartDate,
+                  defaultValue: `ทุกเดือนจะรีเซ็ตในวันที่ ${budgetStartDate}`,
+                })}
               </span>
             </div>
             <select
@@ -217,7 +235,7 @@ const Setting: React.FC = () => {
             >
               {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                 <option key={d} value={d}>
-                  วันที่ {d}
+                  {t('date_format', { date: d, defaultValue: `วันที่ ${d}` })}
                 </option>
               ))}
             </select>
@@ -225,7 +243,7 @@ const Setting: React.FC = () => {
         </div>
 
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2 px-1">
-          การสนับสนุน
+          {t('support_section', 'การสนับสนุน')}
         </p>
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-6">
           {supportRows.map((row, i, arr) => renderRow(row, i, arr))}
@@ -235,16 +253,18 @@ const Setting: React.FC = () => {
           {renderRow(
             {
               icon: <IoLogOutOutline size={20} />,
-              label: 'ออกจากระบบ',
+              label: t('logout_btn', 'ออกจากระบบ'),
               onClick: handleLogout,
               danger: true,
             },
             0,
-            [{ icon: null, label: '', onClick: () => { } }],
+            [{ icon: null, label: '', onClick: () => {} }],
           )}
         </div>
 
-        <p className="text-center text-xs text-gray-300">สติสตางค์ · v1.0.0</p>
+        <p className="text-center text-xs text-gray-300">
+          {t('app_version', 'สติสตางค์ · v1.0.0')}
+        </p>
       </div>
     </PageWrapper>
   );

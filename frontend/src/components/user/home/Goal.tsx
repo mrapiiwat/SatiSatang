@@ -8,8 +8,10 @@ import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 import Tooltip from '../../Tooltip';
 import DeleteModal from '../../DeleteModal';
+import { useTranslation } from 'react-i18next';
 
 const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
+  const { t } = useTranslation();
   const [goalName, setGoalName] = useState('');
   const [amount, setAmount] = useState('');
   const [hasDeadline, setHasDeadline] = useState(false);
@@ -30,20 +32,20 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
 
   const monthOptions: OptionType[] = useMemo(
     () => [
-      { value: '1', label: 'มกราคม' },
-      { value: '2', label: 'กุมภาพันธ์' },
-      { value: '3', label: 'มีนาคม' },
-      { value: '4', label: 'เมษายน' },
-      { value: '5', label: 'พฤษภาคม' },
-      { value: '6', label: 'มิถุนายน' },
-      { value: '7', label: 'กรกฎาคม' },
-      { value: '8', label: 'สิงหาคม' },
-      { value: '9', label: 'กันยายน' },
-      { value: '10', label: 'ตุลาคม' },
-      { value: '11', label: 'พฤศจิกายน' },
-      { value: '12', label: 'ธันวาคม' },
+      { value: '1', label: t('month_jan', 'มกราคม') },
+      { value: '2', label: t('month_feb', 'กุมภาพันธ์') },
+      { value: '3', label: t('month_mar', 'มีนาคม') },
+      { value: '4', label: t('month_apr', 'เมษายน') },
+      { value: '5', label: t('month_may', 'พฤษภาคม') },
+      { value: '6', label: t('month_jun', 'มิถุนายน') },
+      { value: '7', label: t('month_jul', 'กรกฎาคม') },
+      { value: '8', label: t('month_aug', 'สิงหาคม') },
+      { value: '9', label: t('month_sep', 'กันยายน') },
+      { value: '10', label: t('month_oct', 'ตุลาคม') },
+      { value: '11', label: t('month_nov', 'พฤศจิกายน') },
+      { value: '12', label: t('month_dec', 'ธันวาคม') },
     ],
-    [],
+    [t],
   );
 
   useEffect(() => {
@@ -137,11 +139,11 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
 
   const validateInputs = () => {
     if (!goalName.trim()) {
-      showToastAlert('กรุณากรอกชื่อเป้าหมาย', 'error');
+      showToastAlert(t('error_goal_name_req', 'กรุณากรอกชื่อเป้าหมาย'), 'error');
       return false;
     }
     if (!amount.trim() || parseFloat(amount) <= 0) {
-      showToastAlert('จำนวนเงินต้องมากกว่า 0', 'error');
+      showToastAlert(t('manual_error_amount_gt_0', 'จำนวนเงินต้องมากกว่า 0'), 'error');
       return false;
     }
 
@@ -151,7 +153,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
       today.setHours(0, 0, 0, 0);
 
       if (selectedDate < today) {
-        showToastAlert('ตั้งเป้าหมายวันในอนาคตกันเถอะ!', 'error');
+        showToastAlert(t('error_future_date', 'ตั้งเป้าหมายวันในอนาคตกันเถอะ!'), 'error');
         return false;
       }
     }
@@ -219,13 +221,13 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
     setIsDeleting(true);
     try {
       await axios.delete(`/goal/${dataWithId.id}`);
-      showToastAlert('ลบเป้าหมายสำเร็จ', 'success');
+      showToastAlert(t('delete_goal_success', 'ลบเป้าหมายสำเร็จ'), 'success');
       setIsDeleteModalOpen(false);
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
       console.log(err);
-      showToastAlert('เกิดข้อผิดพลาดในการลบ', 'error');
+      showToastAlert(t('delete_error', 'เกิดข้อผิดพลาดในการลบ'), 'error');
       setIsDeleteModalOpen(false);
     } finally {
       setIsDeleting(false);
@@ -259,10 +261,10 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
 
       if (dataWithId?.id) {
         await axios.put(`/goal/${dataWithId.id}`, payload);
-        showToastAlert('อัปเดตเป้าหมายสำเร็จ', 'success');
+        showToastAlert(t('update_goal_success', 'อัปเดตเป้าหมายสำเร็จ'), 'success');
       } else {
         await axios.post('/goal', payload);
-        showToastAlert('บันทึกเป้าหมายใหม่สำเร็จ', 'success');
+        showToastAlert(t('save_goal_success', 'บันทึกเป้าหมายใหม่สำเร็จ'), 'success');
       }
 
       if (onSuccess) onSuccess();
@@ -273,13 +275,16 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
         const data = axiosError.response?.data;
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
         const errorMessage =
-          customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
+          customError ||
+          data?.errors?.[0]?.summary ||
+          data?.message ||
+          t('error_default', 'เกิดข้อผิดพลาด');
 
         showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(err.message, 'error');
       } else {
-        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert(t('unknown_error', 'เกิดข้อผิดพลาดไม่ทราบชนิด'), 'error');
       }
     }
   };
@@ -314,8 +319,13 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
         <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
           <div className="flex justify-between items-center mb-6">
             <div className="flex gap-3 items-center">
-              <h4 className="font-semibold">{onUpdateDraft ? 'แก้ไขเป้าหมาย' : 'เป้าหมาย'}</h4>
-              <Tooltip text="ตั้งเป้าหมายเงินออมเพื่อเก็บเงินให้ได้ตามเป้าหมาย" position="right" />
+              <h4 className="font-semibold">
+                {onUpdateDraft ? t('edit_goal', 'แก้ไขเป้าหมาย') : t('goal_label', 'เป้าหมาย')}
+              </h4>
+              <Tooltip
+                text={t('goal_tooltip', 'ตั้งเป้าหมายเงินออมเพื่อเก็บเงินให้ได้ตามเป้าหมาย')}
+                position="right"
+              />
             </div>
 
             <div
@@ -328,7 +338,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">ชื่อเป้าหมาย</label>
+              <label className="text-sm font-medium">{t('goal_name', 'ชื่อเป้าหมาย')}</label>
               <input
                 type="text"
                 value={goalName}
@@ -338,7 +348,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">จำนวนเงิน</label>
+              <label className="text-sm font-medium">{t('amount_label', 'จำนวนเงิน')}</label>
               <input
                 type="number"
                 value={amount}
@@ -354,8 +364,12 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                   className="text-sm font-medium cursor-pointer select-none text-black-900"
                 >
                   <div className="flex items-center gap-3">
-                    ระยะเวลา{' '}
-                    <Tooltip text="กำหนดวันสิ้นสุดของเป้าหมาย" position="right" type="help" />
+                    {t('duration_label', 'ระยะเวลา')}{' '}
+                    <Tooltip
+                      text={t('deadline_tooltip', 'กำหนดวันสิ้นสุดของเป้าหมาย')}
+                      position="right"
+                      type="help"
+                    />
                   </div>
                 </label>
                 <input
@@ -374,7 +388,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                       options={yearOptions}
                       value={year}
                       onChange={handleYearChange}
-                      placeholder="ปี"
+                      placeholder={t('year', 'ปี')}
                       isClearable
                       isSearchable={false}
                       styles={selectStyles}
@@ -386,7 +400,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                       options={monthOptions}
                       value={month}
                       onChange={handleMonthChange}
-                      placeholder="เดือน"
+                      placeholder={t('month', 'เดือน')}
                       isClearable
                       isSearchable={false}
                       isOptionDisabled={(option) => {
@@ -404,7 +418,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                       options={dayOptions}
                       value={day}
                       onChange={(option) => setDay(option)}
-                      placeholder="วัน"
+                      placeholder={t('day', 'วัน')}
                       isClearable
                       isSearchable={false}
                       isOptionDisabled={(option) => {
@@ -432,7 +446,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                   onClick={() => setIsDeleteModalOpen(true)}
                   className="flex-1 py-3 rounded-xl bg-[#FF2D55] text-white text-sm font-semibold hover:bg-[#f91e46] transition"
                 >
-                  ลบ
+                  {t('delete', 'ลบ')}
                 </button>
               )}
               <button
@@ -442,7 +456,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                   canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
                 }`}
               >
-                บันทึก
+                {t('save_btn', 'บันทึก')}
               </button>
             </div>
           </div>
@@ -453,9 +467,11 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}
-        title="ต้องการลบเป้าหมายนี้ใช่หรือไม่?"
-        confirmText={isDeleting ? 'กำลังลบ...' : 'ใช่ ลบเลย'}
-        cancelText="ยกเลิก"
+        title={t('delete_goal_confirm', 'ต้องการลบเป้าหมายนี้ใช่หรือไม่?')}
+        confirmText={
+          isDeleting ? t('deleting', 'กำลังลบ...') : t('yes_delete_confirm', 'ใช่ ลบเลย')
+        }
+        cancelText={t('cancel_btn', 'ยกเลิก')}
       />
     </>
   );

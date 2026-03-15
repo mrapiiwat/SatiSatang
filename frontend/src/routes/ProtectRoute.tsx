@@ -38,11 +38,14 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
           setUser(resUser.data);
         }
 
-        if (!fetchedSettings.current) {
+        const storedUserId = useSettingStore.getState().userId;
+        const currentUserId = user ? String(user.id) : null;
+
+        if (!fetchedSettings.current || storedUserId !== currentUserId) {
           const resSetting = await axios.get('/setting');
 
           if (resSetting.data?.data) {
-            actionSetSettings(resSetting.data.data);
+            actionSetSettings({ ...resSetting.data.data, userId: currentUserId });
             console.log('Fetched Settings from API');
           }
           fetchedSettings.current = true;

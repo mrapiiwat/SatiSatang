@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../api/axios';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
 import { IoLockClosedOutline } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
@@ -10,6 +11,7 @@ import { IoCheckmarkCircle } from 'react-icons/io5';
 import type { ElysiaResponse } from '../../interface/error';
 
 const ResetPassword: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const tokenFromUrl = searchParams.get('token') || '';
@@ -20,10 +22,14 @@ const ResetPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isReset, setIsReset] = useState(false);
   const validatePassword = (password: string) => {
-    if (password.length < 6) return ['รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'];
-    else if (!/[A-Z]/.test(password)) return ['ต้องมีตัวอักษรพิมพ์ใหญ่อย่างน้อย 1 ตัว (A-Z)'];
-    else if (!/[a-z]/.test(password)) return ['ต้องมีตัวอักษรพิมพ์เล็กอย่างน้อย 1 ตัว (a-z)'];
-    else if (!/[0-9]/.test(password)) return ['ต้องมีตัวเลขอย่างน้อย 1 ตัว (0-9)'];
+    if (password.length < 6)
+      return [t('password_length_error', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร')];
+    else if (!/[A-Z]/.test(password))
+      return [t('password_uppercase_error', 'ต้องมีตัวอักษรพิมพ์ใหญ่อย่างน้อย 1 ตัว (A-Z)')];
+    else if (!/[a-z]/.test(password))
+      return [t('password_lowercase_error', 'ต้องมีตัวอักษรพิมพ์เล็กอย่างน้อย 1 ตัว (a-z)')];
+    else if (!/[0-9]/.test(password))
+      return [t('password_number_error', 'ต้องมีตัวเลขอย่างน้อย 1 ตัว (0-9)')];
     return [];
   };
 
@@ -61,11 +67,11 @@ const ResetPassword: React.FC = () => {
     }
 
     if (!newPassword || !confirm) {
-      showToastAlert('กรุณากรอกรหัสผ่านให้ครบถ้วน', 'error');
+      showToastAlert(t('please_fill_all_passwords', 'กรุณากรอกรหัสผ่านให้ครบถ้วน'), 'error');
       return;
     }
     if (newPassword !== confirm) {
-      showToastAlert('รหัสผ่านไม่ตรงกัน', 'error');
+      showToastAlert(t('password_mismatch', 'รหัสผ่านไม่ตรงกัน'), 'error');
       return;
     }
 
@@ -77,10 +83,10 @@ const ResetPassword: React.FC = () => {
         newPassword,
       });
 
-      showToastAlert('รีเซ็ตรหัสผ่านสำเร็จ', 'success');
+      showToastAlert(t('reset_password_success', 'รีเซ็ตรหัสผ่านสำเร็จ'), 'success');
       setIsReset(true);
     } catch (err: unknown) {
-      let message = 'เกิดข้อผิดพลาด';
+      let message = t('generic_error', 'เกิดข้อผิดพลาด');
 
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as AxiosError<ElysiaResponse>;
@@ -110,26 +116,38 @@ const ResetPassword: React.FC = () => {
                 <IoCheckmarkCircle className="text-green-600 w-8 h-8" strokeWidth={2} />
               </div>
 
-              <h1 className="text-3xl font-semibold text-gray-900 mb-4">เปลี่ยนรหัสผ่านสำเร็จ</h1>
+              <h1 className="text-3xl font-semibold text-gray-900 mb-4">
+                {t('reset_password_success_title', 'เปลี่ยนรหัสผ่านสำเร็จ')}
+              </h1>
 
               <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                รหัสผ่านของคุณได้รับการเปลี่ยนแปลงเรียบร้อยแล้ว
+                {t(
+                  'reset_password_success_desc',
+                  'รหัสผ่านของคุณได้รับการเปลี่ยนแปลงเรียบร้อยแล้ว',
+                )}
               </p>
 
-              <p className="text-gray-500 text-sm">คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้ทันที</p>
+              <p className="text-gray-500 text-sm">
+                {t('reset_password_login_now', 'คุณสามารถเข้าสู่ระบบด้วยรหัสผ่านใหม่ได้ทันที')}
+              </p>
             </div>
           </div>
         </div>
       ) : (
         <div className="bg-white rounded-2xl p-8 w-full max-w-md text-center animate-fadeIn">
           <IoLockClosedOutline className="text-blue-600 text-6xl mb-4 mx-auto" />
-          <h1 className="text-2xl font-bold mb-4">ตั้งรหัสผ่านใหม่</h1>
+          <h1 className="text-2xl font-bold mb-4">{t('set_new_password', 'ตั้งรหัสผ่านใหม่')}</h1>
           <p className="text-gray-600 mb-6">
-            โปรดกรอกรหัสผ่านใหม่ของคุณ และยืนยันอีกครั้งเพื่อความถูกต้อง
+            {t(
+              'set_new_password_desc',
+              'โปรดกรอกรหัสผ่านใหม่ของคุณ และยืนยันอีกครั้งเพื่อความถูกต้อง',
+            )}
           </p>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
             <div>
-              <label className="block text-sm font-medium mb-1">รหัสผ่านใหม่</label>
+              <label className="block text-sm font-medium mb-1">
+                {t('new_password_label', 'รหัสผ่านใหม่')}
+              </label>
               <input
                 type="password"
                 value={newPassword}
@@ -139,7 +157,9 @@ const ResetPassword: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">ยืนยันรหัสผ่าน</label>
+              <label className="block text-sm font-medium mb-1">
+                {t('confirm_password_label', 'ยืนยันรหัสผ่าน')}
+              </label>
               <input
                 type="password"
                 value={confirm}
@@ -156,7 +176,9 @@ const ResetPassword: React.FC = () => {
               }`}
             >
               {loading && <AiOutlineLoading3Quarters className="animate-spin" />}
-              {loading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่'}
+              {loading
+                ? t('saving', 'กำลังบันทึก...')
+                : t('save_new_password', 'บันทึกรหัสผ่านใหม่')}
             </button>
           </form>
         </div>

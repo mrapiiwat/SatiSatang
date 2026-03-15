@@ -16,13 +16,7 @@ import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 import Tooltip from '../../Tooltip';
 import DeleteModal from '../../DeleteModal';
-
-const frequencies: FrequencyOption[] = [
-  { value: 'DAILY', label: 'รายวัน' },
-  { value: 'WEEKLY', label: 'รายสัปดาห์' },
-  { value: 'MONTHLY', label: 'รายเดือน' },
-  { value: 'YEARLY', label: 'รายปี' },
-];
+import { useTranslation } from 'react-i18next';
 
 interface ExtendedBudgetProps extends BudgetProps {
   editData?: BudgetDraftData | null;
@@ -30,6 +24,18 @@ interface ExtendedBudgetProps extends BudgetProps {
 }
 
 const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
+  const { t } = useTranslation();
+
+  const frequencies: FrequencyOption[] = React.useMemo(
+    () => [
+      { value: 'DAILY', label: t('daily', 'รายวัน') },
+      { value: 'WEEKLY', label: t('weekly', 'รายสัปดาห์') },
+      { value: 'MONTHLY', label: t('monthly', 'รายเดือน') },
+      { value: 'YEARLY', label: t('yearly', 'รายปี') },
+    ],
+    [t],
+  );
+
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<CategoryOption | null>(null);
   const [selectedFrequency, setSelectedFrequency] = useState<FrequencyOption | null>(null);
@@ -63,7 +69,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
       }
     };
     fetchCategories();
-  }, [editData]);
+  }, [editData, frequencies]);
 
   const isModified = () => {
     if (!editData) return true;
@@ -90,7 +96,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
     };
 
     if (Object.values(newErrors).some(Boolean)) {
-      return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      return showToastAlert(t('manual_error_fill_all', 'กรุณากรอกข้อมูลให้ครบถ้วน'), 'error');
     }
 
     const payload = {
@@ -108,10 +114,10 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
     try {
       if (editData) {
         await axios.put(`/budget/${editData.id}`, payload);
-        showToastAlert('แก้ไขงบประมาณสำเร็จ', 'success');
+        showToastAlert(t('edit_budget_success', 'แก้ไขงบประมาณสำเร็จ'), 'success');
       } else {
         await axios.post('/budget', payload);
-        showToastAlert('ตั้งงบประมาณสำเร็จ', 'success');
+        showToastAlert(t('set_budget_success', 'ตั้งงบประมาณสำเร็จ'), 'success');
       }
 
       onSuccess?.();
@@ -122,12 +128,15 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
         const data = axiosError.response?.data;
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
         const errorMessage =
-          customError || data?.errors?.[0]?.summary || data?.message || 'เกิดข้อผิดพลาด';
+          customError ||
+          data?.errors?.[0]?.summary ||
+          data?.message ||
+          t('error_default', 'เกิดข้อผิดพลาด');
         showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {
-        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert(t('unknown_error', 'เกิดข้อผิดพลาดไม่ทราบชนิด'), 'error');
       }
       console.error(err);
     }
@@ -140,7 +149,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
     try {
       await axios.delete(`/budget/${editData.id}`);
 
-      showToastAlert('ลบงบประมาณสำเร็จ', 'success');
+      showToastAlert(t('delete_budget_success', 'ลบงบประมาณสำเร็จ'), 'success');
 
       setIsDeleteModalOpen(false);
       onSuccess?.();
@@ -149,12 +158,12 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
       if (isAxiosError(err)) {
         const axiosError = err as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
-        const errorMessage = data?.message || 'เกิดข้อผิดพลาด';
+        const errorMessage = data?.message || t('error_default', 'เกิดข้อผิดพลาด');
         showToastAlert(errorMessage, 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {
-        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert(t('unknown_error', 'เกิดข้อผิดพลาดไม่ทราบชนิด'), 'error');
       }
       console.error(err);
       setIsDeleteModalOpen(false);
@@ -169,8 +178,13 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
         <div className="bg-white w-full max-w-96 min-h-[420px] rounded-2xl py-7 px-8">
           <div className="flex justify-between items-center mb-5">
             <div className="flex gap-3 items-center">
-              <h4 className="font-medium">{editData ? 'แก้ไขงบประมาณ' : 'ตั้งงบประมาณ'}</h4>
-              <Tooltip text="กําหนดงบประมาณเพื่อควบคุมและจำกัดค่าใช้จ่าย" position="right" />
+              <h4 className="font-medium">
+                {editData ? t('edit_budget', 'แก้ไขงบประมาณ') : t('set_budget', 'ตั้งงบประมาณ')}
+              </h4>
+              <Tooltip
+                text={t('budget_tooltip', 'กําหนดงบประมาณเพื่อควบคุมและจำกัดค่าใช้จ่าย')}
+                position="right"
+              />
             </div>
             <div
               onClick={onClose}
@@ -182,7 +196,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
 
           <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-2">
-              <label>หมวด</label>
+              <label>{t('category', 'หมวด')}</label>
               <Select<CategoryOption, false>
                 options={categories}
                 value={selectedCategory}
@@ -212,7 +226,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label>รอบงบประมาณ</label>
+              <label>{t('budget_cycle', 'รอบงบประมาณ')}</label>
               <Select<FrequencyOption, false>
                 options={frequencies}
                 value={selectedFrequency}
@@ -243,7 +257,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="amount">จำนวนเงิน</label>
+              <label htmlFor="amount">{t('amount_label', 'จำนวนเงิน')}</label>
               <input
                 id="amount"
                 type="number"
@@ -262,7 +276,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                   onClick={() => setIsDeleteModalOpen(true)}
                   className="flex-1 py-3 rounded-xl bg-[#FF2D55] text-white text-sm font-semibold hover:bg-[#f91e46] transition"
                 >
-                  ลบ
+                  {t('delete', 'ลบ')}
                 </button>
               )}
 
@@ -273,7 +287,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                   canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
                 }`}
               >
-                บันทึก
+                {t('save_btn', 'บันทึก')}
               </button>
             </div>
           </form>
@@ -284,9 +298,11 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}
-        title="ต้องการลบงบประมาณนี้ใช่หรือไม่?"
-        confirmText={isDeleting ? 'กำลังลบ...' : 'ใช่ ลบเลย'}
-        cancelText="ยกเลิก"
+        title={t('delete_budget_confirm', 'ต้องการลบงบประมาณนี้ใช่หรือไม่?')}
+        confirmText={
+          isDeleting ? t('deleting', 'กำลังลบ...') : t('yes_delete_confirm', 'ใช่ ลบเลย')
+        }
+        cancelText={t('cancel_btn', 'ยกเลิก')}
       />
     </>
   );

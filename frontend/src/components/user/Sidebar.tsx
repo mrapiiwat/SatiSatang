@@ -1,9 +1,11 @@
 import useAuthStore from '../../store/authStore';
 import { Link } from 'react-router-dom';
 import type { SidebarProps } from '../../interface/components';
+import { useTranslation } from 'react-i18next';
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const actionLogout = useAuthStore((state) => state.actionLogout);
+  const { t } = useTranslation();
   return (
     <>
       <div
@@ -30,7 +32,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={onClose}
               className="bg-blue-600 rounded-2xl h-16 flex items-center hover:bg-blue-600/95 active:scale-105 justify-center mb-7 cursor-pointer"
             >
-              <h1 className="text-white text-2xl font-medium">แชทกับพี่สตางค์</h1>
+              <h1 className="text-white text-2xl font-medium">
+                {t('chat_with_satang', 'แชทกับพี่สตางค์')}
+              </h1>
             </Link>
             <div className="flex flex-col gap-4 px-9">
               <Link
@@ -38,50 +42,44 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 onClick={onClose}
                 className="py-2 font-semibold text-lg cursor-pointer"
               >
-                หน้าหลัก
+                {t('home', 'หน้าหลัก')}
               </Link>
               <Link
                 to="/user/summary"
                 onClick={onClose}
                 className="py-2 font-semibold text-lg cursor-pointer"
               >
-                สรุปรายรับ รายจ่าย
+                {t('summary', 'สรุปรายรับ รายจ่าย')}
               </Link>
               <Link
                 to="/user/categories"
                 onClick={onClose}
                 className="py-2 font-semibold text-lg cursor-pointer"
               >
-                จัดการหมวดหมู่
+                {t('manage_categories', 'จัดการหมวดหมู่')}
               </Link>
               <Link
                 to="/user/feedback"
                 onClick={onClose}
                 className="py-2 font-semibold text-lg cursor-pointer"
               >
-                รายงานปัญหา
+                {t('report_issues', 'รายงานปัญหา')}
               </Link>
               <Link
                 to="/user/setting"
                 onClick={onClose}
                 className="py-2 font-semibold text-lg cursor-pointer"
               >
-                การตั้งค่า
-              </Link>
-              <Link
-                to="/user/account"
-                onClick={onClose}
-                className="py-2 font-semibold text-lg cursor-pointer"
-              >
-                บัญชี
+                {t('settings', 'การตั้งค่า')}
               </Link>
             </div>
           </div>
+
           <div
             onClick={actionLogout}
             className="py-2 px-9 font-semibold text-lg mb-8 cursor-pointer"
           >
-            ออกจากระบบ
+            {t('logout', 'ออกจากระบบ')}
           </div>
         </div>
       </div>

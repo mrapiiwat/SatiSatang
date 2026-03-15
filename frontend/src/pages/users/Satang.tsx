@@ -3,8 +3,10 @@ import SatangTextMode from '../../components/user/satang/SatangTextMode';
 import type { ChatMessage } from '../../interface/satang';
 import axios from '../../api/axios';
 import { fetchWithAuth } from '../../api/fetch';
+import { useTranslation } from 'react-i18next';
 
 const Satang: React.FC = () => {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -137,7 +139,7 @@ const Satang: React.FC = () => {
         {
           id: Date.now() + 1,
           role: 'assistant',
-          content: 'เกิดข้อผิดพลาดในการตอบ AI',
+          content: t('ai_error_response', 'เกิดข้อผิดพลาดในการตอบ AI'),
           createdAt: new Date().toISOString(),
         },
       ]);

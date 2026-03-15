@@ -10,6 +10,7 @@ const defaultSettings: SettingState = {
   theme: 'system',
   isNotificationEnabled: true,
   budgetStartDate: 1,
+  userId: null,
 };
 
 const settingStore: StateCreator<SettingStore> = (set) => ({

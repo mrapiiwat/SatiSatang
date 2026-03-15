@@ -17,13 +17,19 @@ import type {
 } from '../../../interface/home';
 import type { SingleValue } from 'react-select';
 import type { ElysiaResponse } from '../../../interface/error';
-
-const transactionTypes: OptionType[] = [
-  { value: 'INCOME', label: 'รายรับ' },
-  { value: 'EXPENSE', label: 'รายจ่าย' },
-];
+import { useTranslation } from 'react-i18next';
 
 const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { t } = useTranslation();
+
+  const transactionTypes: OptionType[] = useMemo(
+    () => [
+      { value: 'INCOME', label: t('income', 'รายรับ') },
+      { value: 'EXPENSE', label: t('expense', 'รายจ่าย') },
+    ],
+    [t],
+  );
+
   const [files, setFiles] = useState<File[]>([]);
   const [pendingTransactions, setPendingTransactions] = useState<PendingTransaction[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -105,7 +111,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       });
 
       if (newPendingList.length === 0) {
-        showToastAlert('ไม่สามารถอ่านข้อมูลจากสลิปได้', 'error');
+        showToastAlert(t('upload_error_read_slip', 'ไม่สามารถอ่านข้อมูลจากสลิปได้'), 'error');
         return;
       }
 
@@ -115,10 +121,10 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     } catch (error: unknown) {
       if (isAxiosError(error)) {
         const axiosError = error as AxiosError<ElysiaResponse>;
-        const msg = axiosError.response?.data?.message || 'เกิดข้อผิดพลาด';
+        const msg = axiosError.response?.data?.message || t('error_default', 'เกิดข้อผิดพลาด');
         showToastAlert(msg, 'error');
       } else {
-        showToastAlert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ', 'error');
+        showToastAlert(t('unknown_error', 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ'), 'error');
       }
     } finally {
       setLoading(false);
@@ -160,7 +166,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const data = currentTransaction.data;
 
     if (!data.description || !data.type || !data.categoryId || !data.amount)
-      return showToastAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      return showToastAlert(t('manual_error_fill_all', 'กรุณากรอกข้อมูลให้ครบถ้วน'), 'error');
 
     try {
       const formData = new FormData();
@@ -181,7 +187,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
       await axios.post('/transaction', formData);
 
-      showToastAlert('สร้างธุรกรรมสำเร็จ', 'success');
+      showToastAlert(t('save_success', 'สร้างธุรกรรมสำเร็จ'), 'success');
 
       const remaining = pendingTransactions.filter((_, idx) => idx !== currentIndex);
       if (remaining.length === 0) {
@@ -195,7 +201,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       }
     } catch (error: unknown) {
       console.log(error);
-      showToastAlert('เกิดข้อผิดพลาดในการบันทึก', 'error');
+      showToastAlert(t('save_error', 'เกิดข้อผิดพลาดในการบันทึก'), 'error');
     }
   };
 
@@ -209,7 +215,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       {!isOpen && !isImageModalOpen && (
         <div className="bg-white w-full max-w-96 min-h-[350px] rounded-2xl py-7 px-8 shadow-md flex flex-col">
           <div className="flex justify-between items-center mb-6">
-            <h4 className="font-medium text-lg">อัปโหลดสลิป</h4>
+            <h4 className="font-medium text-lg">{t('upload_slip', 'อัปโหลดสลิป')}</h4>
             <div
               onClick={onClose}
               className="bg-gray-200 flex justify-center items-center rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer transition"
@@ -229,7 +235,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             disabled={files.length === 0 || loading}
             className={`w-full py-3 rounded-full font-semibold text-white transition ${files.length > 0 && !loading ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
           >
-            {loading ? 'กำลังตรวจสอบ' : 'อัปโหลด'}
+            {loading ? t('processing', 'กำลังตรวจสอบ') : t('upload', 'อัปโหลด')}
           </button>
         </div>
       )}
@@ -241,8 +247,15 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="mb-6 relative">
               <FaCloudUploadAlt className="text-6xl text-[#4F14E5] animate-pulse" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">กำลังอัปโหลดไฟล์</h3>
-            <p className="text-gray-500">จำนวน {files.length} จาก ทั้งหมด</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              {t('uploading', 'กำลังอัปโหลดไฟล์')}
+            </h3>
+            <p className="text-gray-500">
+              {t('upload_count', {
+                count: files.length,
+                defaultValue: `จำนวน ${files.length} รายการ`,
+              })}
+            </p>
           </Dialog.Panel>
         </div>
       </Dialog>
@@ -270,7 +283,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     }}
                   />
                 ) : (
-                  <div className="text-center py-10">ไม่พบข้อมูล</div>
+                  <div className="text-center py-10">{t('no_data_found', 'ไม่พบข้อมูล')}</div>
                 )}
               </div>
 
@@ -285,7 +298,11 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   </button>
 
                   <div className="bg-white px-6 py-3 rounded-full shadow-lg text-gray-700 font-medium min-w-[160px] text-center">
-                    สลิป {currentIndex + 1} จาก {pendingTransactions.length}
+                    {t('slip_count', {
+                      current: currentIndex + 1,
+                      total: pendingTransactions.length,
+                      defaultValue: `สลิป ${currentIndex + 1} จาก ${pendingTransactions.length}`,
+                    })}
                   </div>
 
                   <button

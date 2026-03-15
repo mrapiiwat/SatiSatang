@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
 import type { SubmitButtonProps } from '../interface/components';
+import { useTranslation } from 'react-i18next';
 
 const SubmitButton: React.FC<SubmitButtonProps> = ({ isLoading, disabled, text }) => {
+  const { t } = useTranslation();
   const buttonClass = useMemo(() => {
     const isNotAllowed = isLoading || disabled;
 
@@ -14,7 +16,9 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({ isLoading, disabled, text }
 
   return (
     <button type="submit" disabled={isLoading || disabled} className={buttonClass}>
-      <p className="text-xl font-semibold text-black-50">{isLoading ? 'กำลังดำเนินการ' : text}</p>
+      <p className="text-xl font-semibold text-black-50">
+        {isLoading ? t('processing', 'กำลังดำเนินการ') : text}
+      </p>
     </button>
   );
 };

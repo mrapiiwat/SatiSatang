@@ -4,6 +4,7 @@ import { showToastAlert } from '../store/toastStore';
 import useAuthStore from '../store/authStore';
 import { type ConsentInterceptorProps } from '../interface/components';
 import { consentSteps as steps } from '../constants/consentSteps';
+import { useTranslation } from 'react-i18next';
 
 const CheckIcon = () => (
   <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none">
@@ -18,6 +19,7 @@ const CheckIcon = () => (
 );
 
 const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => {
+  const { t } = useTranslation();
   const isConsentAccepted = useAuthStore((state) => state.isConsentAccepted);
   const actionSetConsent = useAuthStore((state) => state.actionSetConsent);
 
@@ -47,7 +49,10 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
 
   const handleAccept = async () => {
     if (!checked) {
-      showToastAlert('กรุณาทำเครื่องหมายเพื่อยืนยันการยอมรับเงื่อนไขทั้งหมด', 'error');
+      showToastAlert(
+        t('consent_check_error', 'กรุณาทำเครื่องหมายเพื่อยืนยันการยอมรับเงื่อนไขทั้งหมด'),
+        'error',
+      );
       return;
     }
 
@@ -55,10 +60,13 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
     try {
       await axios.post('/consent/accept');
       actionSetConsent(true);
-      showToastAlert('ยินดีต้อนรับเข้าสู่ระบบ', 'success');
+      showToastAlert(t('welcome_message', 'ยินดีต้อนรับเข้าสู่ระบบ'), 'success');
     } catch (error) {
       console.error('Failed to record consent', error);
-      showToastAlert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง', 'error');
+      showToastAlert(
+        t('save_consent_error', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง'),
+        'error',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -74,7 +82,9 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
             <div className="absolute inset-0 rounded-full border border-[#D8D3CB]" />
             <div className="absolute inset-0 rounded-full border border-t-[#1C1917] animate-spin" />
           </div>
-          <p className="text-xs tracking-[0.2em] uppercase text-[#A8A29E] font-light">กำลังโหลด</p>
+          <p className="text-xs tracking-[0.2em] uppercase text-[#A8A29E] font-light">
+            {t('loading', 'กำลังโหลด')}
+          </p>
         </div>
       </div>
     );
@@ -155,7 +165,7 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
               className="ml-2 text-[10px] tracking-[0.15em] uppercase font-medium truncate"
               style={{ color: '#A8A29E' }}
             >
-              {current.badge}
+              {t(`consent_step_${current.id}_badge`, current.badge)}
             </span>
           </div>
 
@@ -164,7 +174,7 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
               className="text-[26px] leading-tight tracking-tight font-light"
               style={{ color: '#1C1917' }}
             >
-              {current.title[0]}
+              {t(`consent_step_${current.id}_title_0`, current.title[0])}
             </h2>
             <h2
               className="text-[26px] leading-tight tracking-tight italic"
@@ -175,7 +185,7 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
                 backgroundClip: 'text',
               }}
             >
-              {current.title[1]}
+              {t(`consent_step_${current.id}_title_1`, current.title[1])}
             </h2>
           </div>
 
@@ -198,10 +208,10 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
                   className="text-[9px] font-semibold tracking-[0.22em] uppercase mb-2"
                   style={{ color: '#C2BBAF' }}
                 >
-                  {sec.label}
+                  {t(`consent_step_${current.id}_sec_${i}_label`, sec.label)}
                 </p>
                 <p className="text-[13px] leading-relaxed font-light" style={{ color: '#78716C' }}>
-                  {sec.text}
+                  {t(`consent_step_${current.id}_sec_${i}_text`, sec.text)}
                 </p>
               </div>
             ))}
@@ -240,19 +250,19 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
                 {checked && <CheckIcon />}
               </div>
               <span className="text-[12px] leading-relaxed font-light" style={{ color: '#78716C' }}>
-                ข้าพเจ้าได้อ่านและยอมรับ{' '}
+                {t('consent_accept_prefix', 'ข้าพเจ้าได้อ่านและยอมรับ')}{' '}
                 <strong className="font-medium" style={{ color: '#1C1917' }}>
-                  ข้อตกลงการใช้งาน
+                  {t('consent_terms', 'ข้อตกลงการใช้งาน')}
                 </strong>
                 ,{' '}
                 <strong className="font-medium" style={{ color: '#1C1917' }}>
-                  นโยบายความเป็นส่วนตัว
+                  {t('consent_privacy', 'นโยบายความเป็นส่วนตัว')}
                 </strong>{' '}
-                และ{' '}
+                {t('consent_and', 'และ')}{' '}
                 <strong className="font-medium" style={{ color: '#1C1917' }}>
-                  ข้อตกลงการใช้ AI
+                  {t('consent_ai', 'ข้อตกลงการใช้ AI')}
                 </strong>{' '}
-                รวมถึงยินยอมให้ประมวลผลข้อมูลส่วนบุคคล
+                {t('consent_accept_suffix', 'รวมถึงยินยอมให้ประมวลผลข้อมูลส่วนบุคคล')}
               </span>
             </button>
           )}
@@ -278,7 +288,7 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
                   (e.currentTarget as HTMLButtonElement).style.color = '#78716C';
                 }}
               >
-                ย้อนกลับ
+                {t('back_btn', 'ย้อนกลับ')}
               </button>
             )}
             <button
@@ -299,12 +309,16 @@ const ConsentInterceptor: React.FC<ConsentInterceptorProps> = ({ children }) => 
                     className="w-3.5 h-3.5 rounded-full border-2 animate-spin"
                     style={{ borderColor: 'rgba(255,255,255,0.25)', borderTopColor: '#fff' }}
                   />
-                  <span>กำลังบันทึก…</span>
+                  <span>{t('saving', 'กำลังบันทึก...')}</span>
                 </>
               ) : isLastStep ? (
-                'ยอมรับและเริ่มใช้งาน'
+                t('accept_and_start', 'ยอมรับและเริ่มใช้งาน')
               ) : (
-                `ถัดไป (${step}/${steps.length}) →`
+                t('next_step_with_count', {
+                  step,
+                  total: steps.length,
+                  defaultValue: `ถัดไป (${step}/${steps.length}) →`,
+                })
               )}
             </button>
           </div>

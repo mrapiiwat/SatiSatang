@@ -1,8 +1,10 @@
 import React from 'react';
 import { useRef, useEffect } from 'react';
 import type { CategoryHeaderProps } from '../../../interface/category';
+import { useTranslation } from 'react-i18next';
 
 const CategoryHeader: React.FC<CategoryHeaderProps> = ({ selectedType, setSelectedType }) => {
+  const { t } = useTranslation();
   const incomeRef = useRef<HTMLButtonElement>(null);
   const expenseRef = useRef<HTMLButtonElement>(null);
   const underlineRef = useRef<HTMLDivElement>(null);
@@ -33,7 +35,7 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({ selectedType, setSelect
           selectedType === 'INCOME' ? 'font-semibold text-black-900' : 'text-gray-400'
         }`}
       >
-        รายรับ
+        {t('income_label', 'รายรับ')}
       </button>
 
       <button
@@ -43,7 +45,7 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({ selectedType, setSelect
           selectedType === 'EXPENSE' ? 'font-semibold text-black-900' : 'text-gray-400'
         }`}
       >
-        รายจ่าย
+        {t('expense_label', 'รายจ่าย')}
       </button>
     </div>
   );

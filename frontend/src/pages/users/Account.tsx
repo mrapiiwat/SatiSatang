@@ -7,8 +7,10 @@ import PageWrapper from '../../components/PageWrapper';
 import { showToastAlert } from '../../store/toastStore';
 import type { ElysiaResponse } from '../../interface/error';
 import BackButton from '../../components/BackButton';
+import { useTranslation } from 'react-i18next';
 
 const Account: React.FC = () => {
+  const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const actionSetUser = useAuthStore((state) => state.actionSetUser);
 
@@ -47,7 +49,10 @@ const Account: React.FC = () => {
         ? user.currentLogin.charAt(0).toUpperCase() + user.currentLogin.slice(1)
         : 'local';
 
-  const handleError = (error: unknown, defaultMessage: string = 'เกิดข้อผิดพลาด') => {
+  const handleError = (
+    error: unknown,
+    defaultMessage: string = t('error_default', 'เกิดข้อผิดพลาด'),
+  ) => {
     let msg = defaultMessage;
 
     if (isAxiosError(error)) {
@@ -77,16 +82,16 @@ const Account: React.FC = () => {
       const response = await axios.put('/update-name', { name });
       actionSetUser({ ...user, name: response.data.name });
       setIsEdited(false);
-      showToastAlert('แก้ไขชื่อผู้ใช้งานสำเร็จ', 'success');
+      showToastAlert(t('edit_name_success', 'แก้ไขชื่อผู้ใช้งานสำเร็จ'), 'success');
     } catch (error: unknown) {
-      handleError(error, 'เกิดข้อผิดพลาดในการแก้ไขชื่อ');
+      handleError(error, t('edit_name_error', 'เกิดข้อผิดพลาดในการแก้ไขชื่อ'));
     }
   };
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
-      showToastAlert('รหัสผ่านไม่ตรงกัน', 'error');
-      setPasswordError('รหัสผ่านไม่ตรงกัน');
+      showToastAlert(t('password_mismatch', 'รหัสผ่านไม่ตรงกัน'), 'error');
+      setPasswordError(t('password_mismatch', 'รหัสผ่านไม่ตรงกัน'));
       return;
     }
     try {
@@ -96,14 +101,17 @@ const Account: React.FC = () => {
         password: newPassword,
         confirmPassword,
       });
-      showToastAlert(response.data?.message || 'เปลี่ยนรหัสผ่านสำเร็จ', 'success');
+      showToastAlert(
+        response.data?.message || t('change_password_success', 'เปลี่ยนรหัสผ่านสำเร็จ'),
+        'success',
+      );
 
       setIsChangingPassword(false);
       setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: unknown) {
-      const msg = handleError(error, 'เกิดข้อผิดพลาด โปรดลองใหม่');
+      const msg = handleError(error, t('change_password_error', 'เกิดข้อผิดพลาด โปรดลองใหม่'));
       setPasswordError(msg);
     }
   };
@@ -128,10 +136,12 @@ const Account: React.FC = () => {
     <PageWrapper animation="fade">
       <BackButton />
       <div className="relative px-6 py-8 font-ibm text-black-900">
-        <h1 className="text-center font-semibold mb-8">บัญชีผู้ใช้</h1>
+        <h1 className="text-center font-semibold mb-8">{t('account_label', 'บัญชีผู้ใช้')}</h1>
 
         <div className="mb-6 max-w-md mx-auto">
-          <label className="block text-sm font-semibold mb-1">ชื่อผู้ใช้งาน</label>
+          <label className="block text-sm font-semibold mb-1">
+            {t('username_label', 'ชื่อผู้ใช้งาน')}
+          </label>
           <input
             type="text"
             value={name}
@@ -140,13 +150,15 @@ const Account: React.FC = () => {
               setIsEdited(true);
             }}
             className={`w-full border-b focus:outline-none pb-1 ${isEdited ? 'border-blue-600' : 'border-black-400'}`}
-            placeholder="กรอกชื่อผู้ใช้งาน"
+            placeholder={t('username_placeholder', 'กรอกชื่อผู้ใช้งาน')}
           />
         </div>
 
         {!isSSO && (
           <div className="mb-8 max-w-md mx-auto">
-            <label className="block text-sm font-semibold mb-1">รหัสผ่าน</label>
+            <label className="block text-sm font-semibold mb-1">
+              {t('password_label', 'รหัสผ่าน')}
+            </label>
             <button
               onClick={() => setIsChangingPassword(true)}
               className="w-full border-b border-black-400 text-black-900 text-left pb-1"
@@ -162,7 +174,7 @@ const Account: React.FC = () => {
             onClick={handleSaveName}
             className={`px-6 py-2 rounded-md text-white text-sm font-semibold ${isEdited && name.trim() ? 'bg-blue-600' : 'bg-gray-400 cursor-not-allowed'}`}
           >
-            บันทึก
+            {t('save_btn', 'บันทึก')}
           </button>
         </div>
 
@@ -170,7 +182,10 @@ const Account: React.FC = () => {
           <div className="fixed left-0 bottom-8 w-full flex justify-center">
             {loginMethod === 'local' ? null : (
               <span className="text-gray-500 font-medium text-sm">
-                เข้าสู่ระบบด้วย: {loginMethod}
+                {t('login_with', {
+                  method: loginMethod,
+                  defaultValue: `เข้าสู่ระบบด้วย: ${loginMethod}`,
+                })}
               </span>
             )}
           </div>

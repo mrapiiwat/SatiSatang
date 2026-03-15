@@ -6,6 +6,7 @@ import TypingIndicator from './TypingIndicator';
 import PageWrapper from '../../PageWrapper';
 import TrackingFace from './TrackingFace';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
 
 const SatangTextMode: React.FC<SatangTextModeProps> = ({
   text,
@@ -17,6 +18,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
   hasMore,
   isLoadingHistory,
 }) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const prevMessagesLengthRef = useRef(messages.length);
   const prevScrollHeightRef = useRef<number>(0);
@@ -91,7 +93,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
 
           {hasMore && !isLoadingHistory && (
             <div className="text-center text-gray-400 text-xs mb-2 opacity-50">
-              เลื่อนขึ้นเพื่อโหลดเพิ่มเติม...
+              {t('scroll_up_to_load', 'เลื่อนขึ้นเพื่อโหลดเพิ่มเติม...')}
             </div>
           )}
 
@@ -148,7 +150,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
               className="flex justify-center items-center h-16 text-xl px-3 w-full rounded-full border-2 border-black-400 pr-16"
               value={text}
               onChange={handleInputChange}
-              placeholder="พิมพ์ข้อความ..."
+              placeholder={t('type_message_placeholder', 'พิมพ์ข้อความ...')}
               disabled={isTyping}
             />
             <button

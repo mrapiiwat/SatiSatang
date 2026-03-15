@@ -3,8 +3,10 @@ import SATISATANG from '../../../public/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg';
 import { IoAttachOutline, IoCloseOutline } from 'react-icons/io5';
 import useAuthStore from '../../store/authStore';
 import { showToastAlert } from '../../store/toastStore';
+import { useTranslation } from 'react-i18next';
 
 const Feedback: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +38,7 @@ const Feedback: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!feedbackText.trim() && !selectedImage) {
-      showToastAlert('กรุณาพิมพ์ข้อความ', 'warning');
+      showToastAlert(t('require_text', 'กรุณาพิมพ์ข้อความ'), 'warning');
       return;
     }
 
@@ -52,8 +54,8 @@ const Feedback: React.FC = () => {
       const deviceInfo = navigator.userAgent;
 
       const payload = {
-        email: user?.email || 'ไม่ระบุอีเมล',
-        name: user?.name || 'ไม่ระบุชื่อ',
+        email: user?.email || t('no_email', 'ไม่ระบุอีเมล'),
+        name: user?.name || t('no_name', 'ไม่ระบุชื่อ'),
         feedback: feedbackText,
         deviceInfo: deviceInfo,
         images: base64Images,
@@ -68,15 +70,15 @@ const Feedback: React.FC = () => {
       const result = await response.json();
 
       if (result.status === 'success') {
-        showToastAlert('ส่งความคิดเห็นสำเร็จ ขอบคุณครับ!', 'success');
+        showToastAlert(t('feedback_success', 'ส่งความคิดเห็นสำเร็จ ขอบคุณครับ!'), 'success');
         setFeedbackText('');
         setSelectedImage(null);
       } else {
-        showToastAlert('เกิดข้อผิดพลาด: ' + result.message, 'error');
+        showToastAlert(t('error_occurred', 'เกิดข้อผิดพลาด: ') + result.message, 'error');
       }
     } catch (error) {
       console.error('Error saving feedback:', error);
-      showToastAlert('ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง', 'error');
+      showToastAlert(t('cannot_send_retry', 'ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง'), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -87,17 +89,21 @@ const Feedback: React.FC = () => {
       <div className="w-full max-w-2xl flex flex-col flex-grow pb-5">
         <div className="flex flex-col items-center justify-center text-center flex-grow px-6">
           <div className="flex flex-col items-center gap-3 sm:gap-4">
-            <img src={SATISATANG} alt="โลโก้สติสตางค์" className="w-48 object-contain" />
+            <img
+              src={SATISATANG}
+              alt={t('satisatang_logo', 'โลโก้สติสตางค์')}
+              className="w-48 object-contain"
+            />
           </div>
 
           <p className="text-gray-700 text-lg leading-relaxed mb-6 sm:mb-8 mt-4">
-            ความคิดเห็นของคุณมีความหมายกับเราเสมอ
+            {t('feedback_desc_1', 'ความคิดเห็นของคุณมีความหมายกับเราเสมอ')}
             <br />
-            มาร่วมแบ่งปันประสบการณ์หลังการใช้งาน
+            {t('feedback_desc_2', 'มาร่วมแบ่งปันประสบการณ์หลังการใช้งาน')}
             <br />
-            <span className="font-semibold">“สติสตางค์”</span>
+            <span className="font-semibold">{t('feedback_desc_3', '“สติสตางค์”')}</span>
             <br />
-            เพื่อให้เรานำทุกคำแนะนำไปปรับปรุงและพัฒนา
+            {t('feedback_desc_4', 'เพื่อให้เรานำทุกคำแนะนำไปปรับปรุงและพัฒนา')}
           </p>
 
           <h2 className="text-4xl sm:text-4xl font-bold mb-6 sm:mb-8 bg-gradient-to-r from-blue-700 via-purple-300 to-green-600 text-transparent bg-clip-text">
@@ -112,7 +118,7 @@ const Feedback: React.FC = () => {
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 className="w-full flex-grow outline-none resize-none bg-transparent p-1 text-gray-700 placeholder-gray-400 min-h-[6rem] text-base"
-                placeholder="พิมพ์ความคิดเห็นได้ที่นี่"
+                placeholder={t('type_feedback_here', 'พิมพ์ความคิดเห็นได้ที่นี่')}
               />
 
               {selectedImage && (
@@ -140,7 +146,7 @@ const Feedback: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading || !!selectedImage}
                   className={`p-2 rounded-full transition-colors flex items-center justify-center ${selectedImage ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 hover:text-indigo-600'}`}
-                  title="แนบรูปภาพ"
+                  title={t('attach_image', 'แนบรูปภาพ')}
                 >
                   <IoAttachOutline className="text-2xl sm:text-3xl transform -rotate-45" />
                 </button>
@@ -151,7 +157,11 @@ const Feedback: React.FC = () => {
                   className="hidden"
                   onChange={handleFileChange}
                 />
-                {selectedImage && <span className="text-sm text-gray-400 ml-2">แนบแล้ว 1 รูป</span>}
+                {selectedImage && (
+                  <span className="text-sm text-gray-400 ml-2">
+                    {t('attached_1_image', 'แนบแล้ว 1 รูป')}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -162,7 +172,9 @@ const Feedback: React.FC = () => {
               disabled={isLoading}
               className={`text-white px-8 py-3 rounded-full text-base font-medium transition-colors shadow-md ${isLoading ? 'bg-indigo-400 cursor-wait' : 'bg-indigo-700 hover:bg-indigo-800'}`}
             >
-              {isLoading ? 'กำลังส่งข้อมูล...' : 'ส่งความคิดเห็น'}
+              {isLoading
+                ? t('sending_data', 'กำลังส่งข้อมูล...')
+                : t('send_feedback', 'ส่งความคิดเห็น')}
             </button>
           </div>
         </div>

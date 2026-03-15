@@ -5,6 +5,7 @@ import Facebook from '../../assets/Facebook.svg';
 import axios from '../../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
+import { useTranslation } from 'react-i18next';
 import OAuthButton from '../../components/OAuthButton';
 import SubmitButton from '../../components/SubmitButton';
 import InputField from '../../components/InputField';
@@ -19,6 +20,7 @@ import SATISATANG from '../../../public/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Login: React.FC = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -104,11 +106,11 @@ const Login: React.FC = () => {
       if (isUser === 'Login') {
         try {
           actionLogin(LoginForm!);
-          showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
+          showToastAlert(t('login_success', 'เข้าสู่ระบบสำเร็จ'), 'success');
           navigate('/user');
         } catch (error) {
           console.log(error);
-          showToastAlert('อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'error');
+          showToastAlert(t('login_failed_email_password', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'), 'error');
         }
         return;
       }
@@ -118,7 +120,7 @@ const Login: React.FC = () => {
         setIsLoading(true);
 
         if (password !== confirmPassword) {
-          setError('รหัสผ่านไม่ตรงกัน');
+          setError(t('password_mismatch', 'รหัสผ่านไม่ตรงกัน'));
           setIsLoading(false);
           return;
         }
@@ -150,11 +152,11 @@ const Login: React.FC = () => {
               targetError?.schema?.error ||
               targetError?.summary ||
               responseData?.message ||
-              'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล';
+              t('validation_error', 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล');
 
             setError(errorMessage);
           } else {
-            setError('เกิดข้อผิดพลาดในการลงทะเบียน');
+            setError(t('register_error', 'เกิดข้อผิดพลาดในการลงทะเบียน'));
           }
         } finally {
           setIsLoading(false);
@@ -164,12 +166,12 @@ const Login: React.FC = () => {
       }
 
       if (!email.trim()) {
-        setError('กรุณากรอกอีเมล');
+        setError(t('email_required', 'กรุณากรอกอีเมล'));
         return;
       }
 
       if (!validateEmail(email)) {
-        setError('รูปแบบอีเมลไม่ถูกต้อง');
+        setError(t('email_invalid', 'รูปแบบอีเมลไม่ถูกต้อง'));
         return;
       }
 
@@ -205,22 +207,27 @@ const Login: React.FC = () => {
                 response?: { status?: number; data?: { message?: string } };
               };
               if (axiosError.response?.status === 429) {
-                setError(axiosError.response.data?.message || 'กรุณารอสักครู่ก่อนขอ OTP ใหม่');
+                setError(
+                  axiosError.response.data?.message ||
+                    t('wait_otp', 'กรุณารอสักครู่ก่อนขอ OTP ใหม่'),
+                );
               } else if (axiosError.response?.status === 404) {
-                setError('ไม่พบผู้ใช้งานหรือได้ยืนยันอีเมลแล้ว');
+                setError(t('user_not_found_or_verified', 'ไม่พบผู้ใช้งานหรือได้ยืนยันอีเมลแล้ว'));
               } else {
-                setError('กรุณายืนยันอีเมลก่อนใช้งาน - ไม่สามารถส่ง OTP ใหม่ได้');
+                setError(
+                  t('verify_email_first', 'กรุณายืนยันอีเมลก่อนใช้งาน - ไม่สามารถส่ง OTP ใหม่ได้'),
+                );
               }
             } else {
-              setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+              setError(t('generic_error', 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'));
             }
           }
         } else {
-          setError('ไม่สามารถระบุสถานะได้');
+          setError(t('unknown_status', 'ไม่สามารถระบุสถานะได้'));
         }
       } catch (error) {
         console.error('Email check error:', error);
-        setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        setError(t('generic_error', 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'));
       } finally {
         setIsLoading(false);
       }
@@ -237,12 +244,13 @@ const Login: React.FC = () => {
       isLoading,
       googleLogin,
       facebookLogin,
+      t,
     ],
   );
 
   const handleResetPassword = async () => {
     if (!email) {
-      showToastAlert('กรุณากรอกอีเมล', 'error');
+      showToastAlert(t('email_required', 'กรุณากรอกอีเมล'), 'error');
       return;
     }
     try {
@@ -253,7 +261,10 @@ const Login: React.FC = () => {
         const axiosError = error as AxiosError<{ message?: string }>;
         showToastAlert(String(axiosError.response?.data), 'error');
       } else {
-        showToastAlert('เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+        showToastAlert(
+          t('server_error', 'เกิดข้อผิดพลาด ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้'),
+          'error',
+        );
       }
     }
   };
@@ -273,7 +284,7 @@ const Login: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="flex flex-col mt-12 gap-5">
               <h1 className="text-xl font-medium text-center mb-2">
-                สมัครเข้าใช้งานหรือเข้าสู่ระบบ
+                {t('login_title', 'สมัครเข้าใช้งานหรือเข้าสู่ระบบ')}
               </h1>
 
               <div className="relative w-full">
@@ -282,7 +293,7 @@ const Login: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={handleEmailChange}
-                  label="อีเมล"
+                  label={t('email_label', 'อีเมล')}
                   autoComplete="email"
                 />
               </div>
@@ -294,7 +305,7 @@ const Login: React.FC = () => {
                     type="password"
                     value={password}
                     onChange={handlePasswordChange}
-                    label="รหัสผ่าน"
+                    label={t('password_label', 'รหัสผ่าน')}
                     autoComplete="current-password"
                   />
                 </div>
@@ -308,7 +319,7 @@ const Login: React.FC = () => {
                       type="password"
                       value={password}
                       onChange={handlePasswordChange}
-                      label="รหัสผ่าน"
+                      label={t('password_label', 'รหัสผ่าน')}
                       autoComplete="new-password"
                       minLength={6}
                     />
@@ -320,7 +331,7 @@ const Login: React.FC = () => {
                       type="password"
                       value={confirmPassword}
                       onChange={handleConfirmPasswordChange}
-                      label="ยืนยันรหัสผ่าน"
+                      label={t('confirm_password_label', 'ยืนยันรหัสผ่าน')}
                       autoComplete="new-password"
                       minLength={6}
                     />
@@ -332,38 +343,41 @@ const Login: React.FC = () => {
                       type="text"
                       value={name}
                       onChange={handleNameChange}
-                      label="ชื่อ"
+                      label={t('name_label', 'ชื่อ')}
                       autoComplete="name"
                     />
                   </div>
 
                   <div className="text-xs text-gray-500 text-center mt-2 px-2 leading-relaxed">
-                    เมื่อคลิกปุ่มดำเนินการต่อ ระบบจะนำท่านไปสู่หน้าต่างเพื่ออ่านและยอมรับ
+                    {t(
+                      'terms_prefix',
+                      'เมื่อคลิกปุ่มดำเนินการต่อ ระบบจะนำท่านไปสู่หน้าต่างเพื่ออ่านและยอมรับ',
+                    )}
                     <Link
                       to="/policies/terms-of-use"
                       target="_blank"
                       className="text-blue-600 hover:underline mx-1"
                     >
-                      ข้อตกลงการใช้งาน
+                      {t('terms', 'ข้อตกลงการใช้งาน')}
                     </Link>
-                    และ
+                    {t('and', 'และ')}
                     <Link
                       to="/policies/privacy-policy"
                       target="_blank"
                       className="text-blue-600 hover:underline mx-1"
                     >
-                      นโยบายความเป็นส่วนตัว
+                      {t('privacy_policy', 'นโยบายความเป็นส่วนตัว')}
                     </Link>
-                    ในขั้นตอนถัดไป
+                    {t('terms_suffix', 'ในขั้นตอนถัดไป')}
                   </div>
                 </div>
               )}
 
               {isUser === 'Login' ? (
                 <div className="text-sky-700 text-sm text-center ">
-                  ลืมรหัสผ่าน?{' '}
+                  {t('forgot_password', 'ลืมรหัสผ่าน?')}{' '}
                   <a onClick={handleResetPassword} className="underline cursor-pointer">
-                    คลิกที่นี่
+                    {t('click_here', 'คลิกที่นี่')}
                   </a>
                 </div>
               ) : null}
@@ -376,21 +390,25 @@ const Login: React.FC = () => {
               <SubmitButton
                 isLoading={isLoading}
                 disabled={!isFormValid || isLoading}
-                text="ดำเนินการต่อ"
+                text={t('continue_btn', 'ดำเนินการต่อ')}
               />
             </form>
 
             <div className="relative my-7 flex items-center">
               <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-4 text-gray-500">หรือ</span>
+              <span className="mx-4 text-gray-500">{t('or_divider', 'หรือ')}</span>
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
 
             <div className="flex flex-col gap-5">
-              <OAuthButton onClick={googleLogin} label="ดำเนินการต่อด้วย Google" logo={Google} />
+              <OAuthButton
+                onClick={googleLogin}
+                label={t('continue_google', 'ดำเนินการต่อด้วย Google')}
+                logo={Google}
+              />
               <OAuthButton
                 onClick={facebookLogin}
-                label="ดำเนินการต่อด้วย Facebook"
+                label={t('continue_facebook', 'ดำเนินการต่อด้วย Facebook')}
                 logo={Facebook}
               />
             </div>
