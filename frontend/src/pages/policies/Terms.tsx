@@ -1,5 +1,12 @@
+import BackButton from '../../components/BackButton';
+
 const Terms = () => {
-  return <div>Terms</div>;
+  return (
+    <div>
+      <BackButton />
+      Terms
+    </div>
+  );
 };
 
 export default Terms;
