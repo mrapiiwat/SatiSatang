@@ -5,6 +5,7 @@ import CategoryHeader from '../../components/user/category/CategoryHeader';
 import CategoryList from '../../components/user/category/CategoryList';
 import CategoryModal from '../../components/user/category/CategoryModal';
 import PageWrapper from '../../components/PageWrapper';
+import BackButton from '../../components/BackButton';
 
 const Categories = () => {
   const [selectedType, setSelectedType] = useState<'INCOME' | 'EXPENSE'>('INCOME');
@@ -26,6 +27,7 @@ const Categories = () => {
 
   return (
     <PageWrapper animation="scale-fade">
+      <BackButton />
       <div className="px-6 py-8 text-black-900">
         <CategoryHeader selectedType={selectedType} setSelectedType={setSelectedType} />
 
