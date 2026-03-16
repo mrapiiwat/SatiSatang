@@ -15,7 +15,7 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification?.title || 'แจ้งเตือนใหม่จากสติสตางค์';
+  const notificationTitle = payload.notification?.title || 'สติสตางค์';
   const notificationOptions = {
     body: payload.notification?.body,
     icon: '/logo/192-white.svg',
