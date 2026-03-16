@@ -699,21 +699,21 @@ const Sati: React.FC<SatiProps> = ({
       <PageWrapper animation="fade" duration={0.2}>
         <div
           ref={modalRef}
-          className="bg-white rounded-t-3xl shadow-2xl z-50 w-full"
+          className="bg-white shadow-2xl z-50 w-full"
           style={{ height: 'calc(100vh - 80px)' }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="h-full flex flex-col px-6 pt-5 pb-6">
             <div
               ref={containerRef}
-              className="overscroll-contain border-[1px] bg-white border-black-500 rounded-xl flex-1 w-full overflow-y-auto p-2 mb-4 scrollbar-none flex flex-col"
+              className="overscroll-contain border-[1px] bg-white border-gray-200 rounded-xl flex-1 w-full overflow-y-auto pt-0 px-2 pb-2 mb-4 scrollbar-none flex flex-col"
             >
-              <div className="flex justify-end m-3 mb-4 sticky top-3 z-10">
+              <div className="flex justify-end items-center sticky top-0 z-10 py-3 px-3 bg-white/95 backdrop-blur-md rounded-t-[11px] -mx-2 mb-3">
                 <div
-                  className="bg-gray-100 flex justify-center items-center rounded-full w-12 h-12 hover:bg-gray-200 cursor-pointer"
+                  className="bg-gray-100 flex justify-center items-center rounded-full w-10 h-10 hover:bg-gray-200 cursor-pointer shadow-sm border border-transparent transition-all"
                   onClick={handleCloseChatModal}
                 >
-                  <RxCross2 size={25} />
+                  <RxCross2 size={20} className="text-black-900" />
                 </div>
               </div>
               {hasMore && (

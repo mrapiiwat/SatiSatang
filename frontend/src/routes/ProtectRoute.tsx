@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { me } from '../api/auth';
 import useAuthStore from '../store/authStore';
 import LoadingToRedirect from './LoadingToRedirect';
@@ -13,11 +13,9 @@ interface ProtectRouteProps {
 const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
   const [loading, setLoading] = useState(true);
   const [pass, setPass] = useState(false);
-  const fetchedSettings = useRef(false);
 
   const token = useAuthStore((state) => state.token);
   const setUser = useAuthStore((state) => state.actionSetUser);
-  const user = useAuthStore((state) => state.user);
   const actionSetSettings = useSettingStore((state) => state.actionSetSettings);
 
   useEffect(() => {
@@ -33,30 +31,26 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
       }
 
       try {
-        if (!user) {
+        let currentUser = useAuthStore.getState().user;
+        if (!currentUser) {
           const resUser = await me();
-          setUser(resUser.data);
+          currentUser = resUser.data;
+          setUser(currentUser);
         }
 
-        const storedUserId = useSettingStore.getState().userId;
-        const currentUserId = user ? String(user.id) : null;
+        const currentUserId = String(currentUser?.id);
+        const settingsStore = useSettingStore.getState();
 
-        if (!fetchedSettings.current || storedUserId !== currentUserId) {
+        if (!settingsStore.userId || String(settingsStore.userId) !== currentUserId) {
           const resSetting = await axios.get('/setting');
-
           if (resSetting.data?.data) {
             actionSetSettings({ ...resSetting.data.data, userId: currentUserId });
-            console.log('Fetched Settings from API');
           }
-          fetchedSettings.current = true;
         }
-
         if (isMounted) setPass(true);
       } catch (error) {
-        if (error instanceof AxiosError) {
-          if (error.response?.status !== 401) {
-            console.error(error);
-          }
+        if (error instanceof AxiosError && error.response?.status !== 401) {
+          console.error(error);
         }
         if (isMounted) setPass(false);
       } finally {
@@ -69,7 +63,7 @@ const ProtectRoute: React.FC<ProtectRouteProps> = ({ element }) => {
     return () => {
       isMounted = false;
     };
-  }, [token, user, setUser, actionSetSettings]);
+  }, [token, actionSetSettings, setUser]);
 
   if (loading) return <LoadingToRedirect />;
   return pass ? element : <LoadingToRedirect />;

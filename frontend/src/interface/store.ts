@@ -39,10 +39,12 @@ export interface SettingState {
   isNotificationEnabled: boolean;
   budgetStartDate: number;
   userId: string | null;
+  lastSyncedToken: string | null;
 }
 
 export interface SettingStore extends SettingState {
   actionSetSettings: (settings: SettingState) => void;
   actionUpdateSetting: (data: Partial<SettingState>) => Promise<void>;
   actionClearSettings: () => void;
+  actionSyncFCMToken: () => void;
 }

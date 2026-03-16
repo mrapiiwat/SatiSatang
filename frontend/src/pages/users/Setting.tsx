@@ -53,8 +53,10 @@ const Setting: React.FC = () => {
   const isNotificationEnabled = useSettingStore((s) => s.isNotificationEnabled);
   const budgetStartDate = useSettingStore((s) => s.budgetStartDate);
   const actionUpdateSetting = useSettingStore((s) => s.actionUpdateSetting);
+  const actionClearSettings = useSettingStore((s) => s.actionClearSettings);
 
   const handleLogout = async () => {
+    actionClearSettings();
     actionLogout();
     navigate('/login');
     showToastAlert(t('logout_success', 'ออกจากระบบแล้ว'), 'success');
@@ -75,8 +77,8 @@ const Setting: React.FC = () => {
         try {
           const token = await requestForToken();
           if (token) {
-            await axios.post('/notification/token', { token });
-            actionUpdateSetting({ isNotificationEnabled: true });
+            await actionUpdateSetting({ isNotificationEnabled: true });
+            useSettingStore.getState().actionSyncFCMToken();
             showToastAlert(t('noti_enable_success', 'เปิดรับการแจ้งเตือนสำเร็จ'), 'success');
           }
         } catch (error) {
@@ -96,7 +98,10 @@ const Setting: React.FC = () => {
           await axios.delete('/notification/token', { data: { token } });
         }
 
-        actionUpdateSetting({ isNotificationEnabled: false });
+        actionUpdateSetting({
+          isNotificationEnabled: false,
+          lastSyncedToken: null,
+        });
         showToastAlert(t('noti_disable_success', 'ปิดรับการแจ้งเตือนแล้ว'), 'success');
       } catch {
         actionUpdateSetting({ isNotificationEnabled: false });
