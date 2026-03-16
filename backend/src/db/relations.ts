@@ -14,6 +14,7 @@ import {
   transaction,
   user,
   userConsents,
+  userFcmTokens,
   userSettings,
 } from "./schema";
 
@@ -38,6 +39,7 @@ export const userRelations = relations(user, ({ many, one }) => ({
   chatMessages: many(chatMessage),
   userConsents: many(userConsents),
   userSetting: one(userSettings),
+  userFcmTokens: many(userFcmTokens),
 }));
 
 export const passwordResetTokenRelations = relations(
@@ -157,6 +159,13 @@ export const userConsentsRelations = relations(userConsents, ({ one }) => ({
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({
   user: one(user, {
     fields: [userSettings.userId],
+    references: [user.id],
+  }),
+}));
+
+export const userFcmTokensRelations = relations(userFcmTokens, ({ one }) => ({
+  user: one(user, {
+    fields: [userFcmTokens.userId],
     references: [user.id],
   }),
 }));

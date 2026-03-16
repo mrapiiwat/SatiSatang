@@ -527,7 +527,7 @@ export const userSettings = pgTable(
     aiLanguage: languageEnum("ai_language").default("th").notNull(),
     theme: themeEnum("theme").default("system").notNull(),
     isNotificationEnabled: boolean("is_notification_enabled")
-      .default(true)
+      .default(false)
       .notNull(),
     budgetStartDate: integer("budget_start_date").default(1).notNull(),
     updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
@@ -540,6 +540,35 @@ export const userSettings = pgTable(
       columns: [table.userId],
       foreignColumns: [user.id],
       name: "user_settings_user_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
+  ]
+);
+
+export const userFcmTokens = pgTable(
+  "user_fcm_tokens",
+  {
+    id: serial("id").primaryKey().notNull(),
+    userId: integer("user_id").notNull(),
+    token: text("token").notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_fcm_tokens_token_key").using(
+      "btree",
+      table.token.asc().nullsLast().op("text_ops")
+    ),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [user.id],
+      name: "user_fcm_tokens_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),

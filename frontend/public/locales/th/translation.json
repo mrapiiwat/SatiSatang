@@ -339,5 +339,12 @@
   "no_deadline": "ไม่มีระยะเวลากำหนด",
   "deadline_reached": "ครบกำหนด",
   "days_left": "อีก {{count}} วัน",
-  "countdown_format": "{{hours}} ชม. {{minutes}} นาที {{seconds}} วินาที"
+  "countdown_format": "{{hours}} ชม. {{minutes}} นาที {{seconds}} วินาที",
+  "noti_not_supported": "เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน",
+  "noti_permission_denied": "กรุณาอนุญาตการแจ้งเตือนในเบราว์เซอร์ก่อนเปิดใช้งาน",
+  "noti_enable_success": "เปิดรับการแจ้งเตือนสำเร็จ",
+  "noti_disable_success": "ปิดรับการแจ้งเตือนแล้ว",
+  "noti_save_error": "ไม่สามารถบันทึกการตั้งค่าการแจ้งเตือนได้",
+  "noti_token_error": "สร้าง Token ไม่สำเร็จ ลองใหม่อีกครั้ง",
+  "noti_server_error": "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง"
 }

@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import axios from '../api/axios';
 import type { AuthStore, formLogin } from '../interface/store';
 import useSettingStore from './settingStore';
+import { requestForToken } from '../config/firebase';
 
 const authStore: StateCreator<AuthStore> = (set) => ({
   user: null,
@@ -32,6 +33,10 @@ const authStore: StateCreator<AuthStore> = (set) => ({
     return res;
   },
   actionLogout: async () => {
+    const currentToken = await requestForToken();
+    if (currentToken) {
+      await axios.delete('/notification/token', { data: { token: currentToken } });
+    }
     const res = await axios.post('/logout');
     set({
       user: null,

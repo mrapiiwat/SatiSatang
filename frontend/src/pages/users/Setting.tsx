@@ -6,7 +6,7 @@ import useAuthStore from '../../store/authStore';
 import useSettingStore from '../../store/settingStore';
 import { showToastAlert } from '../../store/toastStore';
 import { useTranslation } from 'react-i18next';
-
+import { requestForToken } from '../../config/firebase';
 import {
   IoPersonOutline,
   IoGridOutline,
@@ -16,10 +16,11 @@ import {
   IoChevronForwardOutline,
   IoLanguageOutline,
   IoSparklesOutline,
-  // IoContrastOutline,
+  IoContrastOutline,
   IoNotificationsOutline,
   IoCalendarOutline,
 } from 'react-icons/io5';
+import axios from '../../api/axios';
 
 interface SettingRow {
   icon: React.ReactNode;
@@ -34,11 +35,11 @@ const LANGUAGE_OPTIONS = [
   { value: 'en', label: 'English' },
 ] as const;
 
-// const THEME_OPTIONS = [
-//   { value: 'system', label: 'ตามระบบ' },
-//   { value: 'light', label: 'สว่าง' },
-//   { value: 'dark', label: 'มืด' },
-// ] as const;
+const THEME_OPTIONS = [
+  { value: 'system', label: 'ตามระบบ' },
+  { value: 'light', label: 'สว่าง' },
+  { value: 'dark', label: 'มืด' },
+] as const;
 
 const Setting: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -48,7 +49,7 @@ const Setting: React.FC = () => {
 
   const appLanguage = useSettingStore((s) => s.appLanguage);
   const aiLanguage = useSettingStore((s) => s.aiLanguage);
-  // const theme = useSettingStore((s) => s.theme);
+  const theme = useSettingStore((s) => s.theme);
   const isNotificationEnabled = useSettingStore((s) => s.isNotificationEnabled);
   const budgetStartDate = useSettingStore((s) => s.budgetStartDate);
   const actionUpdateSetting = useSettingStore((s) => s.actionUpdateSetting);
@@ -57,6 +58,50 @@ const Setting: React.FC = () => {
     actionLogout();
     navigate('/login');
     showToastAlert(t('logout_success', 'ออกจากระบบแล้ว'), 'success');
+  };
+
+  const handleToggleNotification = async () => {
+    const isTurningOn = !isNotificationEnabled;
+
+    if (isTurningOn) {
+      if (!('Notification' in window)) {
+        showToastAlert(t('noti_not_supported', 'เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน'), 'error');
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+
+      if (permission === 'granted') {
+        try {
+          const token = await requestForToken();
+          if (token) {
+            await axios.post('/notification/token', { token });
+            actionUpdateSetting({ isNotificationEnabled: true });
+            showToastAlert(t('noti_enable_success', 'เปิดรับการแจ้งเตือนสำเร็จ'), 'success');
+          }
+        } catch (error) {
+          console.error(error);
+          showToastAlert(t('server_error', 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์'), 'error');
+        }
+      } else {
+        showToastAlert(
+          t('noti_permission_denied', 'กรุณาอนุญาตการแจ้งเตือนในเบราว์เซอร์'),
+          'error',
+        );
+      }
+    } else {
+      try {
+        const token = await requestForToken();
+        if (token) {
+          await axios.delete('/notification/token', { data: { token } });
+        }
+
+        actionUpdateSetting({ isNotificationEnabled: false });
+        showToastAlert(t('noti_disable_success', 'ปิดรับการแจ้งเตือนแล้ว'), 'success');
+      } catch {
+        actionUpdateSetting({ isNotificationEnabled: false });
+      }
+    }
   };
 
   const accountRows: SettingRow[] = [
@@ -170,7 +215,7 @@ const Setting: React.FC = () => {
               ))}
             </div>
           </div>
-          {/* <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
+          <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
             <span className="shrink-0 text-black-700">
               <IoContrastOutline size={20} />
             </span>
@@ -190,7 +235,7 @@ const Setting: React.FC = () => {
                 </button>
               ))}
             </div>
-          </div> */}
+          </div>
 
           <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
             <span className="shrink-0 text-black-700">
@@ -200,7 +245,7 @@ const Setting: React.FC = () => {
               {t('notification_label', 'การแจ้งเตือน')}
             </span>
             <button
-              onClick={() => actionUpdateSetting({ isNotificationEnabled: !isNotificationEnabled })}
+              onClick={handleToggleNotification}
               className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
                 isNotificationEnabled ? 'bg-blue-600' : 'bg-gray-300'
               }`}

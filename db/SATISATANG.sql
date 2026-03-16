@@ -237,8 +237,18 @@ CREATE TABLE public.user_settings (
     app_language public.language_enum DEFAULT 'th',
     ai_language public.language_enum DEFAULT 'th',
     theme public.theme_enum DEFAULT 'system',
-    is_notification_enabled BOOLEAN DEFAULT true,
+    is_notification_enabled BOOLEAN DEFAULT false,
     budget_start_date SMALLINT DEFAULT 1 CHECK (budget_start_date >= 1 AND budget_start_date <= 31),
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
+  );
+
+CREATE TABLE
+  public.user_fcm_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
@@ -272,3 +282,6 @@ UPDATE ON public.chat_messages FOR EACH ROW EXECUTE FUNCTION update_updated_at_c
 
 CREATE TRIGGER update_user_settings_updated_at BEFORE
 UPDATE ON public.user_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column ();
+
+CREATE TRIGGER update_user_fcm_tokens_updated_at BEFORE
+UPDATE ON public.user_fcm_tokens FOR EACH ROW EXECUTE FUNCTION update_updated_at_column ();

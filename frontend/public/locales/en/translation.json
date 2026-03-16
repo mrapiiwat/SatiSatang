@@ -338,5 +338,12 @@
   "no_deadline": "No deadline",
   "deadline_reached": "Expired",
   "days_left": "{{count}} days left",
-  "countdown_format": "{{hours}}h {{minutes}}m {{seconds}}s"
+  "countdown_format": "{{hours}}h {{minutes}}m {{seconds}}s",
+  "noti_not_supported": "Notifications are not supported by this browser.",
+  "noti_permission_denied": "Please enable notification permission in your browser before use.",
+  "noti_enable_success": "Notifications enabled successfully.",
+  "noti_disable_success": "Notifications disabled.",
+  "noti_save_error": "Failed to save notification settings.",
+  "noti_token_error": "Failed to generate token. Please try again.",
+  "noti_server_error": "Server connection error. Please try again later."
 }
