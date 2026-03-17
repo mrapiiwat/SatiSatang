@@ -11,7 +11,19 @@ export class SettingService {
     });
 
     if (!settings) {
-      throw new NotFoundError("ไม่พบข้อมูลการตั้งค่า");
+      const [newSettings] = await db
+        .insert(userSettings)
+        .values({
+          userId,
+          appLanguage: "th",
+          aiLanguage: "th",
+          theme: "system",
+          budgetStartDate: 1,
+          isNotificationEnabled: false,
+        })
+        .returning();
+
+      return newSettings;
     }
 
     return settings;
