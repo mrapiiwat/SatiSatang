@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import axios from '../../../api/axios';
 import Image from '../../Image';
 import type { IconSelectorProps, Icon } from '../../../interface/account';
+import { useTranslation } from 'react-i18next';
 
 const IconSelector: React.FC<IconSelectorProps> = ({
   selectedIconId,
@@ -9,6 +10,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
   onSelect,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const [icons, setIcons] = useState<Icon[]>([]);
   const [selectedIcon, setSelectedIcon] = useState<Icon | null>(null);
   const [loading, setLoading] = useState(false);
@@ -91,11 +93,13 @@ const IconSelector: React.FC<IconSelectorProps> = ({
             className="bg-white rounded-3xl p-6 w-full max-w-sm h-[520px] shadow-xl flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-center mb-4 text-gray-800">เลือกไอคอน</h3>
+            <h3 className="text-lg font-semibold text-center mb-4 text-gray-800">
+              {t('select_icon', 'เลือกไอคอน')}
+            </h3>
 
             <input
               type="text"
-              placeholder="ค้นหา..."
+              placeholder={t('search_placeholder', 'ค้นหา...')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm mb-4 transition"
@@ -109,7 +113,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                   </div>
                 ) : icons.length === 0 ? (
                   <p className="col-span-full text-center text-gray-400 py-12 text-sm">
-                    ไม่พบไอคอน
+                    {t('no_icon_found', 'ไม่พบไอคอน')}
                   </p>
                 ) : (
                   icons.map((icon) => (
@@ -141,7 +145,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                 onClick={handleCloseModal}
                 className="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl hover:bg-gray-200 transition font-medium text-sm"
               >
-                ปิด
+                {t('close_btn', 'ปิด')}
               </button>
             </div>
           </div>

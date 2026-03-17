@@ -34,6 +34,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         navigateFallbackDenylist: [/^\/api/, /^\/satisatang/],
+        importScripts: ['/firebase-messaging-sw.js'],
       },
       devOptions: {
         enabled: true,

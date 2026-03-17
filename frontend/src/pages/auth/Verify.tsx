@@ -6,8 +6,10 @@ import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { showToastAlert } from '../../store/toastStore';
 import type { ElysiaResponse } from '../../interface/error';
+import { useTranslation } from 'react-i18next';
 
 const Verify: React.FC = () => {
+  const { t } = useTranslation();
   const [code, setCode] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
@@ -48,15 +50,15 @@ const Verify: React.FC = () => {
 
   const handleVerify = useCallback(async () => {
     if (!code.trim()) {
-      setError('กรุณากรอกรหัสยืนยัน');
+      setError(t('verify_code_required', 'กรุณากรอกรหัสยืนยัน'));
       return;
     }
     if (code.length !== 6) {
-      setError('รหัสยืนยันต้องมี 6 หลัก');
+      setError(t('verify_code_length_error', 'รหัสยืนยันต้องมี 6 หลัก'));
       return;
     }
     if (!userId) {
-      setError('ไม่พบข้อมูลผู้ใช้ กรุณาลงทะเบียนใหม่');
+      setError(t('verify_user_not_found', 'ไม่พบข้อมูลผู้ใช้ กรุณาลงทะเบียนใหม่'));
       return;
     }
 
@@ -72,14 +74,14 @@ const Verify: React.FC = () => {
 
       const { accessToken } = res.data;
 
-      setSuccess('ยืนยันอีเมลสำเร็จ! กำลังพาคุณเข้าสู่ระบบ...');
+      setSuccess(t('verify_success_message', 'ยืนยันอีเมลสำเร็จ! กำลังพาคุณเข้าสู่ระบบ...'));
       actionSetToken(accessToken);
 
       sessionStorage.removeItem('pendingVerification');
       sessionStorage.removeItem('pendingUserId');
       sessionStorage.removeItem('userEmail');
 
-      showToastAlert('เข้าสู่ระบบสำเร็จ', 'success');
+      showToastAlert(t('login_success', 'เข้าสู่ระบบสำเร็จ'), 'success');
 
       navigate('/user');
     } catch (error: unknown) {
@@ -93,18 +95,18 @@ const Verify: React.FC = () => {
           customError ||
           data?.errors?.[0]?.summary ||
           data?.message ||
-          'รหัสยืนยันไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง';
+          t('verify_code_incorrect', 'รหัสยืนยันไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
 
         setError(errorMessage);
       } else if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        setError(t('generic_error', 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'));
       }
     } finally {
       setIsLoading(false);
     }
-  }, [code, userId, actionSetToken, navigate]);
+  }, [code, userId, actionSetToken, navigate, t]);
 
   const handleKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
@@ -117,7 +119,7 @@ const Verify: React.FC = () => {
 
   const handleResendOtp = useCallback(async () => {
     if (!userId) {
-      setError('ไม่พบข้อมูลผู้ใช้');
+      setError(t('user_not_found_resend', 'ไม่พบข้อมูลผู้ใช้'));
       return;
     }
 
@@ -128,7 +130,7 @@ const Verify: React.FC = () => {
     try {
       const userEmail = sessionStorage.getItem('userEmail');
       if (!userEmail) {
-        setError('ไม่พบข้อมูลอีเมล');
+        setError(t('email_not_found', 'ไม่พบข้อมูลอีเมล'));
         return;
       }
 
@@ -136,7 +138,7 @@ const Verify: React.FC = () => {
         email: userEmail,
       });
 
-      setSuccess('ส่งรหัสยืนยันใหม่เรียบร้อยแล้ว');
+      setSuccess(t('resend_otp_success', 'ส่งรหัสยืนยันใหม่เรียบร้อยแล้ว'));
       setCooldown(60);
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -149,17 +151,20 @@ const Verify: React.FC = () => {
         if (error.response?.status === 429 && backendMessage) {
           setError(backendMessage);
         } else {
-          setError(backendMessage || 'ไม่สามารถส่งรหัสยืนยันใหม่ได้ กรุณาลองใหม่อีกครั้ง');
+          setError(
+            backendMessage ||
+              t('resend_otp_failed', 'ไม่สามารถส่งรหัสยืนยันใหม่ได้ กรุณาลองใหม่อีกครั้ง'),
+          );
         }
       } else if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        setError(t('generic_error', 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'));
       }
     } finally {
       setIsResending(false);
     }
-  }, [userId]);
+  }, [userId, t]);
 
   if (!allowed) {
     return (
@@ -169,12 +174,17 @@ const Verify: React.FC = () => {
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-4">
-            <p className="text-base">หน้านี้ไม่สามารถเข้าถึงได้โดยตรง กรุณาลงทะเบียนใหม่</p>
+            <p className="text-base">
+              {t(
+                'verify_direct_access_error',
+                'หน้านี้ไม่สามารถเข้าถึงได้โดยตรง กรุณาลงทะเบียนใหม่',
+              )}
+            </p>
             <button
               onClick={() => (window.location.href = '/login')}
               className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              กลับไปหน้าลงทะเบียน
+              {t('back_to_register', 'กลับไปหน้าลงทะเบียน')}
             </button>
           </div>
         </div>
@@ -190,11 +200,15 @@ const Verify: React.FC = () => {
 
       <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
         <div className="text-center mb-8">
-          <h1 className="text-xl font-normal text-gray-900 mb-3">ยืนยันอีเมล</h1>
+          <h1 className="text-xl font-normal text-gray-900 mb-3">
+            {t('verify_email_title', 'ยืนยันอีเมล')}
+          </h1>
           <p className="text-sm text-gray-600 mb-2">
-            เราได้ส่งรหัสยืนยัน 6 หลักไปยังอีเมลของคุณแล้ว
+            {t('verify_email_sent', 'เราได้ส่งรหัสยืนยัน 6 หลักไปยังอีเมลของคุณแล้ว')}
           </p>
-          <p className="text-sm text-gray-500">กรุณากรอกรหัสยืนยันด้านล่าง</p>
+          <p className="text-sm text-gray-500">
+            {t('verify_enter_code', 'กรุณากรอกรหัสยืนยันด้านล่าง')}
+          </p>
         </div>
 
         <div className="space-y-5">
@@ -225,13 +239,15 @@ const Verify: React.FC = () => {
             {isLoading ? (
               <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mx-auto" />
             ) : (
-              'ยืนยัน'
+              t('confirm_btn', 'ยืนยัน')
             )}
           </button>
         </div>
 
         <div className="mt-6 text-center border-t border-gray-200 pt-6">
-          <p className="text-sm text-gray-600 mb-3">ไม่ได้รับรหัสยืนยัน?</p>
+          <p className="text-sm text-gray-600 mb-3">
+            {t('not_received_code', 'ไม่ได้รับรหัสยืนยัน?')}
+          </p>
           <button
             onClick={cooldown > 0 || isResending ? undefined : handleResendOtp}
             disabled={cooldown > 0 || isResending}
@@ -242,10 +258,13 @@ const Verify: React.FC = () => {
             }`}
           >
             {isResending
-              ? 'กำลังส่ง...'
+              ? t('sending', 'กำลังส่ง...')
               : cooldown > 0
-                ? `ส่งอีกครั้งใน ${cooldown} วินาที`
-                : 'ส่งรหัสยืนยันใหม่'}
+                ? t('resend_in_seconds', {
+                    count: cooldown,
+                    defaultValue: `ส่งอีกครั้งใน ${cooldown} วินาที`,
+                  })
+                : t('resend_code', 'ส่งรหัสยืนยันใหม่')}
           </button>
         </div>
 
@@ -254,7 +273,7 @@ const Verify: React.FC = () => {
             onClick={() => (window.location.href = '/login')}
             className="text-gray-500 text-sm hover:text-gray-700 transition-colors"
           >
-            ← กลับไปหน้าเข้าสู่ระบบ
+            &larr; {t('back_to_login', 'กลับไปหน้าเข้าสู่ระบบ')}
           </button>
         </div>
       </div>

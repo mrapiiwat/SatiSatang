@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useLayoutEffect, useCallback, useMemo } from 'react';
-// import { RxCross2 } from 'react-icons/rx';
+import { RxCross2 } from 'react-icons/rx';
 import { FaPlus } from 'react-icons/fa6';
 import { GoArrowUp } from 'react-icons/go';
 import AddMenu from './AddMenu';
@@ -23,6 +23,8 @@ import Manual from './Manual';
 import Budget from './Budget';
 import Goal from './Goal';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
+import useSettingStore from '../../../store/settingStore';
 
 const Sati: React.FC<SatiProps> = ({
   handleCloseChatModal,
@@ -32,6 +34,8 @@ const Sati: React.FC<SatiProps> = ({
   onRefresh,
   onSwitchToSatang,
 }) => {
+  const { t } = useTranslation();
+  const aiLanguage = useSettingStore((s) => s.aiLanguage);
   const modalRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -89,7 +93,10 @@ const Sati: React.FC<SatiProps> = ({
       if (data.error) return data.error;
       if (data.summary) return data.summary;
     }
-    return 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุครับ';
+    return t('unknown_error_bot', {
+      lng: aiLanguage,
+      defaultValue: 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุครับ',
+    });
   };
 
   const fetchSession = useCallback(async (cursor?: number) => {
@@ -299,8 +306,11 @@ const Sati: React.FC<SatiProps> = ({
     msgId: number,
     originalContent: MessageContentData,
   ) => {
-    const userConfirmText = `ตกลง`;
-    const botSuccessText = JSON.stringify({ type: 'message', message: 'บันทึกเรียบร้อยครับ!' });
+    const userConfirmText = t('confirm_btn', 'ตกลง');
+    const botSuccessText = JSON.stringify({
+      type: 'message',
+      message: t('save_success_bot', { lng: aiLanguage, defaultValue: 'บันทึกเรียบร้อยครับ!' }),
+    });
 
     setMessages((prev) => [
       ...prev,
@@ -346,7 +356,11 @@ const Sati: React.FC<SatiProps> = ({
       const errorMsg = getErrorMessage(error);
       const botErrorText = JSON.stringify({
         type: 'message',
-        message: `บันทึกรายการไม่สำเร็จครับ: ${errorMsg}`,
+        message: t('save_error_bot', {
+          lng: aiLanguage,
+          errorMsg,
+          defaultValue: `บันทึกรายการไม่สำเร็จครับ: ${errorMsg}`,
+        }),
       });
       await axios.post('/sati/log', { role: 'assistant', content: botErrorText });
       setMessages((prev) => [
@@ -368,10 +382,13 @@ const Sati: React.FC<SatiProps> = ({
     msgId: number,
     originalContent: MessageContentData,
   ) => {
-    const userConfirmText = 'ตกลง';
+    const userConfirmText = t('confirm_btn', 'ตกลง');
     const botSuccessText = JSON.stringify({
       type: 'message',
-      message: 'ตั้งงบประมาณเรียบร้อยครับ!',
+      message: t('set_budget_success_bot', {
+        lng: aiLanguage,
+        defaultValue: 'ตั้งงบประมาณเรียบร้อยครับ!',
+      }),
     });
 
     setMessages((prev) => [
@@ -409,7 +426,11 @@ const Sati: React.FC<SatiProps> = ({
       const errorMsg = getErrorMessage(error);
       const botErrorText = JSON.stringify({
         type: 'message',
-        message: `ตั้งงบประมาณไม่สำเร็จครับ: ${errorMsg}`,
+        message: t('set_budget_error_bot', {
+          lng: aiLanguage,
+          errorMsg,
+          defaultValue: `ตั้งงบประมาณไม่สำเร็จครับ: ${errorMsg}`,
+        }),
       });
       await axios.post('/sati/log', { role: 'assistant', content: botErrorText });
       setMessages((prev) => [
@@ -431,10 +452,14 @@ const Sati: React.FC<SatiProps> = ({
     msgId: number,
     originalContent: MessageContentData,
   ) => {
-    const userConfirmText = 'ตกลง';
+    const userConfirmText = t('confirm_btn', 'ตกลง');
     const botSuccessText = JSON.stringify({
       type: 'message',
-      message: `ตั้งเป้าหมาย "${data.name}" เรียบร้อย! เป็นกำลังใจให้นะครับ ✌️`,
+      message: t('set_goal_success_bot', {
+        lng: aiLanguage,
+        name: data.name,
+        defaultValue: `ตั้งเป้าหมาย "${data.name}" เรียบร้อย! เป็นกำลังใจให้นะครับ ✌️`,
+      }),
     });
 
     setMessages((prev) => [
@@ -472,7 +497,11 @@ const Sati: React.FC<SatiProps> = ({
       const errorMsg = getErrorMessage(error);
       const botErrorText = JSON.stringify({
         type: 'message',
-        message: `ตั้งเป้าหมายไม่สำเร็จครับ: ${errorMsg}`,
+        message: t('set_goal_error_bot', {
+          lng: aiLanguage,
+          errorMsg,
+          defaultValue: `ตั้งเป้าหมายไม่สำเร็จครับ: ${errorMsg}`,
+        }),
       });
       await axios.post('/sati/log', { role: 'assistant', content: botErrorText });
       setMessages((prev) => [
@@ -490,10 +519,13 @@ const Sati: React.FC<SatiProps> = ({
   };
 
   const handleCancel = async (msgId: number, originalContent: MessageContentData) => {
-    const userCancelText = 'ยกเลิก';
+    const userCancelText = t('cancel_btn', 'ยกเลิก');
     const botCancelText = JSON.stringify({
       type: 'message',
-      message: 'รับทราบครับ ยกเลิกรายการให้แล้วครับ',
+      message: t('cancel_success_bot', {
+        lng: aiLanguage,
+        defaultValue: 'รับทราบครับ ยกเลิกรายการให้แล้วครับ',
+      }),
     });
     setIsSending(true);
     try {
@@ -667,26 +699,28 @@ const Sati: React.FC<SatiProps> = ({
       <PageWrapper animation="fade" duration={0.2}>
         <div
           ref={modalRef}
-          className="bg-white rounded-t-3xl shadow-2xl z-50 w-full"
+          className="bg-white shadow-2xl z-50 w-full"
           style={{ height: 'calc(100vh - 80px)' }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="h-full flex flex-col px-6 pt-5 pb-6">
             <div
               ref={containerRef}
-              className="overscroll-contain border-[1px] bg-white border-black-500 rounded-xl flex-1 w-full overflow-y-auto p-2 mb-4 scrollbar-none flex flex-col"
+              className="overscroll-contain border-[1px] bg-white border-gray-200 rounded-xl flex-1 w-full overflow-y-auto pt-0 px-2 pb-2 mb-4 scrollbar-none flex flex-col"
             >
-              {/* <div className="flex justify-end m-3 mb-4 sticky top-3 z-10">
+              <div className="flex justify-end items-center sticky top-0 z-10 py-3 px-3 bg-white/95 backdrop-blur-md rounded-t-[11px] -mx-2 mb-3">
                 <div
-                  className="bg-gray-100 flex justify-center items-center rounded-full w-12 h-12 hover:bg-gray-200 cursor-pointer shadow-sm"
+                  className="bg-gray-100 flex justify-center items-center rounded-full w-10 h-10 hover:bg-gray-200 cursor-pointer shadow-sm border border-transparent transition-all"
                   onClick={handleCloseChatModal}
                 >
-                  <RxCross2 size={25} />
+                  <RxCross2 size={20} className="text-black-900" />
                 </div>
-              </div> */}
+              </div>
               {hasMore && (
                 <div className="text-center text-gray-400 text-xs py-2 w-full">
-                  {isLoading ? 'กำลังโหลด...' : 'เลื่อนขึ้นเพื่อดูข้อความเก่า'}
+                  {isLoading
+                    ? t('loading', 'กำลังโหลด...')
+                    : t('scroll_up_to_load', 'เลื่อนขึ้นเพื่อดูข้อความเก่า')}
                 </div>
               )}
               <div className="flex flex-col gap-3 px-2">
@@ -752,7 +786,9 @@ const Sati: React.FC<SatiProps> = ({
                       : 'bg-white border-gray-200 focus:border-blue-500'
                   }`}
                   placeholder={
-                    isPendingAction ? 'กรุณากด ยืนยัน หรือ ยกเลิก' : 'ให้น้องสติช่วยจดนะ'
+                    isPendingAction
+                      ? t('please_confirm_or_cancel', 'กรุณากด ยืนยัน หรือ ยกเลิก')
+                      : t('sati_placeholder', 'ให้น้องสติช่วยจดนะ')
                   }
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}

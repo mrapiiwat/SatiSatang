@@ -17,8 +17,10 @@ import Goal from '../../components/user/home/Goal';
 import Sati from '../../components/user/home/Sati';
 import DeadlineDisplay from '../../components/user/home/DeadlineDisplay';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
+  const { t, i18n } = useTranslation();
   const today = new Date();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -68,9 +70,9 @@ const Home = () => {
       setGoalIndex(0);
     } catch (err) {
       console.error(err);
-      showToastAlert('เกิดข้อผิดพลาดในการดึง goal', 'error');
+      showToastAlert(t('fetch_goal_error', 'เกิดข้อผิดพลาดในการดึง goal'), 'error');
     }
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, t]);
 
   const fetchBudget = useCallback(async () => {
     try {
@@ -81,9 +83,9 @@ const Home = () => {
       setBudgetIndex(0);
     } catch (error) {
       console.error(error);
-      showToastAlert('เกิดข้อผิดพลาดในการดึง budget', 'error');
+      showToastAlert(t('fetch_budget_error', 'เกิดข้อผิดพลาดในการดึง budget'), 'error');
     }
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, t]);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -95,11 +97,11 @@ const Home = () => {
       setPagination(response.data.pagination);
     } catch (err) {
       console.error(err);
-      showToastAlert('เกิดข้อผิดพลาดในการดึงข้อมูล', 'error');
+      showToastAlert(t('fetch_data_error', 'เกิดข้อผิดพลาดในการดึงข้อมูล'), 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [selectedMonth, selectedYear, currentPage, pagination.limit]);
+  }, [selectedMonth, selectedYear, currentPage, pagination.limit, t]);
 
   const fetchTotalExpense = useCallback(async () => {
     try {
@@ -298,7 +300,7 @@ const Home = () => {
                 transition={{ duration: 0.2 }}
                 className="text-sm"
               >
-                {isExpense ? 'ยอดใช้จ่าย' : 'รายรับ'}
+                {isExpense ? t('expense_label', 'ยอดใช้จ่าย') : t('income_label', 'รายรับ')}
               </motion.p>
             </AnimatePresence>
           </div>
@@ -328,13 +330,13 @@ const Home = () => {
             className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[14px] rounded-[100px] w-[121px] h-[40px] transform transition-transform duration-200 ease-in-out hover:scale-105 mx-auto"
           >
             <PiChartPieSliceLight size={20} />
-            ดูสรุป
+            {t('view_summary', 'ดูสรุป')}
           </button>
         </div>
 
         {isLoading ? (
           <div className="text-center py-10">
-            <p>กำลังโหลดข้อมูล...</p>
+            <p>{t('loading_data', 'กำลังโหลดข้อมูล...')}</p>
           </div>
         ) : (
           <>
@@ -367,7 +369,9 @@ const Home = () => {
                 >
                   <div className="flex justify-between items-center mb-2 pointer-events-none">
                     {' '}
-                    <h4 className="font-semibold text-base pointer-events-auto">งบที่ตั้งไว้</h4>
+                    <h4 className="font-semibold text-base pointer-events-auto">
+                      {t('budget_set', 'งบที่ตั้งไว้')}
+                    </h4>
                     <p
                       className="text-xs text-black-500 cursor-pointer pointer-events-auto"
                       onClick={(e) => {
@@ -385,14 +389,14 @@ const Home = () => {
                             transition={{ duration: 0.2 }}
                           >
                             {budgets[budgetIndex]?.frequency === 'DAILY'
-                              ? 'รายวัน'
+                              ? t('daily', 'รายวัน')
                               : budgets[budgetIndex]?.frequency === 'WEEKLY'
-                                ? 'รายสัปดาห์'
+                                ? t('weekly', 'รายสัปดาห์')
                                 : budgets[budgetIndex]?.frequency === 'MONTHLY'
-                                  ? 'รายเดือน'
+                                  ? t('monthly', 'รายเดือน')
                                   : budgets[budgetIndex]?.frequency === 'YEARLY'
-                                    ? 'รายปี'
-                                    : 'ครั้งเดียว'}
+                                    ? t('yearly', 'รายปี')
+                                    : t('one_time', 'ครั้งเดียว')}
                           </motion.span>
                         ) : (
                           <motion.span
@@ -411,7 +415,7 @@ const Home = () => {
 
                   <div className="flex justify-between items-start mb-1 pointer-events-none">
                     <span className="text-sm text-black pointer-events-auto">
-                      {budgets[budgetIndex]?.category?.name || 'ไม่ระบุหมวดหมู่'}
+                      {budgets[budgetIndex]?.category?.name || t('no_category', 'ไม่ระบุหมวดหมู่')}
                     </span>
                     <div className="text-xs text-gray-700 pointer-events-auto">
                       <span className="text-purple-300 font-semibold">
@@ -495,7 +499,9 @@ const Home = () => {
                   onMouseLeave={() => setIsHovered(false)}
                 >
                   <div className="flex justify-between items-center mb-2 pointer-events-none">
-                    <h4 className="font-semibold text-base pointer-events-auto">เป้าหมาย</h4>
+                    <h4 className="font-semibold text-base pointer-events-auto">
+                      {t('goal_label', 'เป้าหมาย')}
+                    </h4>
                     <p className="text-xs text-black-500 pointer-events-auto">
                       <DeadlineDisplay deadline={goals[goalIndex]?.deadline} now={now} />
                     </p>
@@ -575,8 +581,11 @@ const Home = () => {
                   const transactionDate = new Date(transaction?.date || '');
                   const isToday = transactionDate.toDateString() === today.toDateString();
                   const dayLabel = isToday
-                    ? 'วันนี้'
-                    : transactionDate.toLocaleDateString('th-TH', { weekday: 'short' });
+                    ? t('today', 'วันนี้')
+                    : transactionDate.toLocaleDateString(
+                        i18n.language === 'th' ? 'th-TH' : 'en-US',
+                        { weekday: 'short' },
+                      );
                   const dayNumber = transactionDate.getDate();
                   return (
                     <div

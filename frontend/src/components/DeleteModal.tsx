@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface DeleteModalProps {
   isOpen: boolean;
@@ -13,10 +14,15 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  title = 'ต้องการลบข้อมูลใช่หรือไม่?',
-  confirmText = 'ใช่ ลบเลย',
-  cancelText = 'ยังไม่ลบตอนนี้',
+  title,
+  confirmText,
+  cancelText,
 }) => {
+  const { t } = useTranslation();
+  const displayTitle = title || t('delete_confirm_title', 'ต้องการลบข้อมูลใช่หรือไม่?');
+  const displayConfirmText = confirmText || t('delete_confirm_btn', 'ใช่ ลบเลย');
+  const displayCancelText = cancelText || t('delete_cancel_btn', 'ยังไม่ลบตอนนี้');
+
   if (!isOpen) return null;
 
   return (
@@ -46,20 +52,20 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
           </svg>
         </div>
 
-        <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">{title}</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">{displayTitle}</h2>
 
         <button
           onClick={onConfirm}
           className="bg-[#EE4B60] hover:bg-[#d93a4d] text-white text-lg font-medium py-2.5 w-full max-w-[240px] rounded-xl mb-4 transition-colors shadow-md"
         >
-          {confirmText}
+          {displayConfirmText}
         </button>
 
         <button
           onClick={onClose}
           className="text-gray-700 hover:text-gray-900 text-base font-medium underline underline-offset-[5px] transition-colors"
         >
-          {cancelText}
+          {displayCancelText}
         </button>
       </div>
     </div>

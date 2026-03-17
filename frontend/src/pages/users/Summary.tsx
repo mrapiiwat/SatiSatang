@@ -6,8 +6,10 @@ import { useSearchParams } from 'react-router-dom';
 import axios from '../../api/axios';
 import type { Transaction, Goal } from '../../interface/summary';
 import PageWrapper from '../../components/PageWrapper';
+import { useTranslation } from 'react-i18next';
 
 const Summary: React.FC = () => {
+  const { t } = useTranslation();
   const today = new Date();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -81,9 +83,9 @@ const Summary: React.FC = () => {
   const totalSum = totalIncome + totalExpense + totalGoal;
 
   const data = [
-    { name: 'รายรับ', value: totalIncome },
-    { name: 'รายจ่าย', value: totalExpense },
-    { name: 'เป้าหมาย', value: totalGoal },
+    { name: t('income_label', 'รายรับ'), value: totalIncome },
+    { name: t('expense_label', 'รายจ่าย'), value: totalExpense },
+    { name: t('goal_label', 'เป้าหมาย'), value: totalGoal },
   ];
 
   return (
@@ -123,9 +125,15 @@ const Summary: React.FC = () => {
 
             {totalSum > 0 && (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-xs font-semibold text-black-900 leading-tight">
-                <p>รายรับ {Math.round((totalIncome / totalSum) * 100)}%</p>
-                <p>รายจ่าย {Math.round((totalExpense / totalSum) * 100)}%</p>
-                <p>เป้าหมาย {Math.round((totalGoal / totalSum) * 100)}%</p>
+                <p>
+                  {t('income_label', 'รายรับ')} {Math.round((totalIncome / totalSum) * 100)}%
+                </p>
+                <p>
+                  {t('expense_label', 'รายจ่าย')} {Math.round((totalExpense / totalSum) * 100)}%
+                </p>
+                <p>
+                  {t('goal_label', 'เป้าหมาย')} {Math.round((totalGoal / totalSum) * 100)}%
+                </p>
               </div>
             )}
           </div>
@@ -133,27 +141,29 @@ const Summary: React.FC = () => {
           <div className="flex justify-center gap-8 text-sm font-medium mt-3">
             <div className="flex flex-col items-center gap-1">
               <span className="w-3 h-3 rounded-full bg-[#5300E8]" />
-              <span className="text-black-900">รายรับ</span>
+              <span className="text-black-900">{t('income_label', 'รายรับ')}</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <span className="w-3 h-3 rounded-full bg-[#E278FA]" />
-              <span className="text-black-900">รายจ่าย</span>
+              <span className="text-black-900">{t('expense_label', 'รายจ่าย')}</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <span className="w-3 h-3 rounded-full bg-[#C8E84D]" />
-              <span className="text-black-900">เป้าหมาย</span>
+              <span className="text-black-900">{t('goal_label', 'เป้าหมาย')}</span>
             </div>
           </div>
         </div>
 
         <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-gray-700">รายรับทั้งหมด</span>
+            <span className="text-sm font-semibold text-gray-700">
+              {t('total_income', 'รายรับทั้งหมด')}
+            </span>
             <button
               onClick={() => setShowIncomeDetail(!showIncomeDetail)}
               className="flex items-center gap-1 bg-black-200 border border-black-400 rounded-[8px] px-2 py-[2px] text-sm text-black-700 hover:bg-black-300 transition"
             >
-              <span>ดูเพิ่มเติม</span>
+              <span>{t('view_more', 'ดูเพิ่มเติม')}</span>
               {showIncomeDetail ? (
                 <MdKeyboardArrowUp className="text-lg" />
               ) : (
@@ -169,9 +179,16 @@ const Summary: React.FC = () => {
           >
             {showIncomeDetail && (
               <>
-                <p className="text-sm text-black-600 mb-2">จำนวนรายการ {incomes.length}</p>
+                <p className="text-sm text-black-600 mb-2">
+                  {t('item_count', {
+                    count: incomes.length,
+                    defaultValue: `จำนวนรายการ ${incomes.length}`,
+                  })}
+                </p>
                 {incomes.length === 0 ? (
-                  <p className="text-black-600 text-sm">ไม่มีข้อมูลรายรับ</p>
+                  <p className="text-black-600 text-sm">
+                    {t('no_income_data', 'ไม่มีข้อมูลรายรับ')}
+                  </p>
                 ) : (
                   incomes.map((i) => (
                     <div key={i.id} className="flex justify-between text-sm mb-1">
@@ -189,12 +206,14 @@ const Summary: React.FC = () => {
 
         <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-gray-700">รายจ่ายทั้งหมด</span>
+            <span className="text-sm font-semibold text-gray-700">
+              {t('total_expense', 'รายจ่ายทั้งหมด')}
+            </span>
             <button
               onClick={() => setShowExpenseDetail(!showExpenseDetail)}
               className="flex items-center gap-1 bg-black-200 border border-black-400 rounded-[8px] px-2 py-[2px] text-sm text-black-700 hover:bg-black-300 transition"
             >
-              <span>ดูเพิ่มเติม</span>
+              <span>{t('view_more', 'ดูเพิ่มเติม')}</span>
               {showExpenseDetail ? (
                 <MdKeyboardArrowUp className="text-lg" />
               ) : (
@@ -210,9 +229,16 @@ const Summary: React.FC = () => {
           >
             {showExpenseDetail && (
               <>
-                <p className="text-sm text-black-600 mb-2">จำนวนรายการ {expenses.length}</p>
+                <p className="text-sm text-black-600 mb-2">
+                  {t('item_count', {
+                    count: expenses.length,
+                    defaultValue: `จำนวนรายการ ${expenses.length}`,
+                  })}
+                </p>
                 {expenses.length === 0 ? (
-                  <p className="text-black-600 text-sm">ไม่มีข้อมูลรายจ่าย</p>
+                  <p className="text-black-600 text-sm">
+                    {t('no_expense_data', 'ไม่มีข้อมูลรายจ่าย')}
+                  </p>
                 ) : (
                   expenses.map((e) => (
                     <div key={e.id} className="flex justify-between text-sm mb-1">
@@ -228,12 +254,14 @@ const Summary: React.FC = () => {
 
         <div className="bg-white border-2 border-black-400 rounded-xl shadow-sm p-4 mb-4">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-gray-700">เป้าหมาย</span>
+            <span className="text-sm font-semibold text-gray-700">
+              {t('goal_label', 'เป้าหมาย')}
+            </span>
             <button
               onClick={() => setShowGoalDetail(!showGoalDetail)}
               className="flex items-center gap-1 bg-black-200 border border-black-400 rounded-[8px] px-2 py-[2px] text-sm text-black-700 hover:bg-black-300 transition"
             >
-              <span>ดูเพิ่มเติม</span>
+              <span>{t('view_more', 'ดูเพิ่มเติม')}</span>
               {showGoalDetail ? (
                 <MdKeyboardArrowUp className="text-lg" />
               ) : (
@@ -251,10 +279,15 @@ const Summary: React.FC = () => {
           >
             {showGoalDetail && (
               <>
-                <p className="text-sm text-black-600 mb-2">จำนวนเป้าหมาย {filteredGoals.length}</p>
+                <p className="text-sm text-black-600 mb-2">
+                  {t('goal_count', {
+                    count: filteredGoals.length,
+                    defaultValue: `จำนวนเป้าหมาย ${filteredGoals.length}`,
+                  })}
+                </p>
 
                 {filteredGoals.length === 0 ? (
-                  <p className="text-black-600 text-sm">ไม่มีเป้าหมาย</p>
+                  <p className="text-black-600 text-sm">{t('no_goal_data', 'ไม่มีเป้าหมาย')}</p>
                 ) : (
                   filteredGoals.map((goal) => (
                     <div key={goal.id} className="flex justify-between items-center text-sm mb-1">

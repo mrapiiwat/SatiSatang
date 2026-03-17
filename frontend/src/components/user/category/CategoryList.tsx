@@ -10,10 +10,12 @@ import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 import { RxCross2 } from 'react-icons/rx';
 import DeleteModal from '../../DeleteModal';
+import { useTranslation } from 'react-i18next';
 
 const CategoryList: React.FC<
   CategoryListProps & { onSwipeLeft?: () => void; onSwipeRight?: () => void }
 > = ({ categories, onAddClick, setCategories, refresh, onSwipeLeft, onSwipeRight }) => {
+  const { t } = useTranslation();
   const [editingCategory, setEditingCategory] = useState<CategoriesType | null>(null);
   const [loading, setLoading] = useState(false);
   const [editData, setEditData] = useState({ name: '', iconId: '' });
@@ -70,7 +72,7 @@ const CategoryList: React.FC<
     try {
       setLoading(true);
       await axios.delete(`/category/${editingCategory.id}`);
-      showToastAlert('ลบหมวดหมู่สำเร็จ', 'success');
+      showToastAlert(t('del_category_success', 'ลบหมวดหมู่สำเร็จ'), 'success');
 
       if (refresh) {
         refresh();
@@ -85,11 +87,11 @@ const CategoryList: React.FC<
       if (isAxiosError(err)) {
         const axiosError = err as AxiosError<ElysiaResponse>;
         const data = axiosError.response?.data;
-        showToastAlert(data?.message || 'ไม่สามารถลบหมวดหมู่ได้', 'error');
+        showToastAlert(data?.message || t('del_category_error', 'ไม่สามารถลบหมวดหมู่ได้'), 'error');
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {
-        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert(t('unknown_error', 'เกิดข้อผิดพลาดไม่ทราบชนิด'), 'error');
       }
       setIsDeleteModalOpen(false);
     } finally {
@@ -99,8 +101,9 @@ const CategoryList: React.FC<
 
   const handleUpdateCategory = async () => {
     if (!editingCategory) return;
-    if (!editData.name.trim()) return showToastAlert('กรุณากรอกชื่อหมวดหมู่', 'error');
-    if (!editData.iconId) return showToastAlert('กรุณาเลือกไอคอน', 'error');
+    if (!editData.name.trim())
+      return showToastAlert(t('category_name_required', 'กรุณากรอกชื่อหมวดหมู่'), 'error');
+    if (!editData.iconId) return showToastAlert(t('icon_required', 'กรุณาเลือกไอคอน'), 'error');
 
     try {
       setLoading(true);
@@ -109,7 +112,7 @@ const CategoryList: React.FC<
         iconId: Number(editData.iconId),
       });
 
-      showToastAlert('แก้ไขหมวดหมู่สำเร็จ', 'success');
+      showToastAlert(t('edit_category_success', 'แก้ไขหมวดหมู่สำเร็จ'), 'success');
 
       if (refresh) {
         refresh();
@@ -136,13 +139,16 @@ const CategoryList: React.FC<
         const data = axiosError.response?.data;
         const customError = data?.errors?.find((e) => e.schema?.error)?.schema?.error;
         showToastAlert(
-          customError || data?.errors?.[0]?.summary || data?.message || 'ไม่สามารถแก้ไขหมวดหมู่ได้',
+          customError ||
+            data?.errors?.[0]?.summary ||
+            data?.message ||
+            t('edit_category_error', 'ไม่สามารถแก้ไขหมวดหมู่ได้'),
           'error',
         );
       } else if (err instanceof Error) {
         showToastAlert(`${err.message}`, 'error');
       } else {
-        showToastAlert('เกิดข้อผิดพลาดไม่ทราบชนิด', 'error');
+        showToastAlert(t('unknown_error', 'เกิดข้อผิดพลาดไม่ทราบชนิด'), 'error');
       }
     } finally {
       setLoading(false);
@@ -206,7 +212,9 @@ const CategoryList: React.FC<
             <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-purple-600 text-2xl font-semibold hover:scale-110 transition-transform pointer-events-none">
               <AiOutlinePlus />
             </div>
-            <span className="text-sm text-center text-gray-700">เพิ่มหมวดหมู่</span>
+            <span className="text-sm text-center text-gray-700">
+              {t('add_category', 'เพิ่มหมวดหมู่')}
+            </span>
           </div>
         </div>
       </div>
@@ -216,7 +224,9 @@ const CategoryList: React.FC<
           <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 flex flex-col gap-4 bg-white rounded-2xl min-w-[382px] max-w-md">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-center mb-2">แก้ไขหมวดหมู่</h2>
+                <h2 className="text-xl font-semibold text-center mb-2">
+                  {t('edit_category', 'แก้ไขหมวดหมู่')}
+                </h2>
                 <div
                   onClick={handleCloseModal}
                   className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
@@ -235,12 +245,12 @@ const CategoryList: React.FC<
                   </div>
                 </div>
                 <label htmlFor="category-name" className="text-base font-medium text-gray-700">
-                  ชื่อหมวดหมู่
+                  {t('category_name_label', 'ชื่อหมวดหมู่')}
                 </label>
                 <input
                   id="category-name"
                   type="text"
-                  placeholder="ระบุชื่อหมวดหมู่"
+                  placeholder={t('category_name_placeholder', 'ระบุชื่อหมวดหมู่')}
                   value={editData.name}
                   onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                   onKeyPress={handleKeyPress}
@@ -261,7 +271,7 @@ const CategoryList: React.FC<
                   disabled={loading}
                   className="flex-1 bg-[#FF2D55] text-white py-2.5 rounded-lg hover:bg-[#f91e46] transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
-                  ลบ
+                  {t('delete_btn', 'ลบ')}
                 </button>
                 <button
                   type="button"
@@ -273,7 +283,7 @@ const CategoryList: React.FC<
                       : 'bg-purple-600 text-white hover:bg-purple-700'
                   }`}
                 >
-                  {loading ? 'กำลังบันทึก...' : 'บันทึก'}
+                  {loading ? t('saving', 'กำลังบันทึก...') : t('save_btn', 'บันทึก')}
                 </button>
               </div>
             </div>
@@ -285,9 +295,9 @@ const CategoryList: React.FC<
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteCategory}
-        title="ต้องการลบหมวดหมู่นี้ใช่หรือไม่?"
-        confirmText={loading ? 'กำลังลบ...' : 'ใช่ ลบเลย'}
-        cancelText="ยกเลิก"
+        title={t('delete_category_confirm', 'ต้องการลบหมวดหมู่นี้ใช่หรือไม่?')}
+        confirmText={loading ? t('deleting', 'กำลังลบ...') : t('yes_delete', 'ใช่ ลบเลย')}
+        cancelText={t('cancel_btn', 'ยกเลิก')}
       />
     </>
   );

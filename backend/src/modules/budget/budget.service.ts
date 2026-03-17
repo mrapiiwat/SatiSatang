@@ -1,7 +1,7 @@
-import { and, eq, gte, isNull, lte, or, sum } from "drizzle-orm";
+import { and, eq, gte, isNull, lte, sum } from "drizzle-orm";
 import { BadRequestError } from "@/common/exceptions";
 import { db } from "@/db";
-import { budgets, category, transaction } from "@/db/schema";
+import { budgets, category, transaction, userSettings } from "@/db/schema";
 import type * as budgetSchema from "./budget.schema";
 import {
   getDeadlineFromFrequency,
@@ -20,7 +20,16 @@ export class BudgetService {
       );
     }
 
-    const { start, end } = getPeriodRangeByFrequency(data.frequency);
+    const setting = await db.query.userSettings.findFirst({
+      where: eq(userSettings.userId, userId),
+    });
+
+    const userBudgetStartDate = setting?.budgetStartDate ?? 1;
+
+    const { start, end } = getPeriodRangeByFrequency(
+      data.frequency,
+      userBudgetStartDate
+    );
 
     const existingBudget = await db.query.budgets.findFirst({
       where: and(
@@ -36,7 +45,10 @@ export class BudgetService {
       throw new BadRequestError("มีงบประเภทนี้ในรอบเวลาเดียวกันแล้ว");
     }
 
-    const deadline = getDeadlineFromFrequency(data.frequency);
+    const deadline = getDeadlineFromFrequency(
+      data.frequency,
+      userBudgetStartDate
+    );
 
     const [aggregateResult] = await db
       .select({
@@ -101,12 +113,12 @@ export class BudgetService {
     const { month, year, isOverDeadline } = query;
     const now = new Date();
 
-    const startDate =
-      month && year
-        ? new Date(year, month - 1, 1)
-        : new Date(now.getFullYear(), now.getMonth(), 1);
+    const setting = await db.query.userSettings.findFirst({
+      where: eq(userSettings.userId, userId),
+    });
+    const userBudgetStartDate = setting?.budgetStartDate ?? 1;
 
-    const endDate =
+    const monthEndDate =
       month && year
         ? new Date(year, month, 0, 23, 59, 59, 999)
         : new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
@@ -114,8 +126,7 @@ export class BudgetService {
     const rawBudgets = await db.query.budgets.findMany({
       where: and(
         eq(budgets.userId, userId),
-        lte(budgets.createdAt, endDate),
-        or(gte(budgets.deadline, startDate), isNull(budgets.deadline)),
+        lte(budgets.createdAt, monthEndDate),
         isNull(budgets.deletedAt)
       ),
       with: {
@@ -123,8 +134,18 @@ export class BudgetService {
       },
     });
 
+    const baseDateForRange =
+      month && year ? new Date(year, month - 1, now.getDate()) : now;
+
     const budgetsWithCurrent = await Promise.all(
       rawBudgets.map(async (budget) => {
+        const { start: activeStart, end: activeEnd } =
+          getPeriodRangeByFrequency(
+            budget.frequency,
+            userBudgetStartDate,
+            baseDateForRange
+          );
+
         const [aggregateResult] = await db
           .select({
             totalAmount: sum(transaction.amount),
@@ -135,8 +156,8 @@ export class BudgetService {
               eq(transaction.userId, userId),
               eq(transaction.categoryId, budget.categoryId),
               eq(transaction.type, "EXPENSE"),
-              gte(transaction.date, startDate),
-              lte(transaction.date, endDate),
+              gte(transaction.date, activeStart),
+              lte(transaction.date, activeEnd),
               isNull(transaction.deletedAt)
             )
           );
@@ -160,8 +181,8 @@ export class BudgetService {
             id: budget.category.id,
             name: budget.category.name,
           },
-          deadline: budget.deadline,
-          isOverDeadline: budget.deadline ? budget.deadline < now : false,
+          deadline: activeEnd,
+          isOverDeadline: activeEnd < now,
         };
       })
     );

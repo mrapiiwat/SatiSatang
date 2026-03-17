@@ -3,6 +3,8 @@ import type { StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import axios from '../api/axios';
 import type { AuthStore, formLogin } from '../interface/store';
+import useSettingStore from './settingStore';
+import { requestForToken } from '../config/firebase';
 
 const authStore: StateCreator<AuthStore> = (set) => ({
   user: null,
@@ -20,6 +22,7 @@ const authStore: StateCreator<AuthStore> = (set) => ({
   actionClearAuth: () => {
     set({ user: null, token: null, isConsentAccepted: false });
     useAuthStore.persist.clearStorage();
+    useSettingStore.getState().actionClearSettings();
   },
   actionLogin: async (form: formLogin) => {
     const res = await axios.post('/login', form);
@@ -30,12 +33,17 @@ const authStore: StateCreator<AuthStore> = (set) => ({
     return res;
   },
   actionLogout: async () => {
+    const currentToken = await requestForToken();
+    if (currentToken) {
+      await axios.delete('/notification/token', { data: { token: currentToken } });
+    }
     const res = await axios.post('/logout');
     set({
       user: null,
       token: null,
     });
     useAuthStore.persist.clearStorage();
+    useSettingStore.getState().actionClearSettings();
     return res;
   },
 });

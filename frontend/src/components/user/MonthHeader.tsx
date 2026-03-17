@@ -1,29 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
 import type { MonthHeaderProps } from '../../interface/components';
+import { useTranslation } from 'react-i18next';
 
 const MonthHeader: React.FC<MonthHeaderProps> = ({
   selectedMonth,
   selectedYear,
   onMonthChange,
 }) => {
+  const { t, i18n } = useTranslation();
   const [showPicker, setShowPicker] = useState(false);
 
   const pickerRef = useRef<HTMLDivElement>(null);
 
   const monthsThai = [
-    'มกราคม',
-    'กุมภาพันธ์',
-    'มีนาคม',
-    'เมษายน',
-    'พฤษภาคม',
-    'มิถุนายน',
-    'กรกฎาคม',
-    'สิงหาคม',
-    'กันยายน',
-    'ตุลาคม',
-    'พฤศจิกายน',
-    'ธันวาคม',
+    t('month_jan', 'มกราคม'),
+    t('month_feb', 'กุมภาพันธ์'),
+    t('month_mar', 'มีนาคม'),
+    t('month_apr', 'เมษายน'),
+    t('month_may', 'พฤษภาคม'),
+    t('month_jun', 'มิถุนายน'),
+    t('month_jul', 'กรกฎาคม'),
+    t('month_aug', 'สิงหาคม'),
+    t('month_sep', 'กันยายน'),
+    t('month_oct', 'ตุลาคม'),
+    t('month_nov', 'พฤศจิกายน'),
+    t('month_dec', 'ธันวาคม'),
   ];
 
   const today = new Date();
@@ -73,7 +75,7 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
           onClick={() => setShowPicker(!showPicker)}
           className="border border-black-900 rounded-[8px] w-36 px-4 py-1 text-sm font-semibold text-black-900"
         >
-          {monthsThai[selectedMonth - 1]} {selectedYear + 543}
+          {monthsThai[selectedMonth - 1]} {selectedYear + (i18n.language === 'th' ? 543 : 0)}
         </button>
 
         <button
@@ -105,7 +107,9 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
             >
               <IoIosArrowBack size={16} />
             </button>
-            <span className="font-bold text-lg">{selectedYear + 543}</span>
+            <span className="font-bold text-lg">
+              {selectedYear + (i18n.language === 'th' ? 543 : 0)}
+            </span>
             <button
               onClick={() => onMonthChange(selectedMonth, selectedYear + 1)}
               disabled={selectedYear >= currentYear}

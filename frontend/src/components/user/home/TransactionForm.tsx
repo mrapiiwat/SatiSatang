@@ -4,6 +4,7 @@ import { GoCalendar } from 'react-icons/go';
 import { RxCross2 } from 'react-icons/rx';
 import type { TransactionFormProps, OptionType } from '../../../interface/home';
 import SlipPreview from './SlipPreview';
+import { useTranslation } from 'react-i18next';
 
 const categorySelectStyles: StylesConfig<OptionType, false> = {
   control: (base, state) => ({
@@ -18,11 +19,6 @@ const categorySelectStyles: StylesConfig<OptionType, false> = {
   singleValue: (base) => ({ ...base, color: '#111827' }),
   indicatorsContainer: (base) => ({ ...base, display: 'none' }),
 };
-
-const transactionTypes = [
-  { value: 'INCOME', label: 'รายรับ' },
-  { value: 'EXPENSE', label: 'รายจ่าย' },
-];
 
 interface TransactionFormWithHeaderProps extends TransactionFormProps {
   onClose: () => void;
@@ -42,34 +38,48 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
   previewUrl,
   onPreviewClick,
 }) => {
+  const { t, i18n } = useTranslation();
+  const transactionTypes = [
+    { value: 'INCOME', label: t('income', 'รายรับ') },
+    { value: 'EXPENSE', label: t('expense', 'รายจ่าย') },
+  ];
+
   const isFormValid =
     transactionData.description &&
     transactionData.type &&
     transactionData.categoryId &&
     transactionData.amount;
 
-  const formatThaiDate = (dateString: string) => {
+  const formatLocalizedDate = (dateString: string) => {
     if (!dateString) return '';
     const dateObj = new Date(dateString);
 
     if (isNaN(dateObj.getTime())) return dateString;
 
-    return dateObj
-      .toLocaleDateString('th-TH', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-      .replace('วัน', '')
-      .replace('ที่', '')
-      .replace('พ.ศ. ', '');
+    const isThai = i18n.language === 'th';
+    const localeStr = isThai ? 'th-TH' : 'en-US';
+
+    let formatted = dateObj.toLocaleDateString(localeStr, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    if (isThai) {
+      formatted = formatted
+        .replace(t('day_word', 'วัน'), '')
+        .replace(t('at_word', 'ที่'), '')
+        .replace(t('buddhist_era', 'พ.ศ. '), '');
+    }
+
+    return formatted;
   };
 
   return (
     <div className="py-7 px-8 flex flex-col w-full">
       <div className="flex justify-between items-center mb-5">
-        <h4 className="font-medium">แก้ไขรายการ</h4>
+        <h4 className="font-medium">{t('edit_transaction', 'แก้ไขรายการ')}</h4>
         <div
           onClick={onClose}
           className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
@@ -80,12 +90,12 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
 
       <div className="flex items-center gap-3 mb-5 w-max">
         <GoCalendar size={20} />
-        <h5 className="text-base select-none">{formatThaiDate(transactionData.date)}</h5>
+        <h5 className="text-base select-none">{formatLocalizedDate(transactionData.date)}</h5>
       </div>
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
-          <label>รายละเอียด</label>
+          <label>{t('detail_label', 'รายละเอียด')}</label>
           <input
             name="description"
             value={transactionData.description}
@@ -95,7 +105,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label>ประเภทรายการ</label>
+          <label>{t('transaction_type', 'ประเภทรายการ')}</label>
           <Select
             options={transactionTypes}
             value={selectedTypeOption}
@@ -107,7 +117,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label>หมวด</label>
+          <label>{t('category', 'หมวด')}</label>
           <Select
             options={categories}
             value={selectedCategoryOption}
@@ -120,7 +130,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label>จำนวนเงิน</label>
+          <label>{t('amount_label', 'จำนวนเงิน')}</label>
           <input
             name="amount"
             type="number"
@@ -131,7 +141,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label>ข้อมูลสลิป</label>
+          <label>{t('slip_info', 'ข้อมูลสลิป')}</label>
           <SlipPreview
             transactionData={transactionData}
             previewUrl={previewUrl}
@@ -147,7 +157,7 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
               isFormValid ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
             } w-full px-6 py-3 rounded-xl text-white text-sm font-semibold transition-colors`}
           >
-            บันทึก
+            {t('save_btn', 'บันทึก')}
           </button>
         </div>
       </div>
