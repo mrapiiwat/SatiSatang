@@ -27,54 +27,44 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div className="flex flex-col justify-between h-full">
           <div className="px-3 py-5">
-            <Link
-              to="/user/satang"
-              onClick={onClose}
-              className="bg-blue-600 rounded-2xl h-16 flex items-center hover:bg-blue-600/95 active:scale-105 justify-center mb-7 cursor-pointer"
-            >
-              <h1 className="text-white text-2xl font-medium">
-                {t('chat_with_satang', 'แชทกับพี่สตางค์')}
-              </h1>
-            </Link>
             <div className="flex flex-col gap-4 px-9">
               <Link
                 to="/user"
                 onClick={onClose}
-                className="py-2 font-semibold text-lg cursor-pointer"
+                className="py-2 font-semibold text-lg cursor-pointer hover:text-blue-600"
               >
                 {t('home', 'หน้าหลัก')}
               </Link>
               <Link
+                to="/user/satang"
+                onClick={onClose}
+                className="py-2 font-semibold text-lg cursor-pointer hover:text-blue-600"
+              >
+                {t('chat_with_satang', 'แชทกับพี่สตางค์')}
+              </Link>
+              <Link
                 to="/user/summary"
                 onClick={onClose}
-                className="py-2 font-semibold text-lg cursor-pointer"
+                className="py-2 font-semibold text-lg cursor-pointer hover:text-blue-600"
               >
                 {t('summary', 'สรุปรายรับ รายจ่าย')}
               </Link>
               <Link
                 to="/user/categories"
                 onClick={onClose}
-                className="py-2 font-semibold text-lg cursor-pointer"
+                className="py-2 font-semibold text-lg cursor-pointer hover:text-blue-600"
               >
                 {t('manage_categories', 'จัดการหมวดหมู่')}
               </Link>
               <Link
-                to="/user/feedback"
-                onClick={onClose}
-                className="py-2 font-semibold text-lg cursor-pointer"
-              >
-                {t('report_issues', 'รายงานปัญหา')}
-              </Link>
-              <Link
                 to="/user/setting"
                 onClick={onClose}
-                className="py-2 font-semibold text-lg cursor-pointer"
+                className="py-2 font-semibold text-lg cursor-pointer hover:text-blue-600"
               >
                 {t('settings', 'การตั้งค่า')}
               </Link>
             </div>
           </div>
-
           <div
             onClick={actionLogout}
             className="py-2 px-9 font-semibold text-lg mb-8 cursor-pointer"
