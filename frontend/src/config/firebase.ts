@@ -19,8 +19,7 @@ export const requestForToken = async (): Promise<string | null> => {
     const registration = await navigator.serviceWorker.ready;
 
     const currentToken = await getToken(messaging, {
-      vapidKey:
-        'BG9eXx-9t6hC0SSNuao5W9m1m7XMO4B9-IAoqSKXwUaBbAw_ZUvitGM2JE0b9yI13_ZWC7dKst-H1Js_oVgzrHY',
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
       serviceWorkerRegistration: registration,
     });
 
