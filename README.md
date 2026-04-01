@@ -1,8 +1,10 @@
 <p align="center">
-  <a href="https://สติสตางค์.com" target="_blank" rel="noopener noreferrer">
-    <img src="frontend/public/SATASATANG_LOGO_BLACK_VERTICAL_EN.svg" width="170" alt="SatiSatang" />
-  </a>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./frontend/public/SATASATANG_LOGO_WH_VERTICAL_EN.svg">
+    <img alt="SatiSatang Logo" src="./frontend/public/SATASATANG_LOGO_BLACK_VERTICAL_EN.svg" width="170">
+  </picture>
 </p>
+
 
 <p align="center">
   <a href="https://สติสตางค์.com" target="_blank" rel="noopener noreferrer"><strong>Live Demo</strong> - https://สติสตางค์.com</a>
