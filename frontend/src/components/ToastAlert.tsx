@@ -23,7 +23,7 @@ const ToastAlert: React.FC = () => {
       <AnimatePresence>
         {visible && (
           <motion.div
-            className="pointer-events-auto flex items-center gap-2 bg-white rounded-lg shadow-md px-4 py-2 border border-gray-200 text-black-900 font-medium"
+            className="pointer-events-auto flex items-center gap-2 bg-white dark:bg-black-800 rounded-lg shadow-md px-4 py-2 border border-gray-200 dark:border-black-600 text-black-900 dark:text-white font-medium"
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -30 }}

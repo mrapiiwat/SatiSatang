@@ -66,14 +66,14 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
       <div className="flex items-center justify-center gap-2">
         <button
           onClick={handlePrev}
-          className="text-black-900 text-2xl hover:opacity-50 transition"
+          className="text-black-900 dark:text-white text-2xl hover:opacity-50 transition"
         >
           <IoIosArrowBack />
         </button>
 
         <button
           onClick={() => setShowPicker(!showPicker)}
-          className="border border-black-900 rounded-[8px] w-36 px-4 py-1 text-sm font-semibold text-black-900"
+          className="border border-black-900 dark:border-white rounded-[8px] w-36 px-4 py-1 text-sm font-semibold text-black-900 dark:text-white dark:bg-transparent"
         >
           {monthsThai[selectedMonth - 1]} {selectedYear + (i18n.language === 'th' ? 543 : 0)}
         </button>
@@ -84,7 +84,7 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
             selectedYear > currentYear ||
             (selectedYear === currentYear && selectedMonth >= currentMonth)
           }
-          className={`text-black-900 text-2xl transition ${
+          className={`text-black-900 dark:text-white text-2xl transition ${
             selectedYear > currentYear ||
             (selectedYear === currentYear && selectedMonth >= currentMonth)
               ? 'opacity-20 cursor-not-allowed'
@@ -98,22 +98,22 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
       {showPicker && (
         <div
           ref={pickerRef}
-          className="absolute top-12 z-50 bg-white border border-gray-100 shadow-2xl rounded-2xl p-4 w-72 mt-2 animate-in fade-in zoom-in duration-200"
+          className="absolute top-12 z-50 bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 shadow-2xl rounded-2xl p-4 w-72 mt-2 animate-in fade-in zoom-in duration-200"
         >
           <div className="flex justify-between items-center mb-4 px-2">
             <button
               onClick={() => onMonthChange(selectedMonth, selectedYear - 1)}
-              className="p-1 hover:bg-gray-100 rounded-full transition"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition"
             >
               <IoIosArrowBack size={16} />
             </button>
-            <span className="font-bold text-lg">
+            <span className="font-bold text-lg dark:text-white">
               {selectedYear + (i18n.language === 'th' ? 543 : 0)}
             </span>
             <button
               onClick={() => onMonthChange(selectedMonth, selectedYear + 1)}
               disabled={selectedYear >= currentYear}
-              className={`p-1 hover:bg-gray-100 rounded-full transition ${selectedYear >= currentYear ? 'invisible' : ''}`}
+              className={`p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition ${selectedYear >= currentYear ? 'invisible' : ''}`}
             >
               <IoIosArrowForward size={16} />
             </button>
@@ -134,8 +134,8 @@ const MonthHeader: React.FC<MonthHeaderProps> = ({
                   }}
                   className={`py-2.5 rounded-xl text-[15px] font-medium transition-all ${
                     isSelected
-                      ? 'bg-[#33302E] text-white shadow-md'
-                      : 'text-gray-400 hover:text-black-900 hover:bg-gray-50'
+                      ? 'bg-[#33302E] dark:bg-black-600 text-white shadow-md'
+                      : 'text-gray-400 dark:text-gray-300 hover:text-black-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-black-700'
                   } ${isFuture ? 'opacity-10 cursor-not-allowed' : ''}`}
                 >
                   {month}

@@ -28,7 +28,7 @@ const Categories = () => {
   return (
     <PageWrapper animation="scale-fade">
       <BackButton />
-      <div className="px-6 py-8 text-black-900">
+      <div className="px-6 py-8 text-black-900 dark:text-white">
         <CategoryHeader selectedType={selectedType} setSelectedType={setSelectedType} />
 
         <CategoryList

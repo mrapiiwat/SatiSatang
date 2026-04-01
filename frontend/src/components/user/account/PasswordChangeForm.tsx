@@ -20,19 +20,19 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="relative px-6 py-8 font-ibm text-black-900 min-h-screen">
+    <div className="relative px-6 py-8 font-ibm text-black-900 dark:text-white min-h-screen">
       <h2 className="text-center font-semibold mb-6">
         {t('change_password_title', 'เปลี่ยนรหัสผ่าน')}
       </h2>
       <div className="space-y-6 max-w-md mx-auto">
         <div>
           <label className="block text-sm mb-1">{t('old_password_label', 'รหัสผ่านเก่า')}</label>
-          <div className="flex items-center border-b border-gray-300">
+          <div className="flex items-center border-b border-gray-300 dark:border-black-500">
             <input
               type={showOldPassword ? 'text' : 'password'}
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
-              className="flex-1 focus:outline-none py-1"
+              className="flex-1 focus:outline-none py-1 bg-transparent dark:text-white"
             />
             <button onClick={() => setShowOldPassword(!showOldPassword)} className="text-gray-600">
               {showOldPassword ? <LuEye /> : <LuEyeClosed />}
@@ -42,12 +42,12 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
 
         <div>
           <label className="block text-sm mb-1">{t('new_password_label', 'รหัสผ่านใหม่')}</label>
-          <div className="flex items-center border-b border-gray-300">
+          <div className="flex items-center border-b border-gray-300 dark:border-black-500">
             <input
               type={showNewPassword ? 'text' : 'password'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="flex-1 focus:outline-none py-1"
+              className="flex-1 focus:outline-none py-1 bg-transparent dark:text-white"
             />
             <button onClick={() => setShowNewPassword(!showNewPassword)} className="text-gray-600">
               {showNewPassword ? <LuEye /> : <LuEyeClosed />}
@@ -59,12 +59,12 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
           <label className="block text-sm mb-1">
             {t('confirm_password_label', 'ยืนยันรหัสผ่าน')}
           </label>
-          <div className="flex items-center border-b border-gray-300">
+          <div className="flex items-center border-b border-gray-300 dark:border-black-500">
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="flex-1 focus:outline-none py-1"
+              className="flex-1 focus:outline-none py-1 bg-transparent dark:text-white"
             />
             <button
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -77,7 +77,7 @@ const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
         </div>
 
         <div className="flex justify-between mt-6">
-          <button onClick={cancel} className="text-black-600 font-medium">
+          <button onClick={cancel} className="text-black-600 dark:text-gray-300 font-medium">
             {t('back_btn', 'กลับ')}
           </button>
           <button

@@ -25,14 +25,16 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({ selectedType, setSelect
     <div className="relative flex justify-center gap-8 mb-8">
       <div
         ref={underlineRef}
-        className="absolute bottom-0 h-[2px] bg-black-900 transition-all duration-300 ease-in-out"
+        className="absolute bottom-0 h-[2px] bg-black-900 dark:bg-white transition-all duration-300 ease-in-out"
       ></div>
 
       <button
         ref={incomeRef}
         onClick={() => setSelectedType('INCOME')}
         className={`pb-1 text-base transition-colors ${
-          selectedType === 'INCOME' ? 'font-semibold text-black-900' : 'text-gray-400'
+          selectedType === 'INCOME'
+            ? 'font-semibold text-black-900 dark:text-white'
+            : 'text-gray-400 dark:text-gray-500'
         }`}
       >
         {t('income_label', 'รายรับ')}
@@ -42,7 +44,9 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({ selectedType, setSelect
         ref={expenseRef}
         onClick={() => setSelectedType('EXPENSE')}
         className={`pb-1 text-base transition-colors ${
-          selectedType === 'EXPENSE' ? 'font-semibold text-black-900' : 'text-gray-400'
+          selectedType === 'EXPENSE'
+            ? 'font-semibold text-black-900 dark:text-white'
+            : 'text-gray-400 dark:text-gray-500'
         }`}
       >
         {t('expense_label', 'รายจ่าย')}
