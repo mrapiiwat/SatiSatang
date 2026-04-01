@@ -43,4 +43,4 @@ package-lock.json
 **/*.bun
 
 # Google Cloud Credentials
-/src/common/config/google-credentials.json
+/src/common/config/keys/*
