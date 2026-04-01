@@ -20,7 +20,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children, position = 'top', typ
   const IconComponent = type === 'help' ? BsQuestionCircle : BsInfoCircle;
 
   return (
-    <div className="relative inline-flex items-center justify-center group cursor-pointer">
+    <div className="relative inline-flex items-center justify-center group cursor-pointer z-[1000]">
       {children ? (
         children
       ) : (

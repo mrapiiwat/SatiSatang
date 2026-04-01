@@ -1,5 +1,11 @@
 FROM node:22-slim AS builder
 WORKDIR /app
+ARG VITE_MODE
+ARG VITE_GOOGLE_SCRIPT_URL
+ARG VITE_FIREBASE_VAPID_KEY
+RUN echo "VITE_MODE=${VITE_MODE}" > .env && \
+    echo "VITE_GOOGLE_SCRIPT_URL=${VITE_GOOGLE_SCRIPT_URL}" >> .env && \
+    echo "VITE_FIREBASE_VAPID_KEY=${VITE_FIREBASE_VAPID_KEY}" >> .env
 COPY package*.json ./
 RUN npm install
 COPY . .

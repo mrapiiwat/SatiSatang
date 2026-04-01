@@ -5,6 +5,7 @@ import { RxCross2 } from 'react-icons/rx';
 import axios from '../../../api/axios';
 import Image from '../../Image';
 import goalIcon from '../../../assets/goal.png';
+import { useTranslation } from 'react-i18next';
 
 const DraftCard: React.FC<{
   data: DraftData;
@@ -13,6 +14,7 @@ const DraftCard: React.FC<{
   onEdit: () => void;
   status: DraftStatus;
 }> = ({ data, onConfirm, onCancel, onEdit, status }) => {
+  const { t } = useTranslation();
   const isExpense = data.type === 'EXPENSE';
   const transactionDate = data.date ? new Date(data.date) : new Date();
   const dateNum = transactionDate.getDate();
@@ -22,20 +24,20 @@ const DraftCard: React.FC<{
     transactionDate.getMonth() === today.getMonth() &&
     transactionDate.getFullYear() === today.getFullYear();
   const monthNames = [
-    'ม.ค.',
-    'ก.พ.',
-    'มี.ค.',
-    'เม.ย.',
-    'พ.ค.',
-    'มิ.ย.',
-    'ก.ค.',
-    'ส.ค.',
-    'ก.ย.',
-    'ต.ค.',
-    'พ.ย.',
-    'ธ.ค.',
+    t('month_jan_short', 'ม.ค.'),
+    t('month_feb_short', 'ก.พ.'),
+    t('month_mar_short', 'มี.ค.'),
+    t('month_apr_short', 'เม.ย.'),
+    t('month_may_short', 'พ.ค.'),
+    t('month_jun_short', 'มิ.ย.'),
+    t('month_jul_short', 'ก.ค.'),
+    t('month_aug_short', 'ส.ค.'),
+    t('month_sep_short', 'ก.ย.'),
+    t('month_oct_short', 'ต.ค.'),
+    t('month_nov_short', 'พ.ย.'),
+    t('month_dec_short', 'ธ.ค.'),
   ];
-  const displayTopText = isToday ? 'วันนี้' : monthNames[transactionDate.getMonth()];
+  const displayTopText = isToday ? t('today', 'วันนี้') : monthNames[transactionDate.getMonth()];
 
   const [isInteracted, setIsInteracted] = useState(false);
   const [categoryIconUrl, setCategoryIconUrl] = useState<string | null>(null);
@@ -104,7 +106,7 @@ const DraftCard: React.FC<{
               <button
                 onClick={onEdit}
                 className="absolute top-[-10px] right-[-10px] bg-white border border-blue-600/20 rounded-full p-2 cursor-pointer z-10 shadow-sm"
-                title="แก้ไขรายละเอียด"
+                title={t('edit_details', 'แก้ไขรายละเอียด')}
               >
                 <FaPen size={10} className="text-gray-600" />
               </button>
@@ -125,10 +127,14 @@ const DraftCard: React.FC<{
 
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-black text-base">
-                  {data.isGoal ? 'เป้าหมาย' : isExpense ? 'รายจ่าย' : 'รายรับ'}
+                  {data.isGoal
+                    ? t('goal_label', 'เป้าหมาย')
+                    : isExpense
+                      ? t('expense', 'รายจ่าย')
+                      : t('income', 'รายรับ')}
                 </span>
                 <span className="text-black text-sm leading-tight truncate pr-2 font-normal">
-                  {data.description || 'ไม่ระบุรายการ'}
+                  {data.description || t('no_description', 'ไม่ระบุรายการ')}
                 </span>
               </div>
             </div>
@@ -139,7 +145,10 @@ const DraftCard: React.FC<{
           {shouldShowButtons && (
             <div className="animate-fade-in">
               <p className="text-black text-sm mb-3 font-normal">
-                ให้น้องสติบันทึกลงในรายการ{isExpense ? 'รายจ่าย' : 'รายรับ'}เลยมั้ยครับ?
+                {t('prompt_save_transaction', {
+                  type: isExpense ? t('expense', 'รายจ่าย') : t('income', 'รายรับ'),
+                  defaultValue: `ให้น้องสติบันทึกลงในรายการ{{type}}เลยมั้ยครับ?`,
+                })}
               </p>
 
               <div className="flex gap-3">

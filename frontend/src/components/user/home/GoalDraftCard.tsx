@@ -32,7 +32,7 @@ const GoalDraftCard: React.FC<{
     ? 'bg-gray-100 border-gray-200 opacity-60 grayscale bg-blue-600/20'
     : 'bg-blue-600/20';
 
-  const formatDate = (dateStr?: string) => {
+  const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return 'ไม่กำหนดเวลา';
     return new Date(dateStr).toLocaleDateString('th-TH', {
       day: 'numeric',

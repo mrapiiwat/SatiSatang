@@ -143,14 +143,18 @@ export class GoalService {
 
     let newDeadline = existingGoal.deadline;
 
-    if (data.deadline) {
-      const parsedDate = new Date(data.deadline);
-      const now = new Date();
+    if (data.deadline !== undefined) {
+      if (data.deadline === null) {
+        newDeadline = null;
+      } else {
+        const parsedDate = new Date(data.deadline);
+        const now = new Date();
 
-      if (parsedDate < now) {
-        throw new BadRequestError("Deadline cannot be in the past");
+        if (parsedDate < now) {
+          throw new BadRequestError("Deadline cannot be in the past");
+        }
+        newDeadline = parsedDate;
       }
-      newDeadline = parsedDate;
     }
 
     const [updatedGoal] = await db

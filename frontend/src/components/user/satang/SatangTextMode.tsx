@@ -6,6 +6,10 @@ import TypingIndicator from './TypingIndicator';
 import PageWrapper from '../../PageWrapper';
 import TrackingFace from './TrackingFace';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
+import { IoChevronBackOutline } from 'react-icons/io5';
+import Tooltip from '../../Tooltip';
+import { useNavigate } from 'react-router-dom';
 
 const SatangTextMode: React.FC<SatangTextModeProps> = ({
   text,
@@ -17,10 +21,12 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
   hasMore,
   isLoadingHistory,
 }) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const prevMessagesLengthRef = useRef(messages.length);
   const prevScrollHeightRef = useRef<number>(0);
   const isUserScrolledRef = useRef(false);
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setText(e.target.value);
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -79,9 +85,20 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
   return (
     <PageWrapper animation="scale-fade">
       <div className="min-h-[calc(100vh-80px)] flex flex-col justify-evenly px-6">
+        <div className="flex justify-between items-center px-2">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-1 cursor-pointer">
+            <IoChevronBackOutline />
+            <span className="font-normal">{t('back_btn', 'ย้อนกลับ')}</span>
+          </button>
+          <Tooltip
+            text="AI พี่สตางค์ ผู้ช่วยแนะนำด้านการเงิน ไม่ว่าจะถามเรื่องเล็กตั้งแต่ ให้แสดงรายจ่ายในสัปดาห์นี้ ไปจนถึงเรื่องลงทุนอย่างการให้แนะนำหุ้น"
+            position="left"
+            type="info"
+          />
+        </div>
         <div
           ref={containerRef}
-          className="border-[1px] border-black-600 rounded-xl flex-1 w-full overflow-y-auto p-2 max-h-[75vh] scrollbar-none flex flex-col gap-2 relative"
+          className="border-[1px] border-black-600 rounded-xl flex-1 w-full overflow-y-auto p-2 max-h-[70vh] scrollbar-none flex flex-col gap-2 relative"
         >
           {isLoadingHistory && (
             <div className="w-full flex justify-center py-4 relative">
@@ -91,7 +108,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
 
           {hasMore && !isLoadingHistory && (
             <div className="text-center text-gray-400 text-xs mb-2 opacity-50">
-              เลื่อนขึ้นเพื่อโหลดเพิ่มเติม...
+              {t('scroll_up_to_load', 'เลื่อนขึ้นเพื่อโหลดเพิ่มเติม...')}
             </div>
           )}
 
@@ -148,7 +165,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
               className="flex justify-center items-center h-16 text-xl px-3 w-full rounded-full border-2 border-black-400 pr-16"
               value={text}
               onChange={handleInputChange}
-              placeholder="พิมพ์ข้อความ..."
+              placeholder={t('type_message_placeholder', 'พิมพ์ข้อความ...')}
               disabled={isTyping}
             />
             <button

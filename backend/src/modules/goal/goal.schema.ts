@@ -21,7 +21,7 @@ export type createGoal = Static<typeof createGoal>;
 export const updateGoal = t.Object({
   name: t.Optional(t.String({ minLength: 1 })),
   amount: t.Optional(t.Numeric({ minimum: 1 })),
-  deadline: t.Optional(t.Union([t.Date(), t.String()])),
+  deadline: t.Optional(t.Nullable(t.Union([t.Date(), t.String()]))),
 });
 
 export type updateGoal = Static<typeof updateGoal>;

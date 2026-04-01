@@ -4,6 +4,7 @@ import { RxCross2 } from 'react-icons/rx';
 import type { BudgetDraftData, CategoryType, DraftStatus } from '../../../interface/home';
 import axios from '../../../api/axios';
 import Image from '../../Image';
+import { useTranslation } from 'react-i18next';
 
 const BudgetDraftCard: React.FC<{
   data: BudgetDraftData;
@@ -12,6 +13,7 @@ const BudgetDraftCard: React.FC<{
   onEdit: () => void;
   status: DraftStatus;
 }> = ({ data, onConfirm, onCancel, onEdit, status }) => {
+  const { t } = useTranslation();
   const [isInteracted, setIsInteracted] = useState(false);
   const [categoryName, setCategoryName] = useState('');
   const [categoryIcon, setCategoryIcon] = useState<string | null>(null);
@@ -49,10 +51,10 @@ const BudgetDraftCard: React.FC<{
   const isCancelled = status === 'cancelled';
 
   const freqMap: Record<string, string> = {
-    DAILY: 'วัน',
-    WEEKLY: 'สัปดาห์',
-    MONTHLY: 'เดือน',
-    YEARLY: 'ปี',
+    DAILY: t('daily', 'รายวัน'),
+    WEEKLY: t('weekly', 'รายสัปดาห์'),
+    MONTHLY: t('monthly', 'รายเดือน'),
+    YEARLY: t('yearly', 'รายปี'),
   };
 
   const bgClass = isCancelled
@@ -68,7 +70,7 @@ const BudgetDraftCard: React.FC<{
           <button
             onClick={onEdit}
             className="absolute top-[-10px] right-[-10px] bg-white border border-blue-600/20 hover:bg-gray-50 rounded-full p-2 transition-all cursor-pointer z-10 shadow-sm"
-            title="แก้ไขรายละเอียด"
+            title={t('edit_details', 'แก้ไขรายละเอียด')}
           >
             <FaPen size={10} className="text-gray-600" />
           </button>
@@ -89,9 +91,11 @@ const BudgetDraftCard: React.FC<{
             </div>
 
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-black text-base">ตั้งงบประมาณ</span>
+              <span className="font-bold text-black text-base">
+                {t('set_budget', 'ตั้งงบประมาณ')}
+              </span>
               <span className="text-black text-sm leading-tight truncate pr-2 font-normal">
-                {categoryName || 'หมวดทั่วไป'}
+                {categoryName || t('general_category', 'หมวดทั่วไป')}
               </span>
             </div>
           </div>
@@ -107,7 +111,7 @@ const BudgetDraftCard: React.FC<{
       {shouldShowButtons && (
         <div className="animate-fade-in mt-3 pl-1">
           <p className="text-black text-sm mb-3 font-normal">
-            ให้น้องสติบันทึกงบประมาณนี้เลยมั้ยครับ?
+            {t('prompt_save_budget', 'ให้น้องสติบันทึกงบประมาณนี้เลยมั้ยครับ?')}
           </p>
 
           <div className="flex gap-3">

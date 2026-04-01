@@ -9,6 +9,7 @@ import { showToastAlert } from '../../../store/toastStore';
 import { MdSubject } from 'react-icons/md';
 import { MdOutlineNotInterested } from 'react-icons/md';
 import DeleteModal from '../../DeleteModal';
+import { useTranslation } from 'react-i18next';
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({
   groupedByDate,
@@ -16,6 +17,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
   onRefresh,
   onEdit,
 }) => {
+  const { t } = useTranslation();
   const [categoryMap, setCategoryMap] = useState<Record<number, string>>({});
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -50,14 +52,14 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
     setIsDeleting(true);
     try {
       await axios.delete(`/transaction/${selectedTransaction.id}`);
-      showToastAlert('ลบรายการสำเร็จ', 'success');
+      showToastAlert(t('day_trans_delete_success', 'ลบรายการสำเร็จ'), 'success');
 
       setIsDeleteModalOpen(false);
       setSelectedTransaction(null);
 
       if (onRefresh) onRefresh();
     } catch {
-      showToastAlert('ไม่สามารถลบรายการได้', 'error');
+      showToastAlert(t('day_trans_delete_error', 'ไม่สามารถลบรายการได้'), 'error');
       setIsDeleteModalOpen(false);
     } finally {
       setIsDeleting(false);
@@ -77,7 +79,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
   if (sortedDates.length === 0)
     return (
       <p className="absolute inset-x-0 flex items-center justify-center text-black-600 text-base">
-        ยังไม่มีรายการ
+        {t('no_transactions', 'ยังไม่มีรายการ')}
       </p>
     );
 
@@ -101,11 +103,13 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
           ${index === 0 ? 'rounded-t-md' : ''}`}
             >
               <div className="flex flex-col justify-start items-start">
-                <span className="text-base font-semibold text-black">รายรับ</span>
+                <span className="text-base font-semibold text-black">{t('income', 'รายรับ')}</span>
                 <span className="text-black text-base">{dayIncome.toLocaleString()}</span>
               </div>
               <div className="flex flex-col justify-end items-end">
-                <span className="text-base font-semibold text-black">รายจ่าย</span>
+                <span className="text-base font-semibold text-black">
+                  {t('expense', 'รายจ่าย')}
+                </span>
                 <span className="text-black text-base">{dayExpense.toLocaleString()}</span>
               </div>
             </div>
@@ -138,10 +142,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                       </div>
                       <div>
                         <p className="font-semibold text-black text-base flex items-center gap-1">
-                          {transaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
+                          {transaction.type === 'INCOME'
+                            ? t('income', 'รายรับ')
+                            : t('expense', 'รายจ่าย')}
                           {!categoryMap[transaction.categoryId] && (
                             <span className="text-xs text-gray-500 font-normal">
-                              (ไม่มีหมวดหมู่)
+                              {t('uncategorized_paren', '(ไม่มีหมวดหมู่)')}
                             </span>
                           )}
                         </p>
@@ -174,7 +180,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
           >
             <div className="bg-white w-full max-w-[340px] rounded-2xl py-6 px-6 shadow-xl">
               <div className="flex justify-between items-center mb-5">
-                <h4 className="font-semibold text-lg">รายละเอียด</h4>
+                <h4 className="font-semibold text-lg">{t('detail_label', 'รายละเอียด')}</h4>
                 <div
                   onClick={handleCloseMainModal}
                   className="bg-black-300 flex justify-center items-center rounded-full w-10 h-10 hover:bg-black-400 cursor-pointer"
@@ -204,9 +210,13 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                       selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
-                    {selectedTransaction.type === 'INCOME' ? 'รายรับ' : 'รายจ่าย'}
+                    {selectedTransaction.type === 'INCOME'
+                      ? t('income', 'รายรับ')
+                      : t('expense', 'รายจ่าย')}
                     {!categoryMap[selectedTransaction.categoryId] && (
-                      <span className="text-sm font-normal text-gray-400">(ไม่มีหมวดหมู่)</span>
+                      <span className="text-sm font-normal text-gray-400">
+                        {t('uncategorized_paren', '(ไม่มีหมวดหมู่)')}
+                      </span>
                     )}
                   </div>
                   <h2
@@ -241,7 +251,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                   disabled={isDeleting}
                   className="flex-1 py-2.5 rounded-xl bg-[#FF2D55] text-white text-sm font-semibold hover:bg-[#f91e46] transition disabled:opacity-50"
                 >
-                  {isDeleting ? 'กำลังลบ...' : 'ลบ'}
+                  {isDeleting ? t('deleting', 'กำลังลบ...') : t('delete', 'ลบ')}
                 </button>
 
                 <button
@@ -252,7 +262,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                   }}
                   className="flex-1 bg-blue-600 py-2.5 rounded-xl text-white text-sm font-semibold hover:bg-blue-700 transition"
                 >
-                  แก้ไข
+                  {t('edit_btn', 'แก้ไข')}
                 </button>
               </div>
             </div>
@@ -264,9 +274,11 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
         isOpen={isDeleteModalOpen}
         onClose={handleCancelDelete}
         onConfirm={handleDelete}
-        title="ต้องการลบรายการนี้ใช่หรือไม่?"
-        confirmText={isDeleting ? 'กำลังลบ...' : 'ใช่ ลบเลย'}
-        cancelText="ยกเลิก"
+        title={t('delete_transaction_confirm', 'ต้องการลบรายการนี้ใช่หรือไม่?')}
+        confirmText={
+          isDeleting ? t('deleting', 'กำลังลบ...') : t('yes_delete_confirm', 'ใช่ ลบเลย')
+        }
+        cancelText={t('cancel_btn', 'ยกเลิก')}
       />
     </div>
   );

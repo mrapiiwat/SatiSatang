@@ -1,5 +1,12 @@
+import BackButton from '../../components/BackButton';
+
 const Privacy = () => {
-  return <div>Privacy</div>;
+  return (
+    <div>
+      <BackButton />
+      Privacy
+    </div>
+  );
 };
 
 export default Privacy;

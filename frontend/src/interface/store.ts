@@ -31,3 +31,20 @@ export interface AuthStore {
   actionLogout: () => void;
   actionSetConsent: (status: boolean) => void;
 }
+
+export interface SettingState {
+  appLanguage: 'th' | 'en';
+  aiLanguage: 'th' | 'en';
+  theme: 'light' | 'dark' | 'system';
+  isNotificationEnabled: boolean;
+  budgetStartDate: number;
+  userId: string | null;
+  lastSyncedToken: string | null;
+}
+
+export interface SettingStore extends SettingState {
+  actionSetSettings: (settings: SettingState) => void;
+  actionUpdateSetting: (data: Partial<SettingState>) => Promise<void>;
+  actionClearSettings: () => void;
+  actionSyncFCMToken: () => void;
+}
