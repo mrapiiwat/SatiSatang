@@ -86,7 +86,10 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
     <PageWrapper animation="scale-fade">
       <div className="min-h-[calc(100vh-80px)] flex flex-col justify-evenly px-6">
         <div className="flex justify-between items-center px-2">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1 cursor-pointer">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1 cursor-pointer dark:text-white"
+          >
             <IoChevronBackOutline />
             <span className="font-normal">{t('back_btn', 'ย้อนกลับ')}</span>
           </button>
@@ -118,7 +121,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
               className={`p-3 rounded-2xl w-fit max-w-[75%] break-words ${
                 msg.role === 'user'
                   ? 'bg-blue-600 text-white self-end rounded-tr-none whitespace-pre-wrap'
-                  : 'bg-gray-100 text-black self-start rounded-tl-none'
+                  : 'bg-gray-100 dark:bg-black-800 text-black dark:text-white self-start rounded-tl-none'
               }`}
             >
               {msg.role === 'user' ? (
@@ -136,7 +139,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
                       ),
                       li: ({ node: _node, ...props }) => <li className="" {...props} />,
                       strong: ({ node: _node, ...props }) => (
-                        <strong className="font-bold text-gray-900" {...props} />
+                        <strong className="font-bold text-gray-900 dark:text-gray-200" {...props} />
                       ),
                       h3: ({ node: _node, ...props }) => (
                         <h3 className="text-lg font-bold mt-4 mb-2" {...props} />
@@ -162,7 +165,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
 
           <form className="flex-1 relative" onSubmit={handleSubmit}>
             <input
-              className="flex justify-center items-center h-16 text-xl px-3 w-full rounded-full border-2 border-black-400 pr-16"
+              className="flex justify-center items-center h-16 text-xl px-3 w-full rounded-full border-2 border-black-400 dark:border-black-600 bg-white dark:bg-black-800 text-black-900 dark:text-white pr-16"
               value={text}
               onChange={handleInputChange}
               placeholder={t('type_message_placeholder', 'พิมพ์ข้อความ...')}
@@ -171,7 +174,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
             <button
               type="submit"
               disabled={!text.trim() || isTyping}
-              className="absolute translate-y-[-50%] right-2 top-1/2 bg-black-900 w-12 h-12 rounded-full flex justify-center items-center disabled:bg-gray-400"
+              className="absolute translate-y-[-50%] right-2 top-1/2 bg-black-900 dark:bg-black-600 w-12 h-12 rounded-full flex justify-center items-center disabled:bg-gray-400 dark:disabled:bg-black-700"
             >
               <GoArrowUp size={24} color="white" />
             </button>

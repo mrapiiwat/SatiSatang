@@ -283,7 +283,7 @@ const Home = () => {
 
   return (
     <PageWrapper animation="scale-fade">
-      <div className="px-6 py-4 font-ibm text-black-900">
+      <div className="px-6 py-4 font-ibm text-black-900 dark:text-white">
         <MonthHeader
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
@@ -308,7 +308,7 @@ const Home = () => {
           <motion.h1
             layout
             onClick={() => setIsExpense(!isExpense)}
-            className={`${getFontSize(totalExpense)} mb-2 font-semibold cursor-pointer leading-none select-none text-black`}
+            className={`${getFontSize(totalExpense)} mb-2 font-semibold cursor-pointer leading-none select-none text-black dark:text-white`}
             transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.5 }}
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -343,7 +343,7 @@ const Home = () => {
             <div className="flex flex-col md:max-w-[80%] md:flex-col lg:flex-row lg:min-w-[700px] lg:justify-center lg:gap-4 mb-6 w-full lg:w-7/12 mx-auto">
               {budgets.length > 0 && budgetIndex < budgets.length && (
                 <motion.div
-                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
+                  className="relative w-full lg:w-1/2 bg-gray-100 dark:bg-black-800 p-3 rounded-lg mb-4 lg:mb-0 flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 dark:hover:bg-black-700 transition-colors touch-pan-y"
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0.2}
@@ -373,7 +373,7 @@ const Home = () => {
                       {t('budget_set', 'งบที่ตั้งไว้')}
                     </h4>
                     <p
-                      className="text-xs text-black-500 cursor-pointer pointer-events-auto"
+                      className="text-xs text-black-500 dark:text-gray-400 cursor-pointer pointer-events-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowFrequency(!showFrequency);
@@ -414,10 +414,10 @@ const Home = () => {
                   </div>
 
                   <div className="flex justify-between items-start mb-1 pointer-events-none">
-                    <span className="text-sm text-black pointer-events-auto">
+                    <span className="text-sm text-black dark:text-gray-200 pointer-events-auto">
                       {budgets[budgetIndex]?.category?.name || t('no_category', 'ไม่ระบุหมวดหมู่')}
                     </span>
-                    <div className="text-xs text-gray-700 pointer-events-auto">
+                    <div className="text-xs text-gray-700 dark:text-gray-400 pointer-events-auto">
                       <span className="text-purple-300 font-semibold">
                         ฿ {budgets[budgetIndex]?.currentAmount?.toLocaleString() || 0}
                       </span>
@@ -428,7 +428,7 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1 pointer-events-none">
+                  <div className="w-full bg-gray-300 dark:bg-black-600 h-1.5 rounded-full mb-1 pointer-events-none">
                     <div
                       className="bg-purple-300 h-1.5 rounded-full transition-all"
                       style={{
@@ -477,7 +477,7 @@ const Home = () => {
 
               {goals.length > 0 && goalIndex < goals.length && (
                 <motion.div
-                  className="relative w-full lg:w-1/2 bg-gray-100 p-3 rounded-lg flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 transition-colors touch-pan-y"
+                  className="relative w-full lg:w-1/2 bg-gray-100 dark:bg-black-800 p-3 rounded-lg flex flex-col cursor-grab active:cursor-grabbing hover:bg-gray-200 dark:hover:bg-black-700 transition-colors touch-pan-y"
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0.2}
@@ -502,16 +502,16 @@ const Home = () => {
                     <h4 className="font-semibold text-base pointer-events-auto">
                       {t('goal_label', 'เป้าหมาย')}
                     </h4>
-                    <p className="text-xs text-black-500 pointer-events-auto">
+                    <p className="text-xs text-black-500 dark:text-gray-400 pointer-events-auto">
                       <DeadlineDisplay deadline={goals[goalIndex]?.deadline} now={now} />
                     </p>
                   </div>
 
                   <div className="flex justify-between items-start mb-1 pointer-events-none">
-                    <span className="text-sm text-black pointer-events-auto">
+                    <span className="text-sm text-black dark:text-gray-200 pointer-events-auto">
                       {goals[goalIndex]?.name}
                     </span>
-                    <div className="text-xs text-gray-700 pointer-events-auto">
+                    <div className="text-xs text-gray-700 dark:text-gray-400 pointer-events-auto">
                       <span className="text-green-600 font-semibold">
                         ฿ {goals[goalIndex]?.totalAmount?.toLocaleString() || 0}
                       </span>
@@ -522,7 +522,7 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="w-full bg-gray-300 h-1.5 rounded-full mb-1 pointer-events-none">
+                  <div className="w-full bg-gray-300 dark:bg-black-600 h-1.5 rounded-full mb-1 pointer-events-none">
                     <div
                       className="bg-green-600 h-1.5 rounded-full transition-all"
                       style={{
@@ -600,14 +600,18 @@ const Home = () => {
                       />
                       <p
                         className={`text-base font-medium ${
-                          isToday ? 'text-blue-600' : 'text-black-700'
+                          isToday
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-black-700 dark:text-gray-300'
                         }`}
                       >
                         {dayLabel}
                       </p>
                       <p
                         className={`text-base font-bold ${
-                          isToday ? 'text-blue-600' : 'text-black-700'
+                          isToday
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-black-700 dark:text-gray-300'
                         } leading-tight`}
                       >
                         {dayNumber}

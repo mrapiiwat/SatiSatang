@@ -10,7 +10,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ isOpen, onSelect, onClose }) => {
         <>
           <div className="fixed inset-0 bg-transparent z-40" onClick={onClose}></div>
           <div
-            className="absolute bg-blue-100 w-52 h-52 left-0 bottom-20 rounded-3xl shadow-xl shadow-black-800 z-50"
+            className="absolute bg-blue-100 dark:bg-black-800 dark:border dark:border-black-600 w-52 h-52 left-0 bottom-20 rounded-3xl shadow-lg shadow-black-400 dark:shadow-black-900 z-50 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <ul className="h-full flex flex-col justify-evenly">
@@ -18,7 +18,7 @@ const AddMenu: React.FC<AddMenuProps> = ({ isOpen, onSelect, onClose }) => {
                 <li
                   key={item}
                   onClick={() => onSelect(item)}
-                  className={`font-semibold text-black-900 h-full flex items-center px-5 cursor-pointer hover:bg-blue-50 ${item === 'upload' ? 'hover:rounded-t-3xl' : null} ${item === 'goal' ? 'hover:rounded-b-3xl' : null} `}
+                  className={`font-semibold text-black-900 dark:text-white h-full flex items-center px-5 cursor-pointer hover:bg-blue-50 dark:hover:bg-black-700 ${item === 'upload' ? 'hover:rounded-t-3xl' : null} ${item === 'goal' ? 'hover:rounded-b-3xl' : null} `}
                 >
                   {item === 'upload' && t('upload_slip', 'อัปโหลดสลิป')}
                   {item === 'manual' && t('manual_record', 'บันทึกรายรับรายจ่ายเอง')}

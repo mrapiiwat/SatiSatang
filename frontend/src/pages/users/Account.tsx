@@ -135,7 +135,7 @@ const Account: React.FC = () => {
   return (
     <PageWrapper animation="fade">
       <BackButton />
-      <div className="relative px-6 py-8 font-ibm text-black-900">
+      <div className="relative px-6 py-8 font-ibm text-black-900 dark:text-white">
         <h1 className="text-center font-semibold mb-8">{t('account_label', 'บัญชีผู้ใช้')}</h1>
 
         <div className="mb-6 max-w-md mx-auto">
@@ -149,7 +149,7 @@ const Account: React.FC = () => {
               setName(e.target.value);
               setIsEdited(true);
             }}
-            className={`w-full border-b focus:outline-none pb-1 ${isEdited ? 'border-blue-600' : 'border-black-400'}`}
+            className={`w-full border-b focus:outline-none pb-1 bg-transparent dark:text-white ${isEdited ? 'border-blue-600' : 'border-black-400 dark:border-black-500'}`}
             placeholder={t('username_placeholder', 'กรอกชื่อผู้ใช้งาน')}
           />
         </div>
@@ -161,7 +161,7 @@ const Account: React.FC = () => {
             </label>
             <button
               onClick={() => setIsChangingPassword(true)}
-              className="w-full border-b border-black-400 text-black-900 text-left pb-1"
+              className="w-full border-b border-black-400 dark:border-black-500 text-black-900 dark:text-white text-left pb-1 bg-transparent"
             >
               *************
             </button>

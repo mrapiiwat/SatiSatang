@@ -85,18 +85,18 @@ const Feedback: React.FC = () => {
   };
 
   return (
-    <div className="w-full bg-white flex flex-col items-center min-h-[calc(100dvh-80px)] overflow-y-auto">
+    <div className="w-full bg-white dark:bg-black-900 text-black-900 dark:text-white flex flex-col items-center min-h-[calc(100dvh-80px)] overflow-y-auto">
       <div className="w-full max-w-2xl flex flex-col flex-grow pb-5">
         <div className="flex flex-col items-center justify-center text-center flex-grow px-6">
           <div className="flex flex-col items-center gap-3 sm:gap-4">
             <img
               src={SATISATANG}
               alt={t('satisatang_logo', 'โลโก้สติสตางค์')}
-              className="w-48 object-contain"
+              className="w-48 object-contain dark:invert"
             />
           </div>
 
-          <p className="text-gray-700 text-lg leading-relaxed mb-6 sm:mb-8 mt-4">
+          <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-6 sm:mb-8 mt-4">
             {t('feedback_desc_1', 'ความคิดเห็นของคุณมีความหมายกับเราเสมอ')}
             <br />
             {t('feedback_desc_2', 'มาร่วมแบ่งปันประสบการณ์หลังการใช้งาน')}
@@ -112,18 +112,18 @@ const Feedback: React.FC = () => {
 
           <div className="w-full mb-6">
             <div
-              className={`w-full min-h-[10rem] sm:min-h-[12rem] flex flex-col border rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent bg-white overflow-hidden p-3 transition-all ${isLoading ? 'opacity-70 pointer-events-none' : 'border-gray-300'}`}
+              className={`w-full min-h-[10rem] sm:min-h-[12rem] flex flex-col border rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent bg-white dark:bg-black-800 overflow-hidden p-3 transition-all ${isLoading ? 'opacity-70 pointer-events-none' : 'border-gray-300 dark:border-black-600'}`}
             >
               <textarea
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
-                className="w-full flex-grow outline-none resize-none bg-transparent p-1 text-gray-700 placeholder-gray-400 min-h-[6rem] text-base"
+                className="w-full flex-grow outline-none resize-none bg-transparent p-1 text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 min-h-[6rem] text-base"
                 placeholder={t('type_feedback_here', 'พิมพ์ความคิดเห็นได้ที่นี่')}
               />
 
               {selectedImage && (
                 <div className="px-2 pb-2 mt-2">
-                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-gray-200 overflow-hidden group shadow-sm">
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg border border-gray-200 dark:border-black-600 overflow-hidden group shadow-sm">
                     <img
                       src={URL.createObjectURL(selectedImage)}
                       alt="preview"
@@ -145,7 +145,7 @@ const Feedback: React.FC = () => {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading || !!selectedImage}
-                  className={`p-2 rounded-full transition-colors flex items-center justify-center ${selectedImage ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 hover:text-indigo-600'}`}
+                  className={`p-2 rounded-full transition-colors flex items-center justify-center ${selectedImage ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-black-700 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                   title={t('attach_image', 'แนบรูปภาพ')}
                 >
                   <IoAttachOutline className="text-2xl sm:text-3xl transform -rotate-45" />
@@ -158,7 +158,7 @@ const Feedback: React.FC = () => {
                   onChange={handleFileChange}
                 />
                 {selectedImage && (
-                  <span className="text-sm text-gray-400 ml-2">
+                  <span className="text-sm text-gray-400 dark:text-gray-500 ml-2">
                     {t('attached_1_image', 'แนบแล้ว 1 รูป')}
                   </span>
                 )}

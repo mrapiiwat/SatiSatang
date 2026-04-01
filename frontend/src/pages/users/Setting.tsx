@@ -143,9 +143,9 @@ const Setting: React.FC = () => {
     <button
       key={row.label}
       onClick={row.onClick}
-      className={`w-full flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-gray-50 active:bg-gray-100 ${
-        row.danger ? 'text-red-500' : 'text-black-900'
-      } ${index < arr.length - 1 ? 'border-b border-gray-100' : ''}`}
+      className={`w-full flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-gray-50 dark:hover:bg-black-700 active:bg-gray-100 dark:active:bg-black-600 ${
+        row.danger ? 'text-red-500' : 'text-black-900 dark:text-white'
+      } ${index < arr.length - 1 ? 'border-b border-gray-100 dark:border-black-600' : ''}`}
     >
       <span className={`shrink-0 ${row.danger ? 'text-red-500' : 'text-black-700'}`}>
         {row.icon}
@@ -163,24 +163,24 @@ const Setting: React.FC = () => {
   return (
     <PageWrapper animation="fade">
       <BackButton />
-      <div className="px-6 py-4 font-ibm text-black-900 max-w-md mx-auto">
+      <div className="px-6 py-4 font-ibm text-black-900 dark:text-white max-w-md mx-auto">
         <h1 className="text-center font-semibold mb-8">{t('setting_title', 'ตั้งค่า')}</h1>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2 px-1">
           {t('account_section', 'บัญชี')}
         </p>
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 rounded-2xl shadow-sm overflow-hidden mb-6">
           {accountRows.map((row, i, arr) => renderRow(row, i, arr))}
         </div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2 px-1">
           {t('app_setting_section', 'การตั้งค่าแอป')}
         </p>
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 rounded-2xl shadow-sm overflow-hidden mb-6">
           <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
             <span className="shrink-0 text-black-700">
               <IoLanguageOutline size={20} />
             </span>
             <span className="text-sm font-medium flex-1">{t('app_language', 'ภาษาแอป')}</span>
-            <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+            <div className="flex gap-1 bg-gray-100 dark:bg-black-700 rounded-lg p-0.5">
               {LANGUAGE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -190,8 +190,8 @@ const Setting: React.FC = () => {
                   }}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                     appLanguage === opt.value
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white dark:bg-black-500 text-blue-600 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
                   }`}
                 >
                   {t(`language_${opt.value}`, opt.label)}
@@ -204,15 +204,15 @@ const Setting: React.FC = () => {
               <IoSparklesOutline size={20} />
             </span>
             <span className="text-sm font-medium flex-1">{t('ai_language', 'ภาษา AI')}</span>
-            <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+            <div className="flex gap-1 bg-gray-100 dark:bg-black-700 rounded-lg p-0.5">
               {LANGUAGE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => actionUpdateSetting({ aiLanguage: opt.value })}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                     aiLanguage === opt.value
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white dark:bg-black-500 text-blue-600 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
                   }`}
                 >
                   {t(`language_${opt.value}`, opt.label)}
@@ -225,15 +225,15 @@ const Setting: React.FC = () => {
               <IoContrastOutline size={20} />
             </span>
             <span className="text-sm font-medium flex-1">{t('theme_label', 'ธีม')}</span>
-            <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+            <div className="flex gap-1 bg-gray-100 dark:bg-black-700 rounded-lg p-0.5">
               {THEME_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => actionUpdateSetting({ theme: opt.value })}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                     theme === opt.value
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white dark:bg-black-500 text-blue-600 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white'
                   }`}
                 >
                   {t(`theme_${opt.value}`, opt.label)}
@@ -281,7 +281,7 @@ const Setting: React.FC = () => {
             <select
               value={budgetStartDate}
               onChange={(e) => actionUpdateSetting({ budgetStartDate: Number(e.target.value) })}
-              className="text-sm text-black-900 border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="text-sm text-black-900 dark:text-white border border-gray-200 dark:border-black-500 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-black-700"
             >
               {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                 <option key={d} value={d}>
@@ -295,11 +295,11 @@ const Setting: React.FC = () => {
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2 px-1">
           {t('support_section', 'การสนับสนุน')}
         </p>
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 rounded-2xl shadow-sm overflow-hidden mb-6">
           {supportRows.map((row, i, arr) => renderRow(row, i, arr))}
         </div>
 
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-10">
+        <div className="bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 rounded-2xl shadow-sm overflow-hidden mb-10">
           {renderRow(
             {
               icon: <IoLogOutOutline size={20} />,

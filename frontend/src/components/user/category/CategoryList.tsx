@@ -195,7 +195,7 @@ const CategoryList: React.FC<
                 handleCategoryClick(cat);
               }}
             >
-              <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden pointer-events-none">
+              <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-black-700 flex items-center justify-center overflow-hidden pointer-events-none">
                 <Image src={cat.icon} alt={cat.name} className="w-full h-full object-cover" />
               </div>
               <span className="text-sm text-center">{cat.name}</span>
@@ -209,10 +209,10 @@ const CategoryList: React.FC<
               onAddClick();
             }}
           >
-            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-purple-600 text-2xl font-semibold hover:scale-110 transition-transform pointer-events-none">
+            <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-black-700 flex items-center justify-center text-purple-600 text-2xl font-semibold hover:scale-110 transition-transform pointer-events-none">
               <AiOutlinePlus />
             </div>
-            <span className="text-sm text-center text-gray-700">
+            <span className="text-sm text-center text-gray-700 dark:text-gray-300">
               {t('add_category', 'เพิ่มหมวดหมู่')}
             </span>
           </div>
@@ -222,14 +222,14 @@ const CategoryList: React.FC<
       {editingCategory && (
         <Modal isOpen={!!editingCategory} onClose={handleCloseModal}>
           <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 flex flex-col gap-4 bg-white rounded-2xl min-w-[382px] max-w-md">
+            <div className="p-6 flex flex-col gap-4 bg-white dark:bg-black-800 rounded-2xl min-w-[382px] max-w-md">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-center mb-2">
+                <h2 className="text-xl font-semibold text-center mb-2 dark:text-white">
                   {t('edit_category', 'แก้ไขหมวดหมู่')}
                 </h2>
                 <div
                   onClick={handleCloseModal}
-                  className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+                  className="bg-black-300 dark:bg-black-600 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 dark:hover:bg-black-500 cursor-pointer"
                 >
                   <RxCross2 size={25} />
                 </div>
@@ -244,7 +244,10 @@ const CategoryList: React.FC<
                     />
                   </div>
                 </div>
-                <label htmlFor="category-name" className="text-base font-medium text-gray-700">
+                <label
+                  htmlFor="category-name"
+                  className="text-base font-medium text-gray-700 dark:text-gray-300"
+                >
                   {t('category_name_label', 'ชื่อหมวดหมู่')}
                 </label>
                 <input
@@ -256,7 +259,7 @@ const CategoryList: React.FC<
                   onKeyPress={handleKeyPress}
                   disabled={loading}
                   maxLength={50}
-                  className="border border-gray-300 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed transition"
+                  className="border border-gray-300 dark:border-black-500 rounded-md px-3 py-2 text-base bg-white dark:bg-black-700 text-black-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-black-600 disabled:cursor-not-allowed transition"
                 />
               </div>
 

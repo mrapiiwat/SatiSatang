@@ -5,7 +5,11 @@
 @tailwind utilities;
 
 body {
-  @apply font-sans;
+  @apply font-sans bg-white text-black-900;
+}
+
+.dark body {
+  @apply bg-black-900 text-white;
 }
 
 *::-webkit-scrollbar {

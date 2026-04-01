@@ -295,12 +295,20 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
       height: 36,
       minHeight: 36,
       borderRadius: 6,
-      borderColor: '#B1B0AD',
+      borderColor: 'var(--tw-border-opacity, #B1B0AD)',
+      backgroundColor: 'inherit',
     }),
-    singleValue: (base) => ({ ...base, color: '#111827' }),
+    singleValue: (base) => ({ ...base, color: 'inherit' }),
+    menu: (base) => ({ ...base, zIndex: 9999, backgroundColor: 'inherit' }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused
+        ? 'var(--tw-prose-bg, rgba(150,150,150,0.1))'
+        : 'transparent',
+      color: 'inherit',
+    }),
     indicatorsContainer: (base) => ({ ...base, display: 'none' }),
     valueContainer: (base) => ({ ...base, padding: '0 8px' }),
-    menu: (base) => ({ ...base, zIndex: 9999 }),
     menuList: (base) => ({
       ...base,
       '::-webkit-scrollbar': {
@@ -316,10 +324,10 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
   return (
     <>
       <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
-        <div className="bg-white w-full max-w-96 rounded-2xl py-7 px-8">
+        <div className="bg-white dark:bg-black-800 text-black-900 dark:text-white w-full max-w-96 rounded-2xl py-7 px-8">
           <div className="flex justify-between items-center mb-6">
             <div className="flex gap-3 items-center">
-              <h4 className="font-semibold">
+              <h4 className="font-semibold dark:text-white">
                 {onUpdateDraft ? t('edit_goal', 'แก้ไขเป้าหมาย') : t('goal_label', 'เป้าหมาย')}
               </h4>
               <Tooltip
@@ -330,7 +338,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
 
             <div
               onClick={onClose}
-              className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+              className="bg-black-300 dark:bg-black-600 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 dark:hover:bg-black-500 cursor-pointer"
             >
               <RxCross2 size={25} />
             </div>
@@ -338,22 +346,26 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">{t('goal_name', 'ชื่อเป้าหมาย')}</label>
+              <label className="text-sm font-medium dark:text-gray-300">
+                {t('goal_name', 'ชื่อเป้าหมาย')}
+              </label>
               <input
                 type="text"
                 value={goalName}
                 onChange={(e) => setGoalName(e.target.value)}
-                className="border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none"
+                className="border border-black-500 dark:border-black-500 dark:bg-black-700 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">{t('amount_label', 'จำนวนเงิน')}</label>
+              <label className="text-sm font-medium dark:text-gray-300">
+                {t('amount_label', 'จำนวนเงิน')}
+              </label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="border border-black-500 w-full h-10 rounded-md px-3 text-black-900 focus:border-blue-600 focus:outline-none"
+                className="border border-black-500 dark:border-black-500 dark:bg-black-700 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
               />
             </div>
 
@@ -361,7 +373,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
               <div className="flex justify-between items-center h-8">
                 <label
                   htmlFor="hasDeadline"
-                  className="text-sm font-medium cursor-pointer select-none text-black-900"
+                  className="text-sm font-medium cursor-pointer select-none text-black-900 dark:text-gray-300"
                 >
                   <div className="flex items-center gap-3">
                     {t('duration_label', 'ระยะเวลา')}{' '}
@@ -377,7 +389,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                   id="hasDeadline"
                   checked={hasDeadline}
                   onChange={(e) => setHasDeadline(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                  className="w-5 h-5 text-blue-600 bg-gray-100 dark:bg-black-700 border-gray-300 dark:border-black-600 rounded focus:ring-blue-500 cursor-pointer"
                 />
               </div>
 
@@ -392,6 +404,11 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                       isClearable
                       isSearchable={false}
                       styles={selectStyles}
+                      classNames={{
+                        control: () => 'dark:border-black-500',
+                        menu: () =>
+                          'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
+                      }}
                     />
                   </div>
 
@@ -410,6 +427,11 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                         return Number(year.value) === currentY && Number(option.value) < currentM;
                       }}
                       styles={selectStyles}
+                      classNames={{
+                        control: () => 'dark:border-black-500',
+                        menu: () =>
+                          'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
+                      }}
                     />
                   </div>
 

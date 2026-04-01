@@ -213,12 +213,12 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <div className="flex justify-center items-center">
       {!isOpen && !isImageModalOpen && (
-        <div className="bg-white w-full max-w-96 min-h-[350px] rounded-2xl py-7 px-8 shadow-md flex flex-col">
+        <div className="bg-white dark:bg-black-800 text-black-900 dark:text-white w-full max-w-96 min-h-[350px] rounded-2xl py-7 px-8 shadow-md flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h4 className="font-medium text-lg">{t('upload_slip', 'อัปโหลดสลิป')}</h4>
             <div
               onClick={onClose}
-              className="bg-gray-200 flex justify-center items-center rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer transition"
+              className="bg-gray-200 dark:bg-black-600 flex justify-center items-center rounded-full w-10 h-10 hover:bg-gray-300 dark:hover:bg-black-500 cursor-pointer transition"
             >
               <RxCross2 size={20} />
             </div>
@@ -243,14 +243,14 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       <Dialog open={loading} onClose={() => {}} className="relative z-[80]">
         <div className="fixed inset-0 bg-black-600/70 backdrop-blur-sm" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="bg-white rounded-3xl w-full max-w-sm p-10 flex flex-col items-center justify-center shadow-sm">
+          <Dialog.Panel className="bg-white dark:bg-black-800 rounded-3xl w-full max-w-sm p-10 flex flex-col items-center justify-center shadow-sm">
             <div className="mb-6 relative">
               <FaCloudUploadAlt className="text-6xl text-[#4F14E5] animate-pulse" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
               {t('uploading', 'กำลังอัปโหลดไฟล์')}
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400">
               {t('upload_count', {
                 count: files.length,
                 defaultValue: `จำนวน ${files.length} รายการ`,
@@ -265,7 +265,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full flex-col items-center justify-center p-4">
             <Dialog.Panel className="w-full max-w-96 flex flex-col items-center outline-none">
-              <div className="bg-white rounded-2xl w-full shadow-xl">
+              <div className="bg-white dark:bg-black-800 rounded-2xl w-full shadow-xl">
                 {currentTransaction ? (
                   <TransactionForm
                     transactionData={currentTransaction.data}
@@ -292,12 +292,12 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <button
                     onClick={() => setCurrentIndex((c) => Math.max(0, c - 1))}
                     disabled={currentIndex === 0}
-                    className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-gray-700"
+                    className="w-12 h-12 flex items-center justify-center bg-white dark:bg-black-800 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-black-700 disabled:opacity-50 disabled:cursor-not-allowed transition text-gray-700 dark:text-gray-300"
                   >
                     <RxChevronLeft size={28} />
                   </button>
 
-                  <div className="bg-white px-6 py-3 rounded-full shadow-lg text-gray-700 font-medium min-w-[160px] text-center">
+                  <div className="bg-white dark:bg-black-800 px-6 py-3 rounded-full shadow-lg text-gray-700 dark:text-gray-300 font-medium min-w-[160px] text-center">
                     {t('slip_count', {
                       current: currentIndex + 1,
                       total: pendingTransactions.length,
@@ -310,7 +310,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                       setCurrentIndex((c) => Math.min(pendingTransactions.length - 1, c + 1))
                     }
                     disabled={currentIndex === pendingTransactions.length - 1}
-                    className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-gray-700"
+                    className="w-12 h-12 flex items-center justify-center bg-white dark:bg-black-800 rounded-full shadow-lg hover:bg-gray-50 dark:hover:bg-black-700 disabled:opacity-50 disabled:cursor-not-allowed transition text-gray-700 dark:text-gray-300"
                   >
                     <RxChevronRight size={28} />
                   </button>

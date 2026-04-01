@@ -9,7 +9,10 @@ const BackButton: React.FC = () => {
 
   return (
     <div className="px-6 py-2">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 cursor-pointer">
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-1 cursor-pointer text-black-900 dark:text-white hover:opacity-70 transition-opacity"
+      >
         <IoChevronBackOutline />
         <span className="font-normal">{t('back_btn', 'ย้อนกลับ')}</span>
       </button>
