@@ -99,22 +99,28 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
         return (
           <div key={date} className="box-border">
             <div
-              className={`bg-blue-50 px-4 py-3 flex justify-between items-center h-16 relative 
+              className={`bg-blue-50 dark:bg-blue-950/30 px-4 py-3 flex justify-between items-center h-16 relative 
           ${index === 0 ? 'rounded-t-md' : ''}`}
             >
               <div className="flex flex-col justify-start items-start">
-                <span className="text-base font-semibold text-black">{t('income', 'รายรับ')}</span>
-                <span className="text-black text-base">{dayIncome.toLocaleString()}</span>
+                <span className="text-base font-semibold text-black dark:text-white">
+                  {t('income', 'รายรับ')}
+                </span>
+                <span className="text-black dark:text-white text-base">
+                  {dayIncome.toLocaleString()}
+                </span>
               </div>
               <div className="flex flex-col justify-end items-end">
-                <span className="text-base font-semibold text-black">
+                <span className="text-base font-semibold text-black dark:text-white">
                   {t('expense', 'รายจ่าย')}
                 </span>
-                <span className="text-black text-base">{dayExpense.toLocaleString()}</span>
+                <span className="text-black dark:text-white text-base">
+                  {dayExpense.toLocaleString()}
+                </span>
               </div>
             </div>
 
-            <div className={`bg-blue-100 ${isLastDate ? 'rounded-b-md' : ''}`}>
+            <div className={`bg-blue-100 dark:bg-blue-900/20 ${isLastDate ? 'rounded-b-md' : ''}`}>
               {dayTransactions.map((transaction, tIndex) => {
                 const isLastTransaction = tIndex === dayTransactions.length - 1;
                 const shouldRoundBottom = isLastDate && isLastTransaction;
@@ -122,12 +128,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                 return (
                   <div
                     key={transaction.id}
-                    className={`flex items-center justify-between px-4 hover:bg-blue-200/50 h-16 cursor-pointer 
+                    className={`flex items-center justify-between px-4 hover:bg-blue-200/50 dark:hover:bg-blue-800/30 h-16 cursor-pointer 
                 ${shouldRoundBottom ? 'rounded-b-md' : ''}`}
                     onClick={() => setSelectedTransaction(transaction)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center overflow-hidden">
+                      <div className="w-10 h-10 rounded-full bg-white dark:bg-black-700 flex-shrink-0 flex items-center justify-center overflow-hidden">
                         {categoryMap[transaction.categoryId] ? (
                           <Image
                             src={categoryMap[transaction.categoryId]}
@@ -141,7 +147,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                         )}
                       </div>
                       <div>
-                        <p className="font-semibold text-black text-base flex items-center gap-1">
+                        <p className="font-semibold text-black dark:text-white text-base flex items-center gap-1">
                           {transaction.type === 'INCOME'
                             ? t('income', 'รายรับ')
                             : t('expense', 'รายจ่าย')}
@@ -152,7 +158,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
                           )}
                         </p>
                         {transaction.description && (
-                          <p className="text-sm text-gray-700 line-clamp-1 break-all w-32 md:w-48">
+                          <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-1 break-all w-32 md:w-48">
                             {transaction.description}
                           </p>
                         )}
@@ -178,19 +184,21 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
             className="flex justify-center items-center h-full w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-white w-full max-w-[340px] rounded-2xl py-6 px-6 shadow-xl">
+            <div className="bg-white dark:bg-black-800 w-full max-w-[340px] rounded-2xl py-6 px-6 shadow-xl">
               <div className="flex justify-between items-center mb-5">
-                <h4 className="font-semibold text-lg">{t('detail_label', 'รายละเอียด')}</h4>
+                <h4 className="font-semibold text-lg dark:text-white">
+                  {t('detail_label', 'รายละเอียด')}
+                </h4>
                 <div
                   onClick={handleCloseMainModal}
-                  className="bg-black-300 flex justify-center items-center rounded-full w-10 h-10 hover:bg-black-400 cursor-pointer"
+                  className="bg-black-300 dark:bg-black-600 flex justify-center items-center rounded-full w-10 h-10 hover:bg-black-400 dark:hover:bg-black-500 cursor-pointer"
                 >
                   <RxCross2 size={18} />
                 </div>
               </div>
 
               <div className="flex flex-col items-center gap-3">
-                <div className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden">
+                <div className="w-24 h-24 rounded-full bg-gray-50 dark:bg-black-700 flex items-center justify-center border border-gray-100 dark:border-black-600 overflow-hidden">
                   {categoryMap[selectedTransaction.categoryId] ? (
                     <Image
                       src={categoryMap[selectedTransaction.categoryId]}
@@ -229,11 +237,11 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
 
                 <div className="w-full mt-1">
                   {selectedTransaction.description ? (
-                    <div className="flex gap-2 items-start bg-gray-50 rounded-xl p-3">
+                    <div className="flex gap-2 items-start bg-gray-50 dark:bg-black-700 rounded-xl p-3">
                       <div className="text-gray-400 mt-0.5 flex-shrink-0">
                         <MdSubject size={16} />
                       </div>
-                      <p className="text-gray-700 text-sm leading-relaxed break-words text-left">
+                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed break-words text-left">
                         {selectedTransaction.description}
                       </p>
                     </div>

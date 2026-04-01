@@ -47,21 +47,28 @@ const Navbar: React.FC = () => {
     <>
       <nav
         className={`fixed top-0 left-0 w-full flex justify-between items-center p-6 z-50 transition-all duration-300
-          ${isOpen ? '' : 'bg-white'}
+          ${isOpen ? '' : 'bg-white dark:bg-black-900'}
           ${showNavbar ? 'translate-y-0' : '-translate-y-full'}
         `}
       >
-        <img
+        <div
           onClick={() => {
             navigate('/user');
-            if (isOpen) {
-              setIsOpen(false);
-            }
+            if (isOpen) setIsOpen(false);
           }}
-          className="w-8 h-8 relative z-[60] transition-all duration-300"
-          src={isOpen ? '/SATISATANG1.svg' : '/SATISATANG.svg'}
-          alt="logo app"
-        />
+          className="relative z-[60] w-8 h-8 cursor-pointer"
+        >
+          <img
+            className="w-full h-full dark:hidden transition-all duration-300"
+            src={isOpen ? '/SATISATANG1.svg' : '/SATISATANG.svg'}
+            alt="logo app"
+          />
+          <img
+            className="w-full h-full hidden dark:block transition-all duration-300"
+            src="/SATISATANG1.svg"
+            alt="logo app dark"
+          />
+        </div>
         <button
           className={`flex flex-col justify-center items-center w-6 h-6 relative z-[60] transition-opacity duration-300
             ${isOpen ? 'md:opacity-0 md:pointer-events-none' : 'md:opacity-100'}
@@ -70,12 +77,12 @@ const Navbar: React.FC = () => {
         >
           <span
             className={`block absolute h-0.5 w-6 transform transition duration-300 ease-in-out
-              ${isOpen ? 'rotate-45 top-3 bg-white' : 'top-2 bg-black-900'}
+              ${isOpen ? 'rotate-45 top-3 bg-white' : 'top-2 bg-black-900 dark:bg-white'}
             `}
           ></span>
           <span
             className={`block absolute h-0.5 w-6 transform transition duration-300 ease-in-out
-              ${isOpen ? '-rotate-45 top-3 bg-white' : 'top-5 bg-black-900'}
+              ${isOpen ? '-rotate-45 top-3 bg-white' : 'top-5 bg-black-900 dark:bg-white'}
             `}
           ></span>
         </button>

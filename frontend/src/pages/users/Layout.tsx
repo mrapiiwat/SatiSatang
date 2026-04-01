@@ -12,13 +12,13 @@ const Layout: React.FC = () => {
   }, [userId, isNotificationEnabled, actionSyncFCMToken]);
 
   return (
-    <>
+    <div className="min-h-screen bg-white dark:bg-black-900 transition-colors duration-300">
       <Navbar />
       <ToastAlert />
       <div className="pt-20">
         <Outlet />
       </div>
-    </>
+    </div>
   );
 };
 

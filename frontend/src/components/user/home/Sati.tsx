@@ -576,7 +576,7 @@ const Sati: React.FC<SatiProps> = ({
             ),
             li: ({ node: _node, ...props }) => <li className="" {...props} />,
             strong: ({ node: _node, ...props }) => (
-              <strong className="font-bold text-gray-900" {...props} />
+              <strong className="font-bold text-gray-900 dark:text-gray-200" {...props} />
             ),
             h3: ({ node: _node, ...props }) => (
               <h3 className="text-lg font-bold mt-4 mb-2" {...props} />
@@ -699,21 +699,21 @@ const Sati: React.FC<SatiProps> = ({
       <PageWrapper animation="fade" duration={0.2}>
         <div
           ref={modalRef}
-          className="bg-white shadow-2xl z-50 w-full"
+          className="bg-white dark:bg-black-900 shadow-2xl z-50 w-full"
           style={{ height: 'calc(100vh - 80px)' }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="h-full flex flex-col px-6 pt-5 pb-6">
             <div
               ref={containerRef}
-              className="overscroll-contain border-[1px] bg-white border-gray-200 rounded-xl flex-1 w-full overflow-y-auto pt-0 px-2 pb-2 mb-4 scrollbar-none flex flex-col"
+              className="overscroll-contain border-[1px] bg-white dark:bg-black-800 border-gray-200 dark:border-black-600 rounded-xl flex-1 w-full overflow-y-auto pt-0 px-2 pb-2 mb-4 scrollbar-none flex flex-col"
             >
-              <div className="flex justify-end items-center sticky top-0 z-10 py-3 px-3 bg-white/95 backdrop-blur-md rounded-t-[11px] -mx-2 mb-3">
+              <div className="flex justify-end items-center sticky top-0 z-10 py-3 px-3 bg-white/95 dark:bg-black-800/95 backdrop-blur-md rounded-t-[11px] -mx-2 mb-3">
                 <div
-                  className="bg-gray-100 flex justify-center items-center rounded-full w-10 h-10 hover:bg-gray-200 cursor-pointer shadow-sm border border-transparent transition-all"
+                  className="bg-gray-100 dark:bg-black-700 flex justify-center items-center rounded-full w-10 h-10 hover:bg-gray-200 dark:hover:bg-black-600 cursor-pointer shadow-sm border border-transparent transition-all"
                   onClick={handleCloseChatModal}
                 >
-                  <RxCross2 size={20} className="text-black-900" />
+                  <RxCross2 size={20} className="text-black-900 dark:text-white" />
                 </div>
               </div>
               {hasMore && (
@@ -741,7 +741,7 @@ const Sati: React.FC<SatiProps> = ({
                           ? 'bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none self-end w-fit max-w-[85%]'
                           : isCard
                             ? 'w-full'
-                            : 'bg-gray-100 text-black p-3 rounded-2xl rounded-tl-none self-start w-fit max-w-[85%]'
+                            : 'bg-gray-100 dark:bg-black-700 text-black dark:text-white p-3 rounded-2xl rounded-tl-none self-start w-fit max-w-[85%]'
                       }`}
                     >
                       {renderMessageContent(msg, isLastMessage)}
@@ -782,8 +782,8 @@ const Sati: React.FC<SatiProps> = ({
                 <input
                   className={`flex justify-center items-center h-16 text-xl pl-6 px-3 w-full rounded-full border-2 outline-none pr-16 transition-all ${
                     isPendingAction
-                      ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white border-gray-200 focus:border-blue-500'
+                      ? 'bg-gray-100 dark:bg-black-700 border-gray-200 dark:border-black-600 text-gray-400 cursor-not-allowed'
+                      : 'bg-white dark:bg-black-800 border-gray-200 dark:border-black-600 text-black-900 dark:text-white focus:border-blue-500'
                   }`}
                   placeholder={
                     isPendingAction

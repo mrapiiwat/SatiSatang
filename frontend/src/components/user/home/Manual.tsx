@@ -273,16 +273,16 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
 
   return (
     <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
-      <div className="bg-white w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8 relative">
+      <div className="bg-white dark:bg-black-800 w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8 relative">
         <div className="flex justify-between items-center mb-5">
-          <h4 className="font-medium">
+          <h4 className="font-medium dark:text-white">
             {editData && 'id' in editData
               ? t('edit_transaction', 'แก้ไขรายการ')
               : t('save_transaction', 'บันทึกรายรับรายจ่าย')}
           </h4>
           <div
             onClick={onClose}
-            className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+            className="bg-black-300 dark:bg-black-600 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 dark:hover:bg-black-500 cursor-pointer"
           >
             <RxCross2 size={25} />
           </div>
@@ -294,7 +294,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
             onClick={() => setShowDatePicker(!showDatePicker)}
           >
             <GoCalendar size={20} className="group-hover:text-blue-600 transition-colors" />
-            <h5 className="text-base group-hover:text-blue-600 transition-colors select-none">
+            <h5 className="text-base group-hover:text-blue-600 transition-colors select-none dark:text-white">
               {formattedDate}
             </h5>
           </div>
@@ -302,22 +302,22 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           {showDatePicker && (
             <div
               ref={datePickerRef}
-              className="absolute top-8 left-0 z-50 bg-white border border-gray-100 shadow-2xl rounded-2xl p-3 w-64 mt-2 animate-in fade-in zoom-in duration-200"
+              className="absolute top-8 left-0 z-50 bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 shadow-2xl rounded-2xl p-3 w-64 mt-2 animate-in fade-in zoom-in duration-200"
             >
               <div className="flex justify-between items-center mb-3 px-1">
                 <button
                   onClick={handlePrevMonth}
-                  className="p-1 hover:bg-gray-100 rounded-full transition"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition"
                 >
                   <IoIosArrowBack size={14} />
                 </button>
-                <span className="font-bold text-sm">
+                <span className="font-bold text-sm dark:text-white">
                   {monthsThai[viewDate.getMonth()]}{' '}
                   {viewDate.getFullYear() + (i18n.language === 'th' ? 543 : 0)}
                 </span>
                 <button
                   onClick={handleNextMonth}
-                  className="p-1 hover:bg-gray-100 rounded-full transition"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition"
                 >
                   <IoIosArrowForward size={14} />
                 </button>
@@ -325,7 +325,10 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
 
               <div className="grid grid-cols-7 gap-1 mb-1.5">
                 {daysThai.map((day) => (
-                  <div key={day} className="text-center text-[11px] text-gray-400 font-medium">
+                  <div
+                    key={day}
+                    className="text-center text-[11px] text-gray-400 dark:text-gray-500 font-medium"
+                  >
                     {day}
                   </div>
                 ))}
@@ -357,8 +360,8 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
                         }}
                         className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
                           isSelected
-                            ? 'bg-[#33302E] text-white shadow-md'
-                            : 'text-gray-600 hover:text-black-900 hover:bg-gray-100'
+                            ? 'bg-[#33302E] dark:bg-black-600 text-white shadow-md'
+                            : 'text-gray-600 dark:text-gray-300 hover:text-black-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-black-700'
                         } ${isFuture ? 'opacity-20 cursor-not-allowed hover:bg-transparent' : ''}`}
                       >
                         {day}
@@ -373,18 +376,20 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
 
         <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
-            <label htmlFor="detail">{t('detail_label', 'รายละเอียด')}</label>
+            <label htmlFor="detail" className="dark:text-gray-300">
+              {t('detail_label', 'รายละเอียด')}
+            </label>
             <input
               id="detail"
               type="text"
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              className="border-[1px] text-black-900 border-black-500 w-full h-10 rounded-md p-1 px-3"
+              className="border-[1px] text-black-900 dark:text-white dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label>{t('type_label', 'ประเภทรายการ')}</label>
+            <label className="dark:text-gray-300">{t('type_label', 'ประเภทรายการ')}</label>
             <Select<OptionType, false>
               options={options}
               value={selectedType}
@@ -406,7 +411,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           </div>
 
           <div className="flex flex-col gap-2">
-            <label>{t('category', 'หมวด')}</label>
+            <label className="dark:text-gray-300">{t('category', 'หมวด')}</label>
             <Select<CategoryOption, false>
               options={categories}
               value={selectedCategory}
@@ -428,13 +433,15 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="amount">{t('amount_label', 'จำนวนเงิน')}</label>
+            <label htmlFor="amount" className="dark:text-gray-300">
+              {t('amount_label', 'จำนวนเงิน')}
+            </label>
             <input
               id="amount"
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="border-[1px] text-black-900 border-black-500 w-full h-10 rounded-md p-1 px-3"
+              className="border-[1px] text-black-900 dark:text-white dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3"
             />
           </div>
 

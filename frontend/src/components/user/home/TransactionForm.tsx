@@ -12,11 +12,17 @@ const categorySelectStyles: StylesConfig<OptionType, false> = {
     height: 40,
     minHeight: 40,
     borderRadius: 6,
-    borderColor: '#B1B0AD',
-    backgroundColor: state.isDisabled ? '#F3F4F6' : 'white',
+    borderColor: 'var(--tw-border-opacity, #B1B0AD)',
+    backgroundColor: 'inherit',
     cursor: state.isDisabled ? 'not-allowed' : 'default',
   }),
-  singleValue: (base) => ({ ...base, color: '#111827' }),
+  singleValue: (base) => ({ ...base, color: 'inherit' }),
+  menu: (base) => ({ ...base, zIndex: 9999, backgroundColor: 'inherit' }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused ? 'var(--tw-prose-bg, rgba(150,150,150,0.1))' : 'transparent',
+    color: 'inherit',
+  }),
   indicatorsContainer: (base) => ({ ...base, display: 'none' }),
 };
 
@@ -79,33 +85,33 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
   return (
     <div className="py-7 px-8 flex flex-col w-full">
       <div className="flex justify-between items-center mb-5">
-        <h4 className="font-medium">{t('edit_transaction', 'แก้ไขรายการ')}</h4>
+        <h4 className="font-medium dark:text-white">{t('edit_transaction', 'แก้ไขรายการ')}</h4>
         <div
           onClick={onClose}
-          className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+          className="bg-black-300 dark:bg-black-600 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 dark:hover:bg-black-500 cursor-pointer"
         >
           <RxCross2 size={25} />
         </div>
       </div>
 
-      <div className="flex items-center gap-3 mb-5 w-max">
+      <div className="flex items-center gap-3 mb-5 w-max dark:text-gray-300">
         <GoCalendar size={20} />
         <h5 className="text-base select-none">{formatLocalizedDate(transactionData.date)}</h5>
       </div>
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2">
-          <label>{t('detail_label', 'รายละเอียด')}</label>
+          <label className="dark:text-gray-300">{t('detail_label', 'รายละเอียด')}</label>
           <input
             name="description"
             value={transactionData.description}
             onChange={onInputChange}
-            className="border-[1px] text-black-900 border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none"
+            className="border-[1px] text-black-900 dark:text-white dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none"
           />
         </div>
 
         <div className="flex flex-col gap-2">
-          <label>{t('transaction_type', 'ประเภทรายการ')}</label>
+          <label className="dark:text-gray-300">{t('transaction_type', 'ประเภทรายการ')}</label>
           <Select
             options={transactionTypes}
             value={selectedTypeOption}
@@ -113,11 +119,15 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
             placeholder=""
             isClearable
             styles={categorySelectStyles}
+            classNames={{
+              control: () => 'dark:border-black-500',
+              menu: () => 'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
+            }}
           />
         </div>
 
         <div className="flex flex-col gap-2">
-          <label>{t('category', 'หมวด')}</label>
+          <label className="dark:text-gray-300">{t('category', 'หมวด')}</label>
           <Select
             options={categories}
             value={selectedCategoryOption}
@@ -126,22 +136,26 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
             isDisabled={!transactionData.type}
             isClearable
             styles={categorySelectStyles}
+            classNames={{
+              control: () => 'dark:border-black-500 dark:bg-black-700',
+              menu: () => 'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
+            }}
           />
         </div>
 
         <div className="flex flex-col gap-2">
-          <label>{t('amount_label', 'จำนวนเงิน')}</label>
+          <label className="dark:text-gray-300">{t('amount_label', 'จำนวนเงิน')}</label>
           <input
             name="amount"
             type="number"
             value={transactionData.amount}
             onChange={onInputChange}
-            className="border-[1px] text-black-900 border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none"
+            className="border-[1px] text-black-900 dark:text-white dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none"
           />
         </div>
 
         <div className="flex flex-col gap-2">
-          <label>{t('slip_info', 'ข้อมูลสลิป')}</label>
+          <label className="dark:text-gray-300">{t('slip_info', 'ข้อมูลสลิป')}</label>
           <SlipPreview
             transactionData={transactionData}
             previewUrl={previewUrl}

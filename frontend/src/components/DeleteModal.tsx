@@ -27,7 +27,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black-900/80 backdrop-blur-sm px-4">
-      <div className="bg-white rounded-[2rem] p-8 flex flex-col items-center w-full max-w-[350px] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-black-800 rounded-[2rem] p-8 flex flex-col items-center w-full max-w-[350px] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
         <div className="mb-5">
           <svg
             width="90"
@@ -52,7 +52,9 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
           </svg>
         </div>
 
-        <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">{displayTitle}</h2>
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6 text-center">
+          {displayTitle}
+        </h2>
 
         <button
           onClick={onConfirm}
@@ -63,7 +65,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
 
         <button
           onClick={onClose}
-          className="text-gray-700 hover:text-gray-900 text-base font-medium underline underline-offset-[5px] transition-colors"
+          className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-base font-medium underline underline-offset-[5px] transition-colors"
         >
           {displayCancelText}
         </button>

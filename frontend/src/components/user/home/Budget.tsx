@@ -175,10 +175,10 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
   return (
     <>
       <div className="flex justify-center items-center">
-        <div className="bg-white w-full max-w-96 min-h-[420px] rounded-2xl py-7 px-8">
+        <div className="bg-white dark:bg-black-800 text-black-900 dark:text-white w-full max-w-96 min-h-[420px] rounded-2xl py-7 px-8">
           <div className="flex justify-between items-center mb-5">
             <div className="flex gap-3 items-center">
-              <h4 className="font-medium">
+              <h4 className="font-medium dark:text-white">
                 {editData ? t('edit_budget', 'แก้ไขงบประมาณ') : t('set_budget', 'ตั้งงบประมาณ')}
               </h4>
               <Tooltip
@@ -188,7 +188,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
             </div>
             <div
               onClick={onClose}
-              className="bg-black-300 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 cursor-pointer"
+              className="bg-black-300 dark:bg-black-600 flex justify-center items-center rounded-full w-12 h-12 hover:bg-black-400 dark:hover:bg-black-500 cursor-pointer"
             >
               <RxCross2 size={25} />
             </div>
@@ -196,7 +196,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
 
           <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-2">
-              <label>{t('category', 'หมวด')}</label>
+              <label className="dark:text-gray-300">{t('category', 'หมวด')}</label>
               <Select<CategoryOption, false>
                 options={categories}
                 value={selectedCategory}
@@ -218,15 +218,29 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                     height: 40,
                     minHeight: 40,
                     borderRadius: 6,
-                    borderColor: '#B1B0AD',
+                    borderColor: 'var(--tw-border-opacity, #B1B0AD)',
+                    backgroundColor: 'inherit',
                   }),
-                  singleValue: (base) => ({ ...base, color: '#111827' }),
+                  singleValue: (base) => ({ ...base, color: 'inherit' }),
+                  menu: (base) => ({ ...base, zIndex: 9999, backgroundColor: 'inherit' }),
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isFocused
+                      ? 'var(--tw-prose-bg, rgba(150,150,150,0.1))'
+                      : 'transparent',
+                    color: 'inherit',
+                  }),
                   indicatorsContainer: (base) => ({ ...base, display: 'none' }),
+                }}
+                classNames={{
+                  control: () => 'dark:border-black-500',
+                  menu: () =>
+                    'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
                 }}
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label>{t('budget_cycle', 'รอบงบประมาณ')}</label>
+              <label className="dark:text-gray-300">{t('budget_cycle', 'รอบงบประมาณ')}</label>
               <Select<FrequencyOption, false>
                 options={frequencies}
                 value={selectedFrequency}
@@ -248,16 +262,32 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                     height: 40,
                     minHeight: 40,
                     borderRadius: 6,
-                    borderColor: '#B1B0AD',
+                    borderColor: 'var(--tw-border-opacity, #B1B0AD)',
+                    backgroundColor: 'inherit',
                   }),
-                  singleValue: (base) => ({ ...base, color: '#111827' }),
+                  singleValue: (base) => ({ ...base, color: 'inherit' }),
+                  menu: (base) => ({ ...base, zIndex: 9999, backgroundColor: 'inherit' }),
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isFocused
+                      ? 'var(--tw-prose-bg, rgba(150,150,150,0.1))'
+                      : 'transparent',
+                    color: 'inherit',
+                  }),
                   indicatorsContainer: (base) => ({ ...base, display: 'none' }),
+                }}
+                classNames={{
+                  control: () => 'dark:border-black-500',
+                  menu: () =>
+                    'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
                 }}
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="amount">{t('amount_label', 'จำนวนเงิน')}</label>
+              <label htmlFor="amount" className="dark:text-gray-300">
+                {t('amount_label', 'จำนวนเงิน')}
+              </label>
               <input
                 id="amount"
                 type="number"
@@ -265,7 +295,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                 onChange={(e) => {
                   setAmount(e.target.value);
                 }}
-                className="text-black-900 w-full h-10 rounded-md p-1 px-3 focus:outline-none transition border-[1px] border-black-500 focus:border-sky-700 focus:ring-0"
+                className="text-black-900 dark:text-white dark:bg-black-700 w-full h-10 rounded-md p-1 px-3 focus:outline-none transition border-[1px] border-black-500 dark:border-black-500 shadow-sm focus:border-sky-700 focus:ring-0"
               />
             </div>
 

@@ -64,12 +64,12 @@ const IconSelector: React.FC<IconSelectorProps> = ({
           disabled={disabled}
           className={`w-40 h-40 rounded-full border-2 flex items-center justify-center transition-all ${
             disabled
-              ? 'opacity-50 cursor-not-allowed bg-gray-100'
+              ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-black-700'
               : 'cursor-pointer hover:scale-105 hover:shadow-md'
           } ${
             selectedIconId
-              ? 'border-blue-300 bg-white shadow-sm'
-              : 'border-gray-300 bg-white hover:border-blue-300'
+              ? 'border-blue-300 bg-white dark:bg-black-800 shadow-sm'
+              : 'border-gray-300 dark:border-black-600 bg-white dark:bg-black-800 hover:border-blue-300 dark:hover:border-blue-500'
           }`}
         >
           {selectedIcon?.url || selectedIconUrl ? (
@@ -90,10 +90,10 @@ const IconSelector: React.FC<IconSelectorProps> = ({
           onClick={handleCloseModal}
         >
           <div
-            className="bg-white rounded-3xl p-6 w-full max-w-sm h-[520px] shadow-xl flex flex-col"
+            className="bg-white dark:bg-black-800 rounded-3xl p-6 w-full max-w-sm h-[520px] shadow-xl flex flex-col border dark:border-black-600"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-center mb-4 text-gray-800">
+            <h3 className="text-lg font-semibold text-center mb-4 text-gray-800 dark:text-white">
               {t('select_icon', 'เลือกไอคอน')}
             </h3>
 
@@ -102,7 +102,7 @@ const IconSelector: React.FC<IconSelectorProps> = ({
               placeholder={t('search_placeholder', 'ค้นหา...')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm mb-4 transition"
+              className="w-full border border-gray-200 dark:border-black-600 bg-white dark:bg-black-700 text-black-900 dark:text-white rounded-xl px-4 py-2.5 text-sm mb-4 transition focus:outline-none focus:border-blue-500"
             />
 
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar mb-4 p-2">
@@ -123,8 +123,8 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                       onClick={() => handleSelectIcon(icon)}
                       className={`w-full aspect-square rounded-full border-2 flex items-center justify-center transition-all p-px ${
                         selectedIconId === icon.id.toString()
-                          ? 'border-blue-600 bg-purple-50 shadow-md scale-105'
-                          : 'border-gray-200 hover:border-blue-600 hover:scale-110 bg-white'
+                          ? 'border-blue-600 bg-purple-50 dark:bg-blue-900/40 shadow-md scale-105'
+                          : 'border-gray-200 dark:border-black-600 hover:border-blue-600 dark:hover:border-blue-400 hover:scale-110 bg-white dark:bg-black-700'
                       }`}
                       title={icon.description}
                     >
@@ -139,11 +139,11 @@ const IconSelector: React.FC<IconSelectorProps> = ({
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 border-t border-gray-100 dark:border-black-600">
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl hover:bg-gray-200 transition font-medium text-sm"
+                className="w-full bg-gray-100 dark:bg-black-700 text-gray-700 dark:text-gray-300 py-2.5 rounded-xl hover:bg-gray-200 dark:hover:bg-black-600 transition font-medium text-sm"
               >
                 {t('close_btn', 'ปิด')}
               </button>
