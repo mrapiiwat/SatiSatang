@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSettingStore from './store/settingStore';
 import AppRoutes from './routes/AppRoutes';
 import InstallPWA from './components/InstallPWA';
 import { useTheme } from './hooks/useTheme';
+import Loading from './components/Loading';
 
 export default function App() {
   const { i18n } = useTranslation();
@@ -19,7 +20,9 @@ export default function App() {
   return (
     <>
       <InstallPWA />
-      <AppRoutes />
+      <Suspense fallback={<Loading />}>
+        <AppRoutes />
+      </Suspense>
     </>
   );
 }

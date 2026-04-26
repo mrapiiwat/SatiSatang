@@ -10,6 +10,8 @@ import { MdSubject } from 'react-icons/md';
 import { MdOutlineNotInterested } from 'react-icons/md';
 import DeleteModal from '../../DeleteModal';
 import { useTranslation } from 'react-i18next';
+import emptyTransactionImgLight from '../../../assets/empty/empty_transaction_light.svg';
+import emptyTransactionImgDark from '../../../assets/empty/empty_transaction_dark.svg';
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({
   groupedByDate,
@@ -78,9 +80,28 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({
 
   if (sortedDates.length === 0)
     return (
-      <p className="absolute inset-x-0 flex items-center justify-center text-black-600 text-base">
-        {t('no_transactions', 'ยังไม่มีรายการ')}
-      </p>
+      <div className="absolute inset-x-0 mt-7">
+        <div className="flex flex-col items-center justify-center text-center px-4">
+          <img
+            className="w-48 object-contain mb-10 opacity-80 dark:hidden"
+            src={emptyTransactionImgLight}
+            alt="empty_transaction"
+          />
+
+          <img
+            className="w-48 object-contain mb-10 opacity-80 hidden dark:block"
+            src={emptyTransactionImgDark}
+            alt="empty_transaction_dark"
+          />
+
+          <h6 className="text-lg font-semibold text-[#939090] dark:text-gray-400 mb-2">
+            {t('empty_state_title', 'ยังไม่มีรายการในเดือนนี้')}
+          </h6>
+          <p className="text-sm text-[#A0A0A0] dark:text-gray-500">
+            {t('empty_state_subtitle', 'เริ่มบันทึกรายการแรกกันเลย!')}
+          </p>
+        </div>
+      </div>
     );
 
   return (

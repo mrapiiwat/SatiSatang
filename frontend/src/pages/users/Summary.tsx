@@ -279,8 +279,9 @@ const Summary: React.FC = () => {
           <p className="text-green-600 font-semibold text-xl mb-2">฿{totalGoal.toLocaleString()}</p>
 
           <div
-            className={`transition-all duration-300 ease-in-out overflow-hidden ${showGoalDetail ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
-              }`}
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              showGoalDetail ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
+            }`}
           >
             {showGoalDetail && (
               <>

@@ -1,27 +1,28 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Home from '../pages/Home';
-import Login from '../pages/auth/Login';
-import Verify from '../pages/auth/Verify';
-import HomeUsers from '../pages/users/Home';
 import ProtectRoute from './ProtectRoute';
-import LayoutUser from '../pages/users/Layout';
-import AuthCallback from '../pages/auth/AuthCallback';
 import RedirectIfAuth from './RedirectIfAuth';
-import Layout from '../pages/Layout';
-import NotFound from '../pages/404/NotFound';
-import Account from '../pages/users/Account';
-import Categories from '../pages/users/Categories';
-import Satang from '../pages/users/Satang';
-import Summary from '../pages/users/Summary';
-import ResetPassword from '../pages/auth/ResetPassword';
-import Recovery from '../pages/auth/Recovery';
-import Feedback from '../pages/users/Feedback';
-import Terms from '../pages/policies/Terms';
-import Privacy from '../pages/policies/Privacy';
-import LayoutPolicies from '../pages/policies/Layout';
 import ConsentInterceptor from '../components/ConsentInterceptor';
-import Setting from '../pages/users/Setting';
+
+const ResetPassword = lazy(() => import('../pages/auth/ResetPassword'));
+const LayoutPolicies = lazy(() => import('../pages/policies/Layout'));
+const AuthCallback = lazy(() => import('../pages/auth/AuthCallback'));
+const Categories = lazy(() => import('../pages/users/Categories'));
+const Privacy = lazy(() => import('../pages/policies/Privacy'));
+const LayoutUser = lazy(() => import('../pages/users/Layout'));
+const Feedback = lazy(() => import('../pages/users/Feedback'));
+const Recovery = lazy(() => import('../pages/auth/Recovery'));
+const NotFound = lazy(() => import('../pages/404/NotFound'));
+const Account = lazy(() => import('../pages/users/Account'));
+const Summary = lazy(() => import('../pages/users/Summary'));
+const Setting = lazy(() => import('../pages/users/Setting'));
+const HomeUsers = lazy(() => import('../pages/users/Home'));
+const Terms = lazy(() => import('../pages/policies/Terms'));
+const Satang = lazy(() => import('../pages/users/Satang'));
+const Verify = lazy(() => import('../pages/auth/Verify'));
+const Login = lazy(() => import('../pages/auth/Login'));
+const Layout = lazy(() => import('../pages/Layout'));
+const Home = lazy(() => import('../pages/Home'));
 
 const router = createBrowserRouter([
   {
