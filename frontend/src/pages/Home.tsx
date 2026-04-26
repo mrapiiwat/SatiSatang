@@ -107,46 +107,74 @@ const Home: React.FC = () => {
           </ol>
         </section>
 
-        <footer className="w-full bg-black-900 text-white py-8 px-6 ">
-          <div className="max-w-6xl mx-auto flex flex-col justify-between min-h-[220px]">
-            <a
-              href="#top"
-              onClick={(e) => {
-                e.preventDefault();
-                const element = document.getElementById('top');
-                element?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="flex flex-col items-start w-max cursor-pointer"
-            >
-              <img
-                src="/SATASATANG_LOGO_WH_HORIZON_TH.svg"
-                alt="SatiSatang Logo White"
-                className="w-[256px] h-auto mb-6"
-              />
-            </a>
+        <footer className="w-full bg-black-900 text-white py-12 px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-10">
+              <div className="flex flex-col items-start">
+                <a
+                  href="#top"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const element = document.getElementById('top');
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="cursor-pointer mb-4"
+                >
+                  <img
+                    src="/SATASATANG_LOGO_WH_HORIZON_TH.svg"
+                    alt="SatiSatang Logo White"
+                    className="w-[200px] md:w-[256px] h-auto"
+                  />
+                </a>
+                <p className="text-sm text-gray-400 hidden md:block">
+                  {t('copyright', '© 2025 สติสตางค์ สงวนลิขสิทธิ์')}
+                </p>
+              </div>
 
-            <div className="flex flex-col gap-4 text-sm leading-relaxed mb-6">
-              <Link to="/login" className="hover:underline w-max cursor-pointer">
-                {t('login_btn', 'เข้าใช้งาน')}
-              </Link>
-              <a
-                href="#main"
-                className="hover:underline w-max cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const element = document.getElementById('main');
-                  element?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                {t('about_us', 'เกี่ยวกับเรา')}
-              </a>
+              <div className="flex flex-col sm:flex-row gap-10 md:gap-20">
+                <div className="flex flex-col gap-3">
+                  <h4 className="font-bold mb-1 text-gray-200">{t('menu', 'เมนู')}</h4>
+                  <Link
+                    to="/login"
+                    className="text-sm text-gray-400 hover:text-white hover:underline w-max cursor-pointer"
+                  >
+                    {t('login_btn', 'เข้าใช้งาน')}
+                  </Link>
+                  <a
+                    href="/docs/"
+                    className="text-sm text-gray-400 hover:text-white hover:underline w-max cursor-pointer"
+                  >
+                    {t('documentation', 'คู่มือการใช้งาน')}
+                  </a>
+                  <a
+                    href="#main"
+                    className="text-sm text-gray-400 hover:text-white hover:underline w-max cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const element = document.getElementById('main');
+                      element?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    {t('about_us', 'เกี่ยวกับเรา')}
+                  </a>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <h4 className="font-bold mb-1 text-gray-200">{t('social', 'ช่องทางติดตาม')}</h4>
+                  <a
+                    href="https://github.com/mrapiiwat/SatiSatang"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    <img src={GitHub} alt="GitHub Logo" className="w-6 h-6 object-contain" />
+                    GitHub
+                  </a>
+                </div>
+              </div>
             </div>
 
-            <a href="https://github.com/mrapiiwat/SatiSatang" className="flex flex-col items-start">
-              <img src={GitHub} alt="GitHub Logo" className="w-[32px] h-[32px] object-contain" />
-            </a>
-
-            <p className="text-sm text-gray-300 mt-6">
+            <p className="text-sm text-gray-400 mt-10 pt-6 border-t border-gray-800 md:hidden">
               {t('copyright', '© 2025 สติสตางค์ สงวนลิขสิทธิ์')}
             </p>
           </div>
