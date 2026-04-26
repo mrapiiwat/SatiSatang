@@ -98,7 +98,7 @@ export class TransactionService {
 
     const transactions = await db.query.transaction.findMany({
       where: and(...conditions, isNull(transaction.deletedAt)),
-      orderBy: [orderFn(sortColumn)],
+      orderBy: [orderFn(sortColumn), desc(transaction.createdAt)],
       limit: limit,
       offset: skip,
       with: {

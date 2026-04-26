@@ -91,7 +91,7 @@ const Home = () => {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `/transaction?month=${selectedMonth}&year=${selectedYear}&page=${currentPage}&limit=${pagination.limit}`,
+        `/transaction?month=${selectedMonth}&year=${selectedYear}&page=${currentPage}&limit=${pagination.limit}&sortBy=createdAt`,
       );
       setTransactions(response.data.data || []);
       setPagination(response.data.pagination);
@@ -435,7 +435,7 @@ const Home = () => {
                         width: `${Math.min(
                           ((budgets[budgetIndex]?.currentAmount || 0) /
                             (budgets[budgetIndex]?.amount || 1)) *
-                            100,
+                          100,
                           100,
                         )}%`,
                       }}
@@ -465,9 +465,8 @@ const Home = () => {
                                 e.stopPropagation();
                                 setBudgetIndex(realIndex);
                               }}
-                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
-                                budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
-                              }`}
+                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${budgetIndex === realIndex ? 'bg-purple-300' : 'bg-gray-400'
+                                }`}
                             />
                           );
                         })}
@@ -528,7 +527,7 @@ const Home = () => {
                       style={{
                         width: `${Math.min(
                           ((goals[goalIndex]?.totalAmount || 0) / (goals[goalIndex]?.amount || 1)) *
-                            100,
+                          100,
                           100,
                         )}%`,
                       }}
@@ -558,9 +557,8 @@ const Home = () => {
                                 e.stopPropagation();
                                 setGoalIndex(realIndex);
                               }}
-                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${
-                                goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
-                              }`}
+                              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${goalIndex === realIndex ? 'bg-green-600' : 'bg-gray-400'
+                                }`}
                             />
                           );
                         })}
@@ -583,9 +581,9 @@ const Home = () => {
                   const dayLabel = isToday
                     ? t('today', 'วันนี้')
                     : transactionDate.toLocaleDateString(
-                        i18n.language === 'th' ? 'th-TH' : 'en-US',
-                        { weekday: 'short' },
-                      );
+                      i18n.language === 'th' ? 'th-TH' : 'en-US',
+                      { weekday: 'short' },
+                    );
                   const dayNumber = transactionDate.getDate();
                   return (
                     <div
@@ -594,25 +592,22 @@ const Home = () => {
                       style={{ height: `${totalHeight}px` }}
                     >
                       <div
-                        className={`border-l-4 ${
-                          isToday ? 'border-blue-600' : 'border-black-700'
-                        } absolute top-0 left-0 h-14`}
+                        className={`border-l-4 ${isToday ? 'border-blue-600' : 'border-black-700'
+                          } absolute top-0 left-0 h-14`}
                       />
                       <p
-                        className={`text-base font-medium ${
-                          isToday
+                        className={`text-base font-medium ${isToday
                             ? 'text-blue-600 dark:text-blue-400'
                             : 'text-black-700 dark:text-gray-300'
-                        }`}
+                          }`}
                       >
                         {dayLabel}
                       </p>
                       <p
-                        className={`text-base font-bold ${
-                          isToday
+                        className={`text-base font-bold ${isToday
                             ? 'text-blue-600 dark:text-blue-400'
                             : 'text-black-700 dark:text-gray-300'
-                        } leading-tight`}
+                          } leading-tight`}
                       >
                         {dayNumber}
                       </p>
@@ -643,13 +638,12 @@ const Home = () => {
                     key={index}
                     onClick={() => typeof page === 'number' && handlePageClick(page)}
                     disabled={page === '...'}
-                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${
-                      page === currentPage
+                    className={`flex items-center justify-center min-w-10 h-10 px-2 rounded-lg transition-colors ${page === currentPage
                         ? 'bg-blue-600 text-white font-semibold'
                         : page === '...'
                           ? 'cursor-default'
                           : 'border border-black-300 hover:bg-black-200'
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { GoCalendar } from 'react-icons/go';
 import { RxCross2 } from 'react-icons/rx';
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io';
-import type { SingleValue } from 'react-select';
+import type { SingleValue, StylesConfig } from 'react-select';
 import Select from 'react-select';
 import { useTranslation } from 'react-i18next';
 import axios from '../../../api/axios';
@@ -271,6 +271,32 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
     }
   };
 
+  const selectStyles: StylesConfig<OptionType | CategoryOption, false> = {
+    control: (base) => ({
+      ...base,
+      height: 40,
+      minHeight: 40,
+      borderRadius: 6,
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: 'transparent',
+      },
+    }),
+    singleValue: (base) => ({ ...base, color: 'inherit' }),
+    menu: (base) => ({ ...base, zIndex: 9999 }),
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused
+        ? 'var(--tw-prose-bg, rgba(150,150,150,0.1))'
+        : 'transparent',
+      color: 'inherit',
+    }),
+    indicatorsContainer: (base) => ({ ...base, display: 'none' }),
+  };
+
   return (
     <div className="flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
       <div className="bg-white dark:bg-black-800 w-full max-w-96 min-h-[530px] rounded-2xl py-7 px-8 relative">
@@ -293,7 +319,10 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
             className="flex items-center gap-3 cursor-pointer group"
             onClick={() => setShowDatePicker(!showDatePicker)}
           >
-            <GoCalendar size={20} className="group-hover:text-blue-600 transition-colors" />
+            <GoCalendar
+              size={20}
+              className="group-hover:text-blue-600 transition-colors dark:text-white"
+            />
             <h5 className="text-base group-hover:text-blue-600 transition-colors select-none dark:text-white">
               {formattedDate}
             </h5>
@@ -307,7 +336,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               <div className="flex justify-between items-center mb-3 px-1">
                 <button
                   onClick={handlePrevMonth}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition dark:text-white"
                 >
                   <IoIosArrowBack size={14} />
                 </button>
@@ -317,7 +346,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
                 </span>
                 <button
                   onClick={handleNextMonth}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition dark:text-white"
                 >
                   <IoIosArrowForward size={14} />
                 </button>
@@ -384,7 +413,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               type="text"
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              className="border-[1px] text-black-900 dark:text-white dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3"
+              className="border-[1px] text-black-900 dark:text-white bg-transparent dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none focus:border-sky-700"
             />
           </div>
 
@@ -396,16 +425,13 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               onChange={(option: SingleValue<OptionType>) => setSelectedType(option)}
               placeholder=""
               isClearable
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  height: 40,
-                  minHeight: 40,
-                  borderRadius: 6,
-                  borderColor: '#B1B0AD',
-                }),
-                singleValue: (base) => ({ ...base, color: '#111827' }),
-                indicatorsContainer: (base) => ({ ...base, display: 'none' }),
+              menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
+              styles={selectStyles as StylesConfig<OptionType, false>}
+              classNames={{
+                control: (state) =>
+                  `!border-[1px] !border-black-500 dark:!border-black-500 text-black-900 dark:text-white ${state.isFocused ? '!border-sky-700' : ''} ${state.isDisabled ? '!bg-gray-100 dark:!bg-black-800/50 !cursor-not-allowed opacity-60' : '!bg-transparent dark:!bg-black-700'}`,
+                menu: () =>
+                  'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 text-black-900 dark:text-white',
               }}
             />
           </div>
@@ -416,18 +442,17 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               options={categories}
               value={selectedCategory}
               onChange={(option: SingleValue<CategoryOption>) => setSelectedCategory(option)}
-              placeholder=""
+              placeholder={
+                !selectedType ? t('please_select_type_first', 'กรุณาเลือกประเภทรายการก่อน') : ''
+              }
               isDisabled={!selectedType}
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  height: 40,
-                  minHeight: 40,
-                  borderRadius: 6,
-                  borderColor: '#B1B0AD',
-                }),
-                singleValue: (base) => ({ ...base, color: '#111827' }),
-                indicatorsContainer: (base) => ({ ...base, display: 'none' }),
+              menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
+              styles={selectStyles as StylesConfig<CategoryOption, false>}
+              classNames={{
+                control: (state) =>
+                  `!border-[1px] !border-black-500 dark:!border-black-500 text-black-900 dark:text-white ${state.isFocused ? '!border-sky-700' : ''} ${state.isDisabled ? '!bg-gray-100 dark:!bg-black-800/50 !cursor-not-allowed opacity-60' : '!bg-transparent dark:!bg-black-700'}`,
+                menu: () =>
+                  'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 text-black-900 dark:text-white',
               }}
             />
           </div>
@@ -441,7 +466,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="border-[1px] text-black-900 dark:text-white dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3"
+              className="border-[1px] text-black-900 dark:text-white bg-transparent dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none focus:border-sky-700"
             />
           </div>
 

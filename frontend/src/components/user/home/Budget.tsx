@@ -204,6 +204,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                   setSelectedCategory(option);
                 }}
                 placeholder=""
+                menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
                 components={{
                   IndicatorSeparator: () => null,
                   DropdownIndicator: () => (
@@ -219,10 +220,11 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                     minHeight: 40,
                     borderRadius: 6,
                     borderColor: 'var(--tw-border-opacity, #B1B0AD)',
-                    backgroundColor: 'inherit',
+                    backgroundColor: 'transparent',
                   }),
                   singleValue: (base) => ({ ...base, color: 'inherit' }),
-                  menu: (base) => ({ ...base, zIndex: 9999, backgroundColor: 'inherit' }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                   option: (base, state) => ({
                     ...base,
                     backgroundColor: state.isFocused
@@ -248,6 +250,7 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                   setSelectedFrequency(option);
                 }}
                 placeholder=""
+                menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
                 components={{
                   IndicatorSeparator: () => null,
                   DropdownIndicator: () => (
@@ -263,10 +266,11 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                     minHeight: 40,
                     borderRadius: 6,
                     borderColor: 'var(--tw-border-opacity, #B1B0AD)',
-                    backgroundColor: 'inherit',
+                    backgroundColor: 'transparent',
                   }),
                   singleValue: (base) => ({ ...base, color: 'inherit' }),
-                  menu: (base) => ({ ...base, zIndex: 9999, backgroundColor: 'inherit' }),
+                  menu: (base) => ({ ...base, zIndex: 9999 }),
+                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
                   option: (base, state) => ({
                     ...base,
                     backgroundColor: state.isFocused
