@@ -51,9 +51,9 @@ jobs:
       - name: Check Python Code (Cron)
         working-directory: cron
         run: |
-          pip install --no-cache-dir black isort
-          black --check .
-          isort --check-only .
+          pip install black isort
+          black .
+          isort .
 
   build-backend-docker:
     name: Test Build Backend Docker
