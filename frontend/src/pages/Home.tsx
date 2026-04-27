@@ -120,15 +120,17 @@ const Home: React.FC = () => {
                   }}
                   className="cursor-pointer mb-4"
                 >
-                  <img
-                    src="/SATASATANG_LOGO_WH_HORIZON_TH.svg"
-                    alt="SatiSatang Logo White"
-                    className="w-[200px] md:w-[256px] h-auto"
-                  />
+                  <div className="flex flex-col gap-10">
+                    <img
+                      src="/SATASATANG_LOGO_WH_HORIZON_TH.svg"
+                      alt="SatiSatang Logo White"
+                      className="w-[200px] md:w-[256px] h-auto"
+                    />
+                    <p className="text-sm text-gray-400 hidden md:block">
+                      {t('copyright', '© 2025 สติสตางค์ สงวนลิขสิทธิ์')}
+                    </p>
+                  </div>
                 </a>
-                <p className="text-sm text-gray-400 hidden md:block">
-                  {t('copyright', '© 2025 สติสตางค์ สงวนลิขสิทธิ์')}
-                </p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-10 md:gap-20">
@@ -160,6 +162,24 @@ const Home: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-3">
+                  <h4 className="font-bold mb-1 text-gray-200">
+                    {t('legal', 'นโยบายและข้อกำหนด')}
+                  </h4>
+                  <Link
+                    to="/policies/terms-of-use"
+                    className="text-sm text-gray-400 hover:text-white hover:underline w-max cursor-pointer"
+                  >
+                    {t('terms', 'ข้อตกลงการใช้งาน')}
+                  </Link>
+                  <Link
+                    to="/policies/privacy-policy"
+                    className="text-sm text-gray-400 hover:text-white hover:underline w-max cursor-pointer"
+                  >
+                    {t('privacy_policy', 'นโยบายความเป็นส่วนตัว')}
+                  </Link>
+                </div>
+
+                <div className="flex flex-col gap-3">
                   <h4 className="font-bold mb-1 text-gray-200">{t('social', 'ช่องทางติดตาม')}</h4>
                   <a
                     href="https://github.com/mrapiiwat/SatiSatang"
@@ -173,10 +193,6 @@ const Home: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            <p className="text-sm text-gray-400 mt-10 pt-6 border-t border-gray-800 md:hidden">
-              {t('copyright', '© 2025 สติสตางค์ สงวนลิขสิทธิ์')}
-            </p>
           </div>
         </footer>
       </div>

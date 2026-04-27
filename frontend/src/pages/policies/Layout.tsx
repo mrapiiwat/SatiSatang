@@ -49,7 +49,7 @@ const LayoutPolicies: React.FC = () => {
             </div>
 
             <div
-              onClick={() => navigate('/user')}
+              onClick={() => navigate('/')}
               className="absolute left-1/2 -translate-x-1/2 w-9 h-9 cursor-pointer hover:opacity-80 transition-all hover:scale-105 active:scale-95"
             >
               <img className="w-full h-full dark:hidden" src="/SATISATANG.svg" alt="logo" />
