@@ -1,13 +1,12 @@
-FROM oven/bun:1.2-alpine AS builder
+FROM node:20-slim AS builder
 WORKDIR /app
-COPY package.json bun.lockb ./
-RUN bun install
+COPY package*.json ./
+RUN npm install
 COPY . .
-RUN bun run build
+RUN npm run build
 
-FROM nginx:1-alpine AS production
-RUN rm -rf /usr/share/nginx/html/*
-COPY --from=builder /app/build /usr/share/nginx/html
-COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+FROM nginx:stable-alpine
+RUN mkdir -p /usr/share/nginx/html/docs
+COPY --from=builder /app/build /usr/share/nginx/html/docs
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

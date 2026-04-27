@@ -4,8 +4,31 @@
  * work well for content-centric websites.
  */
 
+@font-face {
+  font-family: 'Anakotmai';
+  src: url('../../static/fonts/Anakotmai-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Anakotmai';
+  src: url('../../static/fonts/Anakotmai-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Anakotmai';
+  src: url('../../static/fonts/Anakotmai-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: 'Anakotmai', sans-serif;
+  --ifm-font-family-heading: 'Anakotmai', sans-serif;
   --ifm-color-primary: #2e8555;
   --ifm-color-primary-dark: #29784c;
   --ifm-color-primary-darker: #277148;

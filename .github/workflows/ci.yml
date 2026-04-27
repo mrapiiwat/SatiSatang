@@ -19,6 +19,11 @@ jobs:
         with:
           bun-version: 'latest'
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
@@ -40,8 +45,8 @@ jobs:
       - name: Install & Check Docs
         working-directory: docs
         run: |
-          bun install --frozen-lockfile
-          bun run build
+          npm ci
+          npm run build
 
       - name: Check Python Code (Cron)
         working-directory: cron
