@@ -5,9 +5,9 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
-  favicon: 'img/favicon.ico',
+  title: 'คู่มือการใช้งานสติสตางค์',
+  tagline: 'บันทึกรายรับ-รายจ่าย ง่ายๆ ด้วยสติสตางค์',
+  favicon: 'img/SATISATANG_DARK.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -22,8 +22,8 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'mrapiiwat', // Usually your GitHub org/user name.
+  projectName: 'SatiSatang', // Usually your repo name.
 
   onBrokenLinks: 'warn',
   markdown: {
@@ -67,17 +67,18 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'My Site',
+      title: 'สติสตางค์',
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        alt: 'SatiSatang Logo',
+        src: 'img/SATISATANG_DARK.svg',
+        srcDark: 'img/SATISATANG_LIGHT.svg',
       },
       items: [
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'เอกสารคู่มือ',
         },
       ],
     },

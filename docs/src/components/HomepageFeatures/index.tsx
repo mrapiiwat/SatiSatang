@@ -1,4 +1,4 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
@@ -11,38 +11,38 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: 'สแกนสลิปอัจฉริยะด้วย AI',
+    Svg: require('@site/static/img/undraw_key-points_iiic.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        บันทึกรายจ่ายได้ทันทีเพียงแค่สแกนรูปสลิปธนาคาร
+        ด้วยขุมพลัง AI ที่ดึงข้อมูลได้อย่างแม่นยำ ครบถ้วน ไม่ต้องพิมพ์เอง
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: 'จัดหมวดหมู่อัตโนมัติ',
+    Svg: require('@site/static/img/undraw_verify-data_k0y1.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        ระบบ AI ช่วยวิเคราะห์และคัดแยกหมวดหมู่การใช้จ่ายของคุณให้อัตโนมัติ
+        ช่วยให้คุณเห็นภาพรวมการใช้เงินได้ชัดเจนและง่ายกว่าที่เคย
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: 'ผู้ช่วยการเงินส่วนตัว',
+    Svg: require('@site/static/img/undraw_all-the-data_ijgn.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        ติดตามความคืบหน้าของงบประมาณและเป้าหมายการออมเงิน
+        พร้อมสรุปวิเคราะห์ข้อมูลเชิงลึก เพื่อการวางแผนการเงินที่เหนือระดับ
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, Svg, description }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
