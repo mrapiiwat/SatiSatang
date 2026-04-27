@@ -106,13 +106,32 @@ export class TransactionService {
       },
     });
 
-    const formattedTransactions = transactions.map((t) => ({
-      ...t,
-      amount: Number(t.amount),
-      receipt: t.receipt
-        ? `${Bun.env.APP_BASE_URL}/api/transactions/receipt/${t.id}`
-        : null,
-    }));
+    const formattedTransactions = await Promise.all(
+      transactions.map(async (t) => {
+        let signedReceiptUrl = null;
+
+        if (t.receipt) {
+          try {
+            const command = new GetObjectCommand({
+              Bucket: BUCKET_NAME,
+              Key: t.receipt,
+            });
+
+            signedReceiptUrl = await getSignedUrl(s3Client, command, {
+              expiresIn: 3600,
+            });
+          } catch (error) {
+            console.error(`Failed to sign url for transaction ${t.id}`, error);
+          }
+        }
+
+        return {
+          ...t,
+          amount: Number(t.amount),
+          receipt: signedReceiptUrl,
+        };
+      })
+    );
 
     return {
       data: formattedTransactions,
@@ -152,38 +171,6 @@ export class TransactionService {
     return {
       totalAmount: Number(result?.totalAmount ?? 0),
     };
-  }
-
-  async getReceiptUrl(transactionId: number) {
-    const txn = await db.query.transaction.findFirst({
-      where: and(
-        eq(transaction.id, transactionId),
-        isNull(transaction.deletedAt)
-      ),
-    });
-
-    if (!txn || !txn.receipt) {
-      throw new NotFoundError("Receipt not found");
-    }
-
-    try {
-      const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: txn.receipt,
-      });
-
-      const signedUrl = await getSignedUrl(s3Client, command, {
-        expiresIn: 3600,
-      });
-
-      return {
-        url: signedUrl,
-        filename: txn.receipt,
-      };
-    } catch (error) {
-      console.error("S3 Signing Error:", error);
-      throw new Error("Cannot generate receipt URL");
-    }
   }
 
   async createTransaction(

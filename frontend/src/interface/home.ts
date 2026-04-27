@@ -39,6 +39,9 @@ export interface Transaction {
   amount: number;
   date: string;
   categoryId: number;
+  receipt?: string | null;
+  fromAccount?: string | null;
+  toAccount?: string | null;
 }
 
 export interface DayTransactionsProps {
@@ -219,6 +222,9 @@ export interface DraftData {
   category?: string;
   categoryId: number;
   isGoal?: boolean;
+  receipt?: string | null;
+  fromAccount?: string | null;
+  toAccount?: string | null;
 }
 
 export interface CategoryType {

@@ -221,7 +221,7 @@
   "amount_label": "Amount",
   "slip_info": "Slip Information",
   "save_btn": "Save",
-  "daily_account": "Daily Account",
+  "my_account": "My Account",
   "error_goal_name_req": "Please enter a goal name",
   "manual_error_amount_gt_0": "Amount must be greater than 0",
   "error_future_date": "Let's set a goal in the future!",

@@ -16,6 +16,8 @@ import type {
 import { showToastAlert } from '../../../store/toastStore';
 import type { ElysiaResponse } from '../../../interface/error';
 import { isAxiosError, type AxiosError } from 'axios';
+import SlipPreview from './SlipPreview';
+import ImageModal from './ImageModal';
 
 const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateDraft }) => {
   const { t, i18n } = useTranslation();
@@ -60,8 +62,8 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
     return editData && 'date' in editData ? new Date(editData.date as string) : new Date();
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
-
   const [viewDate, setViewDate] = useState<Date>(new Date(selectedDate));
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const datePickerRef = useRef<HTMLDivElement>(null);
 
@@ -335,6 +337,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
             >
               <div className="flex justify-between items-center mb-3 px-1">
                 <button
+                  type="button"
                   onClick={handlePrevMonth}
                   className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition dark:text-white"
                 >
@@ -345,6 +348,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
                   {viewDate.getFullYear() + (i18n.language === 'th' ? 543 : 0)}
                 </span>
                 <button
+                  type="button"
                   onClick={handleNextMonth}
                   className="p-1 hover:bg-gray-100 dark:hover:bg-black-700 rounded-full transition dark:text-white"
                 >
@@ -469,6 +473,30 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               className="border-[1px] text-black-900 dark:text-white bg-transparent dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none focus:border-sky-700"
             />
           </div>
+
+          {editData && 'receipt' in editData && editData.receipt && (
+            <div className="flex flex-col gap-2 mt-2">
+              <label className="dark:text-gray-300 text-base font-medium">
+                {t('slip_data_label', 'ข้อมูลสลิป')}
+              </label>
+              <SlipPreview
+                transactionData={{
+                  fromAccount: editData.fromAccount || t('my_account', 'บัญชีของฉัน'),
+                  toAccount: editData.toAccount || '-',
+                }}
+                previewUrl={editData.receipt || null}
+                onPreviewClick={() => {
+                  setIsImageModalOpen(true);
+                }}
+              />
+            </div>
+          )}
+
+          <ImageModal
+            isOpen={isImageModalOpen}
+            onClose={() => setIsImageModalOpen(false)}
+            previewUrl={editData && 'receipt' in editData ? (editData.receipt as string) : null}
+          />
 
           <div className="flex justify-center items-center mt-3">
             <button

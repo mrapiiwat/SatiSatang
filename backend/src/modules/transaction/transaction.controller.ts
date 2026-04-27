@@ -108,27 +108,6 @@ export const transactionController = new Elysia({ prefix: "/transaction" })
     }
   )
 
-  .get(
-    "/receipt/:id",
-    async ({ params: { id }, set }) => {
-      const txnId = Number(id);
-      const cacheKey = transactionCache.receipt(txnId);
-
-      const { data, status } = await cached(
-        cacheKey,
-        () => transactionService.getReceiptUrl(txnId),
-        "50m"
-      );
-
-      set.headers["X-Cache"] = status;
-      set.status = StatusCodes.OK;
-      return data;
-    },
-    {
-      params: transactionSchema.paramsId,
-    }
-  )
-
   .post(
     "/upload",
     async ({ body, user, set }) => {

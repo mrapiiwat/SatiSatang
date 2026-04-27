@@ -222,7 +222,7 @@
   "amount_label": "จำนวนเงิน",
   "slip_info": "ข้อมูลสลิป",
   "save_btn": "บันทึก",
-  "daily_account": "บัญชีของวัน",
+  "my_account": "บัญชีของฉัน",
   "error_goal_name_req": "กรุณากรอกชื่อเป้าหมาย",
   "manual_error_amount_gt_0": "จำนวนเงินต้องมากกว่า 0",
   "error_future_date": "ตั้งเป้าหมายวันในอนาคตกันเถอะ!",
