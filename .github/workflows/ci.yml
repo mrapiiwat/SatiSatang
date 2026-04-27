@@ -51,7 +51,7 @@ jobs:
       - name: Check Python Code (Cron)
         working-directory: cron
         run: |
-          pip install black isort
+          pip install --no-cache-dir black isort
           black --check .
           isort --check-only .
 
