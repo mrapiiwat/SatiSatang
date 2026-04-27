@@ -2,8 +2,8 @@ import os
 import time
 import uuid
 from datetime import datetime
-import schedule
 
+import schedule
 import yfinance as yf
 from dotenv import load_dotenv
 from openai import OpenAI
