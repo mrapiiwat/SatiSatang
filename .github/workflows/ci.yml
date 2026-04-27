@@ -45,7 +45,7 @@ jobs:
       - name: Install & Check Docs
         working-directory: docs
         run: |
-          npm ci
+          npm install
           npm run build
 
       - name: Check Python Code (Cron)
