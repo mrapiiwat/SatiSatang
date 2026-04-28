@@ -28,6 +28,9 @@
   <a href="https://v2.tailwindcss.com/" target="_blank">
     <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind" />
   </a>
+  <a href="https://docusaurus.io" target="_blank">
+    <img src="https://img.shields.io/badge/Docusaurus-3.x-3ecc5f?style=for-the-badge&logo=docusaurus&logoColor=white" alt="Docusaurus" />
+  </a>
   <a href="https://biomejs.dev" target="_blank">
     <img src="https://img.shields.io/badge/Biome-Toolchain-60a5fa?style=for-the-badge&logo=biome" alt="Biome" />
   </a>
@@ -45,6 +48,9 @@
   </a>
   <a href="https://redis.io" target="_blank">
     <img src="https://img.shields.io/badge/Redis-Cache-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
+  </a>
+    <a href="https://www.nginx.com" target="_blank">
+    <img src="https://img.shields.io/badge/Nginx-Reverse_Proxy-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx" />
   </a>
   <a href="https://openai.com" target="_blank">
     <img src="https://img.shields.io/badge/OpenAI-GPT--4o--mini-000000?style=for-the-badge&logo=openai" alt="OpenAI" />

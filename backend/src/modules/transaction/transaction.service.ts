@@ -301,17 +301,19 @@ export class TransactionService {
   ) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const ocrText = await ocrService.extractTextFromImage(buffer);
+    if (!ocrText) throw new Error("ไม่สามารถอ่านข้อความจากภาพได้");
 
-    const text = await ocrService.extractTextFromImage(buffer);
-    if (!text) throw new Error("ไม่สามารถอ่านข้อความจากภาพได้");
+    const base64Image = buffer.toString("base64");
 
-    const isSlip = await openAIService.checkSlipType(text);
+    const isSlip = await openAIService.checkSlipType(base64Image);
     if (!isSlip) throw new Error("รูปภาพนี้ไม่ใช่สลิปการเงิน");
 
     const transactionData = await openAIService.extractTransactionData(
-      text,
+      base64Image,
+      ocrText,
       categories,
-      { name: user.name }
+      user.name
     );
 
     return transactionData;

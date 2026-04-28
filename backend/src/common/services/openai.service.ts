@@ -76,13 +76,25 @@ export class OpenAIService {
     }
   }
 
-  async checkSlipType(text: string): Promise<boolean> {
+  async checkSlipType(base64Image: string): Promise<boolean> {
     try {
       const response = await openai.chat.completions.create({
         model: MODEL_NAME,
         messages: [
           { role: "system", content: prompts.checkSlipTypePrompt },
-          { role: "user", content: text },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "ภาพนี้คือสลิปโอนเงินหรือใบเสร็จรับเงินใช่หรือไม่?" },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                  detail: "low",
+                },
+              },
+            ],
+          },
         ],
       });
 
@@ -95,9 +107,10 @@ export class OpenAIService {
   }
 
   async extractTransactionData(
-    text: string,
+    base64Image: string,
+    ocrText: string,
     categories: Category[],
-    user: User
+    user: string
   ) {
     try {
       const categoryListText = categories
@@ -105,7 +118,7 @@ export class OpenAIService {
         .join("\n");
 
       const prompt = prompts.getExtractTransactionPrompt(
-        user.name,
+        user,
         categoryListText
       );
 
@@ -113,7 +126,22 @@ export class OpenAIService {
         model: MODEL_NAME,
         messages: [
           { role: "system", content: prompt },
-          { role: "user", content: text },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `อ้างอิงการสะกดคำจากข้อความ OCR นี้:\n---\n${ocrText}\n---\n\nจงสกัดข้อมูลการเงินจากสลิปใบนี้อย่างแม่นยำ`,
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                  detail: "high",
+                },
+              },
+            ],
+          },
         ],
         tools: [SLIP_EXTRACTION_TOOL],
         tool_choice: {

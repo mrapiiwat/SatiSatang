@@ -270,19 +270,23 @@ export const SLIP_EXTRACTION_TOOL: ChatCompletionTool = {
   type: "function",
   function: {
     name: "extract_slip_data",
-    description: "สกัดข้อมูลการเงินจากข้อความ OCR ของสลิปธนาคารหรือใบเสร็จ",
+    description: "สกัดข้อมูลการเงินจากสลิปธนาคาร",
     parameters: {
       type: "object",
       properties: {
+        reasoning: {
+          type: "string",
+          description:
+            "อธิบายสิ่งที่คุณเห็นบนสลิปทีละขั้นตอน เช่น 'คำว่า จาก คือใคร', 'คำว่า ไปยัง คือใคร' เพื่อป้องกันการสลับกัน",
+        },
         type: {
           type: "string",
           enum: ["INCOME", "EXPENSE"],
-          description:
-            "ทิศทางของเงิน (INCOME = เงินเข้าบัญชีเรา, EXPENSE = เงินออกจากบัญชีเรา)",
+          description: "ทิศทางของเงิน",
         },
         description: {
           type: "string",
-          description: "รายละเอียดรายการ เช่น โอนเงินให้..., จ่ายค่า...",
+          description: "รายละเอียดรายการ",
         },
         amount: {
           type: "number",
@@ -290,27 +294,21 @@ export const SLIP_EXTRACTION_TOOL: ChatCompletionTool = {
         },
         toAccount: {
           type: "string",
-          description:
-            "ชื่อบัญชีหรือชื่อผู้รับเงิน / บัญชีปลายทาง (มักอยู่ใกล้คำว่า 'ไปยัง', 'To', 'เข้าบัญชี', 'ผู้รับเงิน', 'โอนเงินให้')",
+          description: "ผู้รับเงิน / ปลายทาง (วิเคราะห์จาก reasoning)",
         },
         fromAccount: {
           type: "string",
-          description:
-            "ชื่อบัญชีหรือชื่อผู้โอนเงิน / บัญชีต้นทาง (มักอยู่ใกล้คำว่า 'จาก', 'From', 'โอนเงินจาก', 'ผู้โอนเงิน')",
+          description: "ผู้โอนเงิน / ต้นทาง (วิเคราะห์จาก reasoning)",
         },
         categoryId: {
           type: "number",
-          description:
-            "ID ของหมวดหมู่ที่เหมาะสมที่สุด (อ้างอิงจาก Category List ที่แนบไปใน Prompt)",
         },
         date: {
           type: "string",
-          description:
-            "วันที่และเวลาที่ทำรายการ (ISO 8601) เช่น 2026-03-05T14:04:00+07:00 " +
-            "ห้ามเดาเดือนผิดเด็ดขาด ตรวจสอบตัวย่อเดือนไทยให้ดี",
         },
       },
       required: [
+        "reasoning",
         "type",
         "description",
         "amount",
