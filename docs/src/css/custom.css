@@ -56,3 +56,7 @@
   --ifm-color-primary-lightest: #FFFFFF;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+/* Remove sidebar shadow */
+.navbar-sidebar {
+  box-shadow: none !important;
+}
