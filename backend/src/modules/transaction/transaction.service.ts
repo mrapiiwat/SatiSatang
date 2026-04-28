@@ -477,7 +477,7 @@ export class TransactionService {
 
       await tx
         .update(transaction)
-        .set({ deletedAt: new Date() })
+        .set({ receipt: null, deletedAt: new Date() })
         .where(
           and(
             eq(transaction.id, id),

@@ -4,9 +4,15 @@
  */
 
 .mainContainer {
-  min-height: calc(100vh - var(--ifm-navbar-height));
   display: flex;
   flex-direction: column;
+}
+
+@media screen and (min-width: 997px) {
+  .mainContainer {
+    height: calc(100vh - var(--ifm-navbar-height) - 88px);
+    overflow: hidden;
+  }
 }
 
 .heroBanner {

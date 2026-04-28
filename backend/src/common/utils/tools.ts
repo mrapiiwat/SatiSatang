@@ -290,11 +290,13 @@ export const SLIP_EXTRACTION_TOOL: ChatCompletionTool = {
         },
         toAccount: {
           type: "string",
-          description: "ชื่อบัญชีหรือชื่อผู้รับเงิน (ถ้ามี)",
+          description:
+            "ชื่อบัญชีหรือชื่อผู้รับเงิน / บัญชีปลายทาง (มักอยู่ใกล้คำว่า 'ไปยัง', 'To', 'เข้าบัญชี', 'ผู้รับเงิน', 'โอนเงินให้')",
         },
         fromAccount: {
           type: "string",
-          description: "ชื่อบัญชีหรือชื่อผู้โอนเงิน (ถ้ามี)",
+          description:
+            "ชื่อบัญชีหรือชื่อผู้โอนเงิน / บัญชีต้นทาง (มักอยู่ใกล้คำว่า 'จาก', 'From', 'โอนเงินจาก', 'ผู้โอนเงิน')",
         },
         categoryId: {
           type: "number",
@@ -308,7 +310,15 @@ export const SLIP_EXTRACTION_TOOL: ChatCompletionTool = {
             "ห้ามเดาเดือนผิดเด็ดขาด ตรวจสอบตัวย่อเดือนไทยให้ดี",
         },
       },
-      required: ["type", "description", "amount"],
+      required: [
+        "type",
+        "description",
+        "amount",
+        "date",
+        "categoryId",
+        "toAccount",
+        "fromAccount",
+      ],
     },
   },
 };

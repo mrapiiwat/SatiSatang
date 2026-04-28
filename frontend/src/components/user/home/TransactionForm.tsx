@@ -17,7 +17,8 @@ const categorySelectStyles: StylesConfig<OptionType, false> = {
     cursor: state.isDisabled ? 'not-allowed' : 'default',
   }),
   singleValue: (base) => ({ ...base, color: 'inherit' }),
-  menu: (base) => ({ ...base, zIndex: 9999, backgroundColor: 'inherit' }),
+  menu: (base) => ({ ...base, zIndex: 9999 }),
+  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
   option: (base, state) => ({
     ...base,
     backgroundColor: state.isFocused ? 'var(--tw-prose-bg, rgba(150,150,150,0.1))' : 'transparent',
@@ -118,10 +119,12 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
             onChange={(option) => onSelectChange('type', option)}
             placeholder=""
             isClearable
+            menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
             styles={categorySelectStyles}
             classNames={{
               control: () => 'dark:border-black-500',
-              menu: () => 'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
+              menu: () =>
+                'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 text-black-900 dark:text-white',
             }}
           />
         </div>
@@ -135,10 +138,12 @@ const TransactionForm: React.FC<TransactionFormWithHeaderProps> = ({
             placeholder=""
             isDisabled={!transactionData.type}
             isClearable
+            menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
             styles={categorySelectStyles}
             classNames={{
               control: () => 'dark:border-black-500 dark:bg-black-700',
-              menu: () => 'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
+              menu: () =>
+                'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 text-black-900 dark:text-white',
             }}
           />
         </div>
