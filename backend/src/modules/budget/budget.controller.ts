@@ -8,7 +8,10 @@ import { BudgetService } from "./budget.service";
 
 const budgetService = new BudgetService();
 
-export const budgetController = new Elysia({ prefix: "/budget" })
+export const budgetController = new Elysia({
+  prefix: "/budget",
+  tags: ["BUDGET"],
+})
   .use(authenticateJWT)
   .post(
     "/",

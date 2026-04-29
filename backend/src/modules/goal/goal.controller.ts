@@ -8,7 +8,7 @@ import { GoalService } from "./goal.service";
 
 const goalService = new GoalService();
 
-export const goalController = new Elysia({ prefix: "/goal" })
+export const goalController = new Elysia({ prefix: "/goal", tags: ["GOAL"] })
   .use(authenticateJWT)
   .post(
     "/",

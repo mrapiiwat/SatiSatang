@@ -5,7 +5,10 @@ import { ConsentService } from "./consent.service";
 
 const consentService = new ConsentService();
 
-export const consentController = new Elysia({ prefix: "/consent" })
+export const consentController = new Elysia({
+  prefix: "/consent",
+  tags: ["CONSENT"],
+})
   .use(authenticateJWT)
   .get("/status", async ({ set, user }) => {
     const userId = Number(user.id);

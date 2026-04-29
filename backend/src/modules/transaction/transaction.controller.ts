@@ -17,7 +17,10 @@ const invalidateAllFinancialData = async (userId: number) => {
   ]);
 };
 
-export const transactionController = new Elysia({ prefix: "/transaction" })
+export const transactionController = new Elysia({
+  prefix: "/transaction",
+  tags: ["TRANSACTION"],
+})
   .use(authenticateJWT)
   .get(
     "/",

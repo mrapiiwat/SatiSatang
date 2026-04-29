@@ -8,7 +8,7 @@ import { IconService } from "./icon.service";
 
 const iconService = new IconService();
 
-export const iconController = new Elysia({ prefix: "/icon" })
+export const iconController = new Elysia({ prefix: "/icon", tags: ["ICON"] })
   .use(authenticateJWT)
   .post(
     "/",

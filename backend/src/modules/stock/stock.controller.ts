@@ -6,7 +6,7 @@ import { StockService } from "./stock.service";
 
 const stockService = new StockService();
 
-export const stockController = new Elysia({ prefix: "/stock" })
+export const stockController = new Elysia({ prefix: "/stock", tags: ["STOCK"] })
   .use(authenticateJWT)
   .get(
     "/",

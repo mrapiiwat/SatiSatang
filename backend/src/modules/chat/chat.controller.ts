@@ -6,7 +6,7 @@ import { ChatService } from "./chat.service";
 
 const chatService = new ChatService();
 
-export const chatController = new Elysia()
+export const chatController = new Elysia({ tags: ["CHAT"] })
   .use(authenticateJWT)
   .get(
     "/:botType/session",

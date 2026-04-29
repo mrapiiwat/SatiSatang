@@ -6,7 +6,10 @@ import { NotificationService } from "./notification.service";
 
 const notificationService = new NotificationService();
 
-export const notificationController = new Elysia({ prefix: "/notification" })
+export const notificationController = new Elysia({
+  prefix: "/notification",
+  tags: ["NOTIFICATION"],
+})
   .use(authenticateJWT)
   .post(
     "/token",

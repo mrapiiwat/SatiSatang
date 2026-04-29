@@ -8,7 +8,7 @@ import { CategoriesService } from "./category.service";
 
 const categoriesService = new CategoriesService();
 
-export const categoryController = new Elysia()
+export const categoryController = new Elysia({ tags: ["CATEGORY"] })
   .use(authenticateJWT)
   .post(
     "/category",

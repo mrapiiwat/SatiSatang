@@ -9,7 +9,7 @@ import { UserService } from "./user.service";
 
 const userService = new UserService();
 
-export const userController = new Elysia()
+export const userController = new Elysia({ tags: ["USER"] })
   .use(authenticateJWT)
   .get("/me", async ({ user, set }) => {
     const userId = Number(user.id);

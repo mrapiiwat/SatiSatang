@@ -14,7 +14,7 @@ import { AuthService } from "./auth.service";
 
 const authService = new AuthService();
 
-export const authController = new Elysia()
+export const authController = new Elysia({ tags: ["AUTH"] })
   .use(setup)
   .post(
     "/check-email",

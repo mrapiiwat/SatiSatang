@@ -9,7 +9,10 @@ import { SettingService } from "./setting.service";
 
 const settingService = new SettingService();
 
-export const settingController = new Elysia({ prefix: "/setting" })
+export const settingController = new Elysia({
+  prefix: "/setting",
+  tags: ["SETTING"],
+})
   .use(authenticateJWT)
   .get("/", async ({ user, set }) => {
     const userId = Number(user.id);
