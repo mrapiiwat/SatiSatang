@@ -31,7 +31,6 @@ const swaggerConfig = swagger({
         },
       },
     },
-    security: [{ JwtAuth: [] }],
   },
   scalarConfig: {
     spec: {

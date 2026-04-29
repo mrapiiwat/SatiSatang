@@ -13,77 +13,90 @@ export const budgetController = new Elysia({
   tags: ["BUDGET"],
 })
   .use(authenticateJWT)
-  .post(
-    "/",
-    async ({ body, user, set }) => {
-      const userId = Number(user.id);
-      const result = await budgetService.createBudget(body, userId);
-      await clearBudgetCache(userId);
-
-      set.status = StatusCodes.CREATED;
-      return {
-        message: "Budget created successfully",
-        data: result,
-      };
-    },
+  .guard(
     {
-      body: budgetSchema.createBudget,
-    }
-  )
-  .get(
-    "/",
-    async ({ query, user, set }) => {
-      const userId = Number(user.id);
-      const cacheKey = budgetCache.list(userId, query);
-
-      const { data, status } = await cached(
-        cacheKey,
-        () => budgetService.getBudgets(userId, query),
-        "1h"
-      );
-
-      set.headers["X-Cache"] = status;
-      set.status = StatusCodes.OK;
-      return {
-        message: "Budgets fetched successfully",
-        data,
-      };
+      detail: {
+        security: [{ JwtAuth: [] }],
+      },
     },
-    {
-      query: budgetSchema.getBudgetsQuery,
-    }
-  )
+    (app) =>
+      app
+        .post(
+          "/",
+          async ({ body, user, set }) => {
+            const userId = Number(user.id);
+            const result = await budgetService.createBudget(body, userId);
+            await clearBudgetCache(userId);
 
-  .put(
-    "/:id",
-    async ({ body, params, user, set }) => {
-      const userId = Number(user.id);
-      const result = await budgetService.updateBudget(userId, params.id, body);
-      await clearBudgetCache(userId);
+            set.status = StatusCodes.CREATED;
+            return {
+              message: "Budget created successfully",
+              data: result,
+            };
+          },
+          {
+            body: budgetSchema.createBudget,
+          }
+        )
+        .get(
+          "/",
+          async ({ query, user, set }) => {
+            const userId = Number(user.id);
+            const cacheKey = budgetCache.list(userId, query);
 
-      set.status = StatusCodes.OK;
-      return {
-        message: "Budget updated successfully",
-        data: result,
-      };
-    },
-    {
-      body: budgetSchema.updateBudget,
-      params: budgetSchema.paramsId,
-    }
-  )
+            const { data, status } = await cached(
+              cacheKey,
+              () => budgetService.getBudgets(userId, query),
+              "1h"
+            );
 
-  .delete(
-    "/:id",
-    async ({ params, user, set }) => {
-      const userId = Number(user.id);
-      await budgetService.deleteBudget(userId, params.id);
-      await clearBudgetCache(userId);
+            set.headers["X-Cache"] = status;
+            set.status = StatusCodes.OK;
+            return {
+              message: "Budgets fetched successfully",
+              data,
+            };
+          },
+          {
+            query: budgetSchema.getBudgetsQuery,
+          }
+        )
 
-      set.status = StatusCodes.NO_CONTENT;
-      return {
-        message: "Budget deleted successfully",
-      };
-    },
-    { params: budgetSchema.paramsId }
+        .put(
+          "/:id",
+          async ({ body, params, user, set }) => {
+            const userId = Number(user.id);
+            const result = await budgetService.updateBudget(
+              userId,
+              params.id,
+              body
+            );
+            await clearBudgetCache(userId);
+
+            set.status = StatusCodes.OK;
+            return {
+              message: "Budget updated successfully",
+              data: result,
+            };
+          },
+          {
+            body: budgetSchema.updateBudget,
+            params: budgetSchema.paramsId,
+          }
+        )
+
+        .delete(
+          "/:id",
+          async ({ params, user, set }) => {
+            const userId = Number(user.id);
+            await budgetService.deleteBudget(userId, params.id);
+            await clearBudgetCache(userId);
+
+            set.status = StatusCodes.NO_CONTENT;
+            return {
+              message: "Budget deleted successfully",
+            };
+          },
+          { params: budgetSchema.paramsId }
+        )
   );

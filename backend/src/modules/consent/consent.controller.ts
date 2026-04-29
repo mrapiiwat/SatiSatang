@@ -10,25 +10,34 @@ export const consentController = new Elysia({
   tags: ["CONSENT"],
 })
   .use(authenticateJWT)
-  .get("/status", async ({ set, user }) => {
-    const userId = Number(user.id);
-    const status = await consentService.getConsentStatus(userId);
+  .guard(
+    {
+      detail: {
+        security: [{ JwtAuth: [] }],
+      },
+    },
+    (app) =>
+      app
+        .get("/status", async ({ set, user }) => {
+          const userId = Number(user.id);
+          const status = await consentService.getConsentStatus(userId);
 
-    set.status = StatusCodes.OK;
-    return status;
-  })
-  .post("/accept", async ({ set, user, headers }) => {
-    const userId = Number(user.id);
-    const userAgent = headers["user-agent"] || "unknown";
-    const ipAddress =
-      headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+          set.status = StatusCodes.OK;
+          return status;
+        })
+        .post("/accept", async ({ set, user, headers }) => {
+          const userId = Number(user.id);
+          const userAgent = headers["user-agent"] || "unknown";
+          const ipAddress =
+            headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
 
-    const result = await consentService.acceptConsents(
-      userId,
-      ipAddress,
-      userAgent
-    );
+          const result = await consentService.acceptConsents(
+            userId,
+            ipAddress,
+            userAgent
+          );
 
-    set.status = StatusCodes.CREATED;
-    return result;
-  });
+          set.status = StatusCodes.CREATED;
+          return result;
+        })
+  );

@@ -22,155 +22,172 @@ export const transactionController = new Elysia({
   tags: ["TRANSACTION"],
 })
   .use(authenticateJWT)
-  .get(
-    "/",
-    async ({ query, user, set }) => {
-      const userId = Number(user.id);
-      const cacheKey = transactionCache.list(userId, query);
-
-      const { data, status } = await cached(
-        cacheKey,
-        () => transactionService.getTransactions(userId, query),
-        "30m"
-      );
-
-      set.headers["X-Cache"] = status;
-      set.status = StatusCodes.OK;
-      return {
-        message: "Transactions fetched successfully",
-        ...data,
-      };
-    },
+  .guard(
     {
-      query: transactionSchema.getTransactionsQuery,
-    }
-  )
-
-  .get(
-    "/total-amount",
-    async ({ query, user, set }) => {
-      const userId = Number(user.id);
-      const cacheKey = transactionCache.total(userId, query);
-
-      const { data, status } = await cached(
-        cacheKey,
-        () => transactionService.getTotalAmount(userId, query),
-        "10m"
-      );
-
-      set.headers["X-Cache"] = status;
-      set.status = StatusCodes.OK;
-      return {
-        message: "Total amount calculated successfully",
-        ...data,
-      };
+      detail: {
+        security: [{ JwtAuth: [] }],
+      },
     },
-    {
-      query: transactionSchema.getTotalAmountQuery,
-    }
-  )
+    (app) =>
+      app
+        .get(
+          "/",
+          async ({ query, user, set }) => {
+            const userId = Number(user.id);
+            const cacheKey = transactionCache.list(userId, query);
 
-  .post(
-    "/",
-    async ({ body, user, set }) => {
-      const userId = Number(user.id);
+            const { data, status } = await cached(
+              cacheKey,
+              () => transactionService.getTransactions(userId, query),
+              "30m"
+            );
 
-      const result = await transactionService.createTransaction(body, userId);
-      await invalidateAllFinancialData(userId);
+            set.headers["X-Cache"] = status;
+            set.status = StatusCodes.OK;
+            return {
+              message: "Transactions fetched successfully",
+              ...data,
+            };
+          },
+          {
+            query: transactionSchema.getTransactionsQuery,
+          }
+        )
 
-      set.status = StatusCodes.CREATED;
+        .get(
+          "/total-amount",
+          async ({ query, user, set }) => {
+            const userId = Number(user.id);
+            const cacheKey = transactionCache.total(userId, query);
 
-      return {
-        message:
-          result.type === "goal"
-            ? "Goal transaction created successfully"
-            : "Transaction created successfully",
-        data: result.data,
-      };
-    },
-    {
-      body: transactionSchema.createTransaction,
-    }
-  )
+            const { data, status } = await cached(
+              cacheKey,
+              () => transactionService.getTotalAmount(userId, query),
+              "10m"
+            );
 
-  .post(
-    "/predict-category",
-    async ({ body, user, set }) => {
-      const userId = Number(user.id);
-      const result = await transactionService.predictCategory(
-        body.description,
-        userId
-      );
+            set.headers["X-Cache"] = status;
+            set.status = StatusCodes.OK;
+            return {
+              message: "Total amount calculated successfully",
+              ...data,
+            };
+          },
+          {
+            query: transactionSchema.getTotalAmountQuery,
+          }
+        )
 
-      set.status = StatusCodes.OK;
+        .post(
+          "/",
+          async ({ body, user, set }) => {
+            const userId = Number(user.id);
 
-      return result;
-    },
-    {
-      body: transactionSchema.predictCategory,
-    }
-  )
+            const result = await transactionService.createTransaction(
+              body,
+              userId
+            );
+            await invalidateAllFinancialData(userId);
 
-  .post(
-    "/upload",
-    async ({ body, user, set }) => {
-      const userId = Number(user.id);
+            set.status = StatusCodes.CREATED;
 
-      const results = await transactionService.transactionByUpload(
-        body.receipt,
-        userId
-      );
+            return {
+              message:
+                result.type === "goal"
+                  ? "Goal transaction created successfully"
+                  : "Transaction created successfully",
+              data: result.data,
+            };
+          },
+          {
+            body: transactionSchema.createTransaction,
+          }
+        )
 
-      set.status = StatusCodes.OK;
+        .post(
+          "/predict-category",
+          async ({ body, user, set }) => {
+            const userId = Number(user.id);
+            const result = await transactionService.predictCategory(
+              body.description,
+              userId
+            );
 
-      const successCount = results.filter((r) => r.status === "success").length;
+            set.status = StatusCodes.OK;
 
-      return {
-        message: `ประมวลผลเสร็จสิ้น สำเร็จ ${successCount} จาก ${results.length} รายการ`,
-        results: results,
-      };
-    },
-    {
-      body: transactionSchema.uploadReceipt,
-    }
-  )
+            return result;
+          },
+          {
+            body: transactionSchema.predictCategory,
+          }
+        )
 
-  .put(
-    "/:id",
-    async ({ params: { id }, body, user, set }) => {
-      const userId = Number(user.id);
+        .post(
+          "/upload",
+          async ({ body, user, set }) => {
+            const userId = Number(user.id);
 
-      const result = await transactionService.updateTransaction(
-        id,
-        body,
-        userId
-      );
-      await invalidateAllFinancialData(userId);
+            const results = await transactionService.transactionByUpload(
+              body.receipt,
+              userId
+            );
 
-      set.status = StatusCodes.OK;
+            set.status = StatusCodes.OK;
 
-      return {
-        message: "Transaction updated successfully",
-        data: result,
-      };
-    },
-    {
-      params: transactionSchema.paramsId,
-      body: transactionSchema.updateTransaction,
-    }
-  )
+            const successCount = results.filter(
+              (r) => r.status === "success"
+            ).length;
 
-  .delete(
-    "/:id",
-    async ({ params: { id }, user, set }) => {
-      const userId = Number(user.id);
-      const result = await transactionService.deleteTransaction(id, userId);
-      await invalidateAllFinancialData(userId);
+            return {
+              message: `ประมวลผลเสร็จสิ้น สำเร็จ ${successCount} จาก ${results.length} รายการ`,
+              results: results,
+            };
+          },
+          {
+            body: transactionSchema.uploadReceipt,
+          }
+        )
 
-      set.status = StatusCodes.OK;
-      return result;
-    },
-    {
-      params: transactionSchema.paramsId,
-    }
+        .put(
+          "/:id",
+          async ({ params: { id }, body, user, set }) => {
+            const userId = Number(user.id);
+
+            const result = await transactionService.updateTransaction(
+              id,
+              body,
+              userId
+            );
+            await invalidateAllFinancialData(userId);
+
+            set.status = StatusCodes.OK;
+
+            return {
+              message: "Transaction updated successfully",
+              data: result,
+            };
+          },
+          {
+            params: transactionSchema.paramsId,
+            body: transactionSchema.updateTransaction,
+          }
+        )
+
+        .delete(
+          "/:id",
+          async ({ params: { id }, user, set }) => {
+            const userId = Number(user.id);
+            const result = await transactionService.deleteTransaction(
+              id,
+              userId
+            );
+            await invalidateAllFinancialData(userId);
+
+            set.status = StatusCodes.OK;
+            return result;
+          },
+          {
+            params: transactionSchema.paramsId,
+          }
+        )
   );

@@ -10,81 +10,93 @@ const categoriesService = new CategoriesService();
 
 export const categoryController = new Elysia({ tags: ["CATEGORY"] })
   .use(authenticateJWT)
-  .post(
-    "/category",
-    async ({ body, set, user }) => {
-      const userId = Number(user.id);
-
-      const result = await categoriesService.createCategory(userId, body);
-      await clearCategoryCache(userId);
-      set.status = StatusCodes.CREATED;
-      return {
-        message: "Category created successfully",
-        data: result,
-      };
-    },
+  .guard(
     {
-      body: categorySchema.CategorySchema,
-    }
-  )
-  .get(
-    "/categories",
-    async ({ query, user, set }) => {
-      const userId = Number(user.id);
-      const cacheKey = categoryCache.list(userId, query);
-
-      const { data, status } = await cached(
-        cacheKey,
-        () => categoriesService.getCategories(userId, query),
-        "50m"
-      );
-
-      set.headers["X-Cache"] = status;
-      set.status = StatusCodes.OK;
-      return {
-        message: `Categories${data.includeGoals ? " (and goals)" : ""} fetched successfully`,
-        data: data.result,
-      };
+      detail: {
+        security: [{ JwtAuth: [] }],
+      },
     },
-    {
-      query: categorySchema.GetCategoriesQuerySchema,
-    }
-  )
-  .put(
-    "/category/:id",
-    async ({ params: { id }, body, user, set }) => {
-      const userId = Number(user.id);
-      const categoryId = Number(id);
+    (app) =>
+      app
+        .post(
+          "/category",
+          async ({ body, set, user }) => {
+            const userId = Number(user.id);
 
-      const result = await categoriesService.updateCategory(
-        userId,
-        categoryId,
-        body
-      );
-      await clearCategoryCache(userId);
-      set.status = StatusCodes.OK;
-      return {
-        message: "Category updated successfully",
-        data: result,
-      };
-    },
-    {
-      params: categorySchema.paramsId,
-      body: categorySchema.UpdateCategorySchema,
-    }
-  )
-  .delete(
-    "/category/:id",
-    async ({ params: { id }, user, set }) => {
-      const userId = Number(user.id);
-      const categoryId = Number(id);
+            const result = await categoriesService.createCategory(userId, body);
+            await clearCategoryCache(userId);
+            set.status = StatusCodes.CREATED;
+            return {
+              message: "Category created successfully",
+              data: result,
+            };
+          },
+          {
+            body: categorySchema.CategorySchema,
+          }
+        )
+        .get(
+          "/categories",
+          async ({ query, user, set }) => {
+            const userId = Number(user.id);
+            const cacheKey = categoryCache.list(userId, query);
 
-      const result = await categoriesService.deleteCategory(userId, categoryId);
-      await clearCategoryCache(userId);
-      set.status = StatusCodes.OK;
-      return result;
-    },
-    {
-      params: categorySchema.paramsId,
-    }
+            const { data, status } = await cached(
+              cacheKey,
+              () => categoriesService.getCategories(userId, query),
+              "50m"
+            );
+
+            set.headers["X-Cache"] = status;
+            set.status = StatusCodes.OK;
+            return {
+              message: `Categories${data.includeGoals ? " (and goals)" : ""} fetched successfully`,
+              data: data.result,
+            };
+          },
+          {
+            query: categorySchema.GetCategoriesQuerySchema,
+          }
+        )
+        .put(
+          "/category/:id",
+          async ({ params: { id }, body, user, set }) => {
+            const userId = Number(user.id);
+            const categoryId = Number(id);
+
+            const result = await categoriesService.updateCategory(
+              userId,
+              categoryId,
+              body
+            );
+            await clearCategoryCache(userId);
+            set.status = StatusCodes.OK;
+            return {
+              message: "Category updated successfully",
+              data: result,
+            };
+          },
+          {
+            params: categorySchema.paramsId,
+            body: categorySchema.UpdateCategorySchema,
+          }
+        )
+        .delete(
+          "/category/:id",
+          async ({ params: { id }, user, set }) => {
+            const userId = Number(user.id);
+            const categoryId = Number(id);
+
+            const result = await categoriesService.deleteCategory(
+              userId,
+              categoryId
+            );
+            await clearCategoryCache(userId);
+            set.status = StatusCodes.OK;
+            return result;
+          },
+          {
+            params: categorySchema.paramsId,
+          }
+        )
   );

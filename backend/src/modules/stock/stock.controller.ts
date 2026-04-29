@@ -8,32 +8,41 @@ const stockService = new StockService();
 
 export const stockController = new Elysia({ prefix: "/stock", tags: ["STOCK"] })
   .use(authenticateJWT)
-  .get(
-    "/",
-    async ({ query, set }) => {
-      const result = await stockService.getStocks(query);
-
-      set.status = StatusCodes.OK;
-      return {
-        message: "Get stock list successfully",
-        data: result,
-      };
-    },
+  .guard(
     {
-      query: stockSchema.GetStocksQuerySchema,
-    }
-  )
-  .get(
-    "/:id",
-    async ({ params: { id }, set }) => {
-      const result = await stockService.getStockById(id);
-
-      set.status = StatusCodes.OK;
-      return {
-        data: result,
-      };
+      detail: {
+        security: [{ JwtAuth: [] }],
+      },
     },
-    {
-      params: stockSchema.paramsId,
-    }
+    (app) =>
+      app
+        .get(
+          "/",
+          async ({ query, set }) => {
+            const result = await stockService.getStocks(query);
+
+            set.status = StatusCodes.OK;
+            return {
+              message: "Get stock list successfully",
+              data: result,
+            };
+          },
+          {
+            query: stockSchema.GetStocksQuerySchema,
+          }
+        )
+        .get(
+          "/:id",
+          async ({ params: { id }, set }) => {
+            const result = await stockService.getStockById(id);
+
+            set.status = StatusCodes.OK;
+            return {
+              data: result,
+            };
+          },
+          {
+            params: stockSchema.paramsId,
+          }
+        )
   );

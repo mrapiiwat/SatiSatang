@@ -11,32 +11,41 @@ export const notificationController = new Elysia({
   tags: ["NOTIFICATION"],
 })
   .use(authenticateJWT)
-  .post(
-    "/token",
-    async ({ user, body, set }) => {
-      const userId = Number(user.id);
-
-      const result = await notificationService.registerToken(
-        userId,
-        body.token
-      );
-
-      set.status = StatusCodes.OK;
-      return result;
-    },
+  .guard(
     {
-      body: notificationSchema.registerToken,
-    }
-  )
-  .delete(
-    "/token",
-    async ({ body, set }) => {
-      await notificationService.unregisterToken(body.token);
-
-      set.status = StatusCodes.OK;
-      return { message: "Token removed" };
+      detail: {
+        security: [{ JwtAuth: [] }],
+      },
     },
-    {
-      body: notificationSchema.registerToken,
-    }
+    (app) =>
+      app
+        .post(
+          "/token",
+          async ({ user, body, set }) => {
+            const userId = Number(user.id);
+
+            const result = await notificationService.registerToken(
+              userId,
+              body.token
+            );
+
+            set.status = StatusCodes.OK;
+            return result;
+          },
+          {
+            body: notificationSchema.registerToken,
+          }
+        )
+        .delete(
+          "/token",
+          async ({ body, set }) => {
+            await notificationService.unregisterToken(body.token);
+
+            set.status = StatusCodes.OK;
+            return { message: "Token removed" };
+          },
+          {
+            body: notificationSchema.registerToken,
+          }
+        )
   );
