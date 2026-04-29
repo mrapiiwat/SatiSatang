@@ -28,12 +28,6 @@
   <a href="https://v2.tailwindcss.com/" target="_blank">
     <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind" />
   </a>
-  <a href="https://docusaurus.io" target="_blank">
-    <img src="https://img.shields.io/badge/Docusaurus-3.x-3ecc5f?style=for-the-badge&logo=docusaurus&logoColor=white" alt="Docusaurus" />
-  </a>
-  <a href="https://biomejs.dev" target="_blank">
-    <img src="https://img.shields.io/badge/Biome-Toolchain-60a5fa?style=for-the-badge&logo=biome" alt="Biome" />
-  </a>
   <a href="https://elysiajs.com" target="_blank">
     <img src="https://img.shields.io/badge/Elysia-latest-0099ff?style=for-the-badge" alt="Elysia" />
   </a>
@@ -49,9 +43,10 @@
   <a href="https://redis.io" target="_blank">
     <img src="https://img.shields.io/badge/Redis-Cache-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
   </a>
-    <a href="https://www.nginx.com" target="_blank">
+  <a href="https://www.nginx.com" target="_blank">
     <img src="https://img.shields.io/badge/Nginx-Reverse_Proxy-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx" />
   </a>
+  <br>
   <a href="https://openai.com" target="_blank">
     <img src="https://img.shields.io/badge/OpenAI-GPT--4o--mini-000000?style=for-the-badge&logo=openai" alt="OpenAI" />
   </a>
@@ -61,4 +56,63 @@
   <a href="https://firebase.google.com" target="_blank">
     <img src="https://img.shields.io/badge/Firebase-FCM-ffca28?style=for-the-badge&logo=firebase" alt="Firebase" />
   </a>
+  <a href="https://biomejs.dev" target="_blank">
+    <img src="https://img.shields.io/badge/Biome-Toolchain-60a5fa?style=for-the-badge&logo=biome" alt="Biome" />
+  </a>
+  <a href="https://docusaurus.io" target="_blank">
+    <img src="https://img.shields.io/badge/Docusaurus-3.x-3ecc5f?style=for-the-badge&logo=docusaurus&logoColor=white" alt="Docusaurus" />
+  </a>
+</p>
+
+---
+
+## เริ่มต้นใช้งาน
+
+### 1. เตรียมโปรเจกต์และไฟล์ Environment
+```bash
+git clone https://github.com/mrapiiwat/SatiSatang.git && cd SatiSatang
+cp docker/.env.example docker/.env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+cp cron/.env.example cron/.env
+```
+> [!IMPORTANT]
+> **อย่าลืม:** แก้ไขไฟล์ `.env` และใส่ค่าคอนฟิกจริง (เช่น Database, API Keys, OAuth Secrets)
+
+### 2. รันระบบด้วย Docker Compose
+```bash
+cd docker && docker compose -f docker-compose.dev.yaml up -d --build
+```
+
+
+| Path      | Service        | Description              |
+| --------- | -------------- | ------------------------ |
+| `/`       | **Frontend**   | Web Application UI       |
+| `/api/*`  | **Backend API**| ElysiaJS API Endpoints   |
+| `/docs/*` | **Docs**       | Project Documentation    |
+
+---
+
+## CI/CD
+
+ใช้ **GitHub Actions** บน branch `main` และ `develop`
+
+| Category  | Tooling           | Purpose                  |
+| --------- | ----------------- | ------------------------ |
+| **Backend**  | Biome             | Linting & Formatting     |
+| **Frontend** | ESLint + Prettier | Code Quality Standards   |
+| **Docs**     | Docusaurus        | Documentation Generation |
+| **Cron**     | Black + isort     | Python PEP 8 Compliance  |
+| **Docker**   | Buildx            | Multi-platform Builds    |
+
+---
+
+## License
+
+[Apache License 2.0](LICENSE)
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ by the SatiSatang team</sub>
 </p>
