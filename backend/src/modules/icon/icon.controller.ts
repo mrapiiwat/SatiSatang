@@ -34,6 +34,10 @@ export const iconController = new Elysia({ prefix: "/icon", tags: ["ICON"] })
           },
           {
             body: iconSchema.createIcon,
+            detail: {
+              summary: "อัปโหลดไอคอนใหม่",
+              description: "อัปโหลดไฟล์รูปภาพไอคอนเพื่อใช้ในระบบ",
+            },
           }
         )
         .get(
@@ -59,6 +63,10 @@ export const iconController = new Elysia({ prefix: "/icon", tags: ["ICON"] })
           },
           {
             query: iconSchema.querySearch,
+            detail: {
+              summary: "ดึงรายการไอคอนทั้งหมด",
+              description: "ดึงรายการไอคอนที่รองรับในระบบ พร้อมรองรับการค้นหาผ่านชื่อ",
+            },
           }
         )
         .put(
@@ -78,6 +86,10 @@ export const iconController = new Elysia({ prefix: "/icon", tags: ["ICON"] })
           {
             params: iconSchema.paramsId,
             body: iconSchema.updateIcon,
+            detail: {
+              summary: "แก้ไขข้อมูลไอคอน",
+              description: "อัปเดตข้อมูลไอคอนที่มีอยู่เดิมในระบบ",
+            },
           }
         )
   );

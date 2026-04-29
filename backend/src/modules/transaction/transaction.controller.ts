@@ -51,6 +51,10 @@ export const transactionController = new Elysia({
           },
           {
             query: transactionSchema.getTransactionsQuery,
+            detail: {
+              summary: "ดึงรายการธุรกรรมทั้งหมด",
+              description: "ดึงรายการธุรกรรม รายรับ-รายจ่าย ตามเงื่อนไขที่กำหนด",
+            },
           }
         )
 
@@ -75,6 +79,10 @@ export const transactionController = new Elysia({
           },
           {
             query: transactionSchema.getTotalAmountQuery,
+            detail: {
+              summary: "คำนวณยอดรวมธุรกรรม",
+              description: "คำนวณยอดรวมของธุรกรรมตามประเภทและเงื่อนไขที่กำหนด",
+            },
           }
         )
 
@@ -101,6 +109,10 @@ export const transactionController = new Elysia({
           },
           {
             body: transactionSchema.createTransaction,
+            detail: {
+              summary: "สร้างรายการธุรกรรมใหม่",
+              description: "เพิ่มรายการธุรกรรม รายรับ หรือ รายจ่าย เข้าสู่ระบบ",
+            },
           }
         )
 
@@ -119,6 +131,10 @@ export const transactionController = new Elysia({
           },
           {
             body: transactionSchema.predictCategory,
+            detail: {
+              summary: "ทำนายหมวดหมู่ธุรกรรม",
+              description: "ใช้ AI ทำนายหมวดหมู่ที่เหมาะสมที่สุดจากคำอธิบายรายการ",
+            },
           }
         )
 
@@ -145,6 +161,10 @@ export const transactionController = new Elysia({
           },
           {
             body: transactionSchema.uploadReceipt,
+            detail: {
+              summary: "อัปโหลดและประมวลผลสลิป",
+              description: "อัปโหลดรูปภาพสลิปธนาคารเพื่อประมวลผลข้อมูลธุรกรรมโดยอัตโนมัติ",
+            },
           }
         )
 
@@ -170,6 +190,10 @@ export const transactionController = new Elysia({
           {
             params: transactionSchema.paramsId,
             body: transactionSchema.updateTransaction,
+            detail: {
+              summary: "แก้ไขข้อมูลธุรกรรม",
+              description: "อัปเดตข้อมูลรายการธุรกรรมที่มีอยู่เดิม",
+            },
           }
         )
 
@@ -188,6 +212,10 @@ export const transactionController = new Elysia({
           },
           {
             params: transactionSchema.paramsId,
+            detail: {
+              summary: "ลบรายการธุรกรรม",
+              description: "ลบข้อมูลรายการธุรกรรมออกจากระบบ",
+            },
           }
         )
   );

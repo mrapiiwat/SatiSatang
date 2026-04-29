@@ -33,6 +33,11 @@ export const goalController = new Elysia({ prefix: "/goal", tags: ["GOAL"] })
           },
           {
             body: goalSchema.createGoal,
+            detail: {
+              summary: "สร้างเป้าหมายการออมใหม่",
+              description:
+                "กำหนดเป้าหมายทางการเงินใหม่ เช่น การออมเงินซื้อบ้าน หรือเที่ยวต่างประเทศ",
+            },
           }
         )
         .get(
@@ -57,6 +62,10 @@ export const goalController = new Elysia({ prefix: "/goal", tags: ["GOAL"] })
           },
           {
             query: goalSchema.getGoalsQuery,
+            detail: {
+              summary: "ดึงรายการและสรุปเป้าหมายการออม",
+              description: "ดึงรายการเป้าหมายทั้งหมดพร้อมสรุปความคืบหน้าของการออม",
+            },
           }
         )
 
@@ -81,6 +90,11 @@ export const goalController = new Elysia({ prefix: "/goal", tags: ["GOAL"] })
           {
             params: goalSchema.paramsId,
             body: goalSchema.updateGoal,
+            detail: {
+              summary: "แก้ไขข้อมูลเป้าหมายการออม",
+              description:
+                "อัปเดตรายละเอียด เช่น จำนวนเงินเป้าหมาย หรือ วันที่ต้องการบรรลุเป้าหมาย",
+            },
           }
         )
         .delete(
@@ -96,6 +110,10 @@ export const goalController = new Elysia({ prefix: "/goal", tags: ["GOAL"] })
           },
           {
             params: goalSchema.paramsId,
+            detail: {
+              summary: "ลบเป้าหมายการออม",
+              description: "ลบเป้าหมายการออมที่ไม่ต้องการออกจากระบบ",
+            },
           }
         )
   );

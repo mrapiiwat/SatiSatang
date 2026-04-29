@@ -26,8 +26,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       body: authSchema.emailSchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "ตรวจสอบสถานะอีเมล",
+        description: "ตรวจสอบว่าอีเมลนี้ลงทะเบียนแล้วหรือยัง และต้องการการยืนยันตัวตนหรือไม่",
       },
     }
   )
@@ -46,8 +46,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       body: authSchema.registerSchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "ลงทะเบียนผู้ใช้งานใหม่",
+        description: "สร้างบัญชีผู้ใช้งานใหม่ด้วยอีเมลและรหัสผ่าน",
       },
     }
   )
@@ -78,8 +78,9 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       body: authSchema.loginSchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "เข้าสู่ระบบ",
+        description:
+          "เข้าสู่ระบบด้วยอีเมลและรหัสผ่านเพื่อรับ Access Token และ Refresh Token",
       },
     }
   )
@@ -112,8 +113,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       body: authSchema.verifySchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "ยืนยันอีเมล",
+        description: "ยืนยันความถูกต้องของอีเมลด้วยรหัส OTP",
       },
     }
   )
@@ -145,8 +146,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       detail: {
-        summary: "",
-        description: "",
+        summary: "ต่ออายุ Access Token",
+        description: "ใช้ Refresh Token เพื่อขอ Access Token ใหม่",
       },
     }
   )
@@ -165,8 +166,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       body: authSchema.emailSchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "ส่งรหัส OTP อีกครั้ง",
+        description: "ร้องขอให้ส่งรหัส OTP ไปที่อีเมลใหม่อีกครั้ง",
       },
     }
   )
@@ -182,8 +183,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       body: authSchema.emailSchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "ลืมรหัสผ่าน",
+        description: "ส่งคำขอรีเซ็ตรหัสผ่านไปยังอีเมลของผู้ใช้งาน",
       },
     }
   )
@@ -199,8 +200,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       body: authSchema.resetPasswordSchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "ตั้งรหัสผ่านใหม่",
+        description: "เปลี่ยนรหัสผ่านใหม่โดยใช้รหัส OTP หรือ Token ที่ได้รับ",
       },
     }
   )
@@ -216,8 +217,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       body: authSchema.emailSchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "ตรวจสอบสถานะการกู้คืนบัญชี",
+        description: "ตรวจสอบสถานะของผู้ใช้งานว่าสามารถกู้คืนรหัสผ่านได้หรือไม่",
       },
     }
   )
@@ -232,8 +233,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     {
       query: authSchema.validateResetSchema,
       detail: {
-        summary: "",
-        description: "",
+        summary: "ตรวจสอบ Token รีเซ็ตรหัสผ่าน",
+        description: "ตรวจสอบว่า Token สำหรับรีเซ็ตรหัสผ่านยังใช้งานได้อยู่หรือไม่",
       },
     }
   )
@@ -268,8 +269,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       detail: {
-        summary: "",
-        description: "",
+        summary: "เข้าสู่ระบบด้วย Google",
+        description: "นำทางไปยังหน้า Login ของ Google",
       },
     }
   )
@@ -353,8 +354,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       detail: {
-        summary: "",
-        description: "",
+        summary: "Google Login Callback",
+        description: "จัดการข้อมูลที่ส่งกลับมาจาก Google หลังจาก Login สำเร็จ",
       },
     }
   )
@@ -380,8 +381,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       detail: {
-        summary: "",
-        description: "",
+        summary: "เข้าสู่ระบบด้วย Facebook",
+        description: "นำทางไปยังหน้า Login ของ Facebook",
       },
     }
   )
@@ -463,8 +464,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       detail: {
-        summary: "",
-        description: "",
+        summary: "Facebook Login Callback",
+        description: "จัดการข้อมูลที่ส่งกลับมาจาก Facebook หลังจาก Login สำเร็จ",
       },
     }
   )
@@ -498,8 +499,8 @@ export const authController = new Elysia({ tags: ["AUTH"] })
         {
           cookie: authSchema.cookie,
           detail: {
-            summary: "",
-            description: "",
+            summary: "ออกจากระบบ",
+            description: "ยกเลิก Refresh Token และลบ Cookie ออกจากระบบ",
           },
         }
       )

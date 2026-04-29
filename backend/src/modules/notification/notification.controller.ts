@@ -34,6 +34,11 @@ export const notificationController = new Elysia({
           },
           {
             body: notificationSchema.registerToken,
+            detail: {
+              summary: "ลงทะเบียนอุปกรณ์สำหรับการแจ้งเตือน",
+              description:
+                "บันทึก Push Token เพื่อใช้ส่งการแจ้งเตือนไปยังอุปกรณ์ของผู้ใช้งาน",
+            },
           }
         )
         .delete(
@@ -46,6 +51,11 @@ export const notificationController = new Elysia({
           },
           {
             body: notificationSchema.registerToken,
+            detail: {
+              summary: "ยกเลิกการลงทะเบียนอุปกรณ์",
+              description:
+                "ลบ Push Token ออกจากระบบเพื่อหยุดส่งการแจ้งเตือนไปยังอุปกรณ์นั้น",
+            },
           }
         )
   );

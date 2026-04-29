@@ -29,6 +29,10 @@ export const stockController = new Elysia({ prefix: "/stock", tags: ["STOCK"] })
           },
           {
             query: stockSchema.GetStocksQuerySchema,
+            detail: {
+              summary: "ดึงรายการหุ้นและทรัพย์สิน",
+              description: "ดึงข้อมูลรายการหุ้นหรือทรัพย์สินที่รองรับในระบบ",
+            },
           }
         )
         .get(
@@ -43,6 +47,10 @@ export const stockController = new Elysia({ prefix: "/stock", tags: ["STOCK"] })
           },
           {
             params: stockSchema.paramsId,
+            detail: {
+              summary: "ดึงข้อมูลหุ้นรายตัว",
+              description: "ดึงข้อมูลรายละเอียดและราคาล่าสุดของหุ้นที่ระบุ",
+            },
           }
         )
   );

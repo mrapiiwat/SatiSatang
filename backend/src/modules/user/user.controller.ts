@@ -19,21 +19,30 @@ export const userController = new Elysia({ tags: ["USER"] })
     },
     (app) =>
       app
-        .get("/me", async ({ user, set }) => {
-          const userId = Number(user.id);
-          const cacheKey = userCache.me(userId, user.provider);
+        .get(
+          "/me",
+          async ({ user, set }) => {
+            const userId = Number(user.id);
+            const cacheKey = userCache.me(userId, user.provider);
 
-          const { data, status } = await cached(
-            cacheKey,
-            () => userService.me(userId, user.provider),
-            "1h"
-          );
+            const { data, status } = await cached(
+              cacheKey,
+              () => userService.me(userId, user.provider),
+              "1h"
+            );
 
-          set.headers["X-Cache"] = status;
-          set.status = 200;
+            set.headers["X-Cache"] = status;
+            set.status = 200;
 
-          return data;
-        })
+            return data;
+          },
+          {
+            detail: {
+              summary: "ดึงข้อมูลส่วนตัวของผู้ใช้งาน",
+              description: "ดึงข้อมูลโปรไฟล์ของผู้ใช้งานที่กำลังเข้าสู่ระบบอยู่",
+            },
+          }
+        )
 
         .put(
           "/change-password",
@@ -51,6 +60,10 @@ export const userController = new Elysia({ tags: ["USER"] })
           },
           {
             body: userSchema.password,
+            detail: {
+              summary: "เปลี่ยนรหัสผ่าน",
+              description: "เปลี่ยนรหัสผ่านใหม่สำหรับผู้ใช้งานที่เข้าสู่ระบบด้วยอีเมล",
+            },
           }
         )
 
@@ -69,6 +82,10 @@ export const userController = new Elysia({ tags: ["USER"] })
           },
           {
             body: userSchema.name,
+            detail: {
+              summary: "แก้ไขชื่อผู้ใช้งาน",
+              description: "อัปเดตชื่อที่แสดงในระบบของผู้ใช้งาน",
+            },
           }
         )
 
@@ -86,6 +103,10 @@ export const userController = new Elysia({ tags: ["USER"] })
           },
           {
             body: userSchema.deleteAccount,
+            detail: {
+              summary: "ลบบัญชีผู้ใช้งาน",
+              description: "ลบข้อมูลบัญชีและข้อมูลที่เกี่ยวข้องทั้งหมดของผู้ใช้งานออกจากระบบ",
+            },
           }
         )
 
@@ -103,14 +124,27 @@ export const userController = new Elysia({ tags: ["USER"] })
           },
           {
             query: userSchema.getSummaryQuery,
+            detail: {
+              summary: "ดึงข้อมูลสรุปภาพรวมทางการเงิน",
+              description: "ดึงข้อมูลสรุป รายรับ รายจ่าย และงบประมาณคงเหลือ",
+            },
           }
         )
 
-        .get("/users/balance", async ({ user, set }) => {
-          const userId = Number(user.id);
-          set.status = StatusCodes.OK;
-          const result = await userService.getBalance(userId);
+        .get(
+          "/users/balance",
+          async ({ user, set }) => {
+            const userId = Number(user.id);
+            set.status = StatusCodes.OK;
+            const result = await userService.getBalance(userId);
 
-          return result;
-        })
+            return result;
+          },
+          {
+            detail: {
+              summary: "ดึงข้อมูลยอดเงินคงเหลือ",
+              description: "ดึงยอดเงินรวมทั้งหมดที่มีอยู่ในปัจจุบัน",
+            },
+          }
+        )
   );

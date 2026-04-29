@@ -22,23 +22,32 @@ export const settingController = new Elysia({
     },
     (app) =>
       app
-        .get("/", async ({ user, set }) => {
-          const userId = Number(user.id);
-          const cacheKey = settingCache.detail(userId);
+        .get(
+          "/",
+          async ({ user, set }) => {
+            const userId = Number(user.id);
+            const cacheKey = settingCache.detail(userId);
 
-          const { data, status } = await cached(
-            cacheKey,
-            () => settingService.getSettings(userId),
-            "24h"
-          );
+            const { data, status } = await cached(
+              cacheKey,
+              () => settingService.getSettings(userId),
+              "24h"
+            );
 
-          set.headers["X-Cache"] = status;
-          set.status = StatusCodes.OK;
-          return {
-            message: "Settings fetched successfully",
-            data,
-          };
-        })
+            set.headers["X-Cache"] = status;
+            set.status = StatusCodes.OK;
+            return {
+              message: "Settings fetched successfully",
+              data,
+            };
+          },
+          {
+            detail: {
+              summary: "ดึงข้อมูลการตั้งค่าของผู้ใช้งาน",
+              description: "ดึงข้อมูลการตั้งค่าต่างๆ เช่น ภาษา สกุลเงิน หรือการแจ้งเตือน",
+            },
+          }
+        )
         .put(
           "/",
           async ({ user, body, set }) => {
@@ -56,6 +65,10 @@ export const settingController = new Elysia({
           },
           {
             body: settingSchema.updateSetting,
+            detail: {
+              summary: "อัปเดตการตั้งค่าของผู้ใช้งาน",
+              description: "แก้ไขข้อมูลการตั้งค่าต่างๆ ของผู้ใช้งาน",
+            },
           }
         )
   );

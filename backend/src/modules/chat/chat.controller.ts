@@ -45,6 +45,11 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           },
           {
             query: chatSchema.getSessionQuery,
+            detail: {
+              summary: "ดึงข้อมูลเซสชันแชท",
+              description:
+                "ดึงข้อมูลเซสชันเดิมหรือสร้างใหม่สำหรับ AI แต่ละประเภท (Sati/Satang)",
+            },
           }
         )
 
@@ -72,6 +77,10 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           },
           {
             body: chatSchema.checkMessage,
+            detail: {
+              summary: "ตรวจสอบและวิเคราะห์ข้อความ",
+              description: "ใช้ AI วิเคราะห์เนื้อหาข้อความเพื่อแยกแยะข้อมูลทางการเงิน",
+            },
           }
         )
 
@@ -86,6 +95,10 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           },
           {
             body: chatSchema.satiLog,
+            detail: {
+              summary: "บันทึกประวัติการแชท (Sati)",
+              description: "บันทึกการโต้ตอบระหว่างผู้ใช้งานและ AI Sati",
+            },
           }
         )
 
@@ -103,6 +116,10 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           {
             body: chatSchema.chatMessage,
             params: chatSchema.paramsId,
+            detail: {
+              summary: "แก้ไขข้อความในแชท",
+              description: "อัปเดตเนื้อหาข้อความที่เคยส่งไปแล้วในเซสชัน",
+            },
           }
         )
 
@@ -120,6 +137,10 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           },
           {
             body: chatSchema.chatMessage,
+            detail: {
+              summary: "แชทกับ AI Satang",
+              description: "ส่งข้อความพูดคุยกับ AI Satang และรับคำตอบแบบ Streaming",
+            },
           }
         )
   );

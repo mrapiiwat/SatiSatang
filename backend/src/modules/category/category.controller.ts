@@ -33,6 +33,10 @@ export const categoryController = new Elysia({ tags: ["CATEGORY"] })
           },
           {
             body: categorySchema.CategorySchema,
+            detail: {
+              summary: "สร้างหมวดหมู่ธุรกรรมใหม่",
+              description: "สร้างหมวดหมู่ใหม่สำหรับจัดกลุ่มธุรกรรม (รายรับ/รายจ่าย)",
+            },
           }
         )
         .get(
@@ -56,6 +60,11 @@ export const categoryController = new Elysia({ tags: ["CATEGORY"] })
           },
           {
             query: categorySchema.GetCategoriesQuerySchema,
+            detail: {
+              summary: "ดึงรายการหมวดหมู่ทั้งหมด",
+              description:
+                "ดึงข้อมูลหมวดหมู่ทั้งหมดของผู้ใช้งาน รวมถึงหมวดหมู่เป้าหมาย (หากระบุ)",
+            },
           }
         )
         .put(
@@ -79,6 +88,10 @@ export const categoryController = new Elysia({ tags: ["CATEGORY"] })
           {
             params: categorySchema.paramsId,
             body: categorySchema.UpdateCategorySchema,
+            detail: {
+              summary: "แก้ไขหมวดหมู่ธุรกรรม",
+              description: "อัปเดตชื่อ ไอคอน หรือสี ของหมวดหมู่ธุรกรรม",
+            },
           }
         )
         .delete(
@@ -97,6 +110,10 @@ export const categoryController = new Elysia({ tags: ["CATEGORY"] })
           },
           {
             params: categorySchema.paramsId,
+            detail: {
+              summary: "ลบหมวดหมู่ธุรกรรม",
+              description: "ลบหมวดหมู่ธุรกรรมออกจากระบบ",
+            },
           }
         )
   );

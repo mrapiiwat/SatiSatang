@@ -36,6 +36,10 @@ export const budgetController = new Elysia({
           },
           {
             body: budgetSchema.createBudget,
+            detail: {
+              summary: "สร้างงบประมาณใหม่",
+              description: "กำหนดงบประมาณการใช้จ่ายรายเดือนสำหรับหมวดหมู่ต่างๆ",
+            },
           }
         )
         .get(
@@ -59,6 +63,10 @@ export const budgetController = new Elysia({
           },
           {
             query: budgetSchema.getBudgetsQuery,
+            detail: {
+              summary: "ดึงรายการงบประมาณทั้งหมด",
+              description: "ดึงข้อมูลงบประมาณทั้งหมดของผู้ใช้งานพร้อมสถานะการใช้จ่าย",
+            },
           }
         )
 
@@ -82,6 +90,10 @@ export const budgetController = new Elysia({
           {
             body: budgetSchema.updateBudget,
             params: budgetSchema.paramsId,
+            detail: {
+              summary: "แก้ไขข้อมูลงบประมาณ",
+              description: "อัปเดตวงเงินงบประมาณสำหรับหมวดหมู่ที่เลือก",
+            },
           }
         )
 
@@ -97,6 +109,12 @@ export const budgetController = new Elysia({
               message: "Budget deleted successfully",
             };
           },
-          { params: budgetSchema.paramsId }
+          {
+            params: budgetSchema.paramsId,
+            detail: {
+              summary: "ลบงบประมาณ",
+              description: "ลบข้อมูลการตั้งงบประมาณของหมวดหมู่ที่เลือก",
+            },
+          }
         )
   );
