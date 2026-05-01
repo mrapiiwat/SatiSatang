@@ -9,7 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { IoChevronBackOutline } from 'react-icons/io5';
 import Tooltip from '../../Tooltip';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SatangTextMode: React.FC<SatangTextModeProps> = ({
   text,
@@ -26,7 +26,10 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
   const prevMessagesLengthRef = useRef(messages.length);
   const prevScrollHeightRef = useRef<number>(0);
   const isUserScrolledRef = useRef(false);
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const incomingText = useRef(location.state?.initialText);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setText(e.target.value);
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -52,6 +55,14 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
     container.addEventListener('scroll', onScroll);
     return () => container.removeEventListener('scroll', onScroll);
   }, [loadMore, hasMore, isLoadingHistory]);
+
+  useEffect(() => {
+    if (incomingText.current) {
+      setText(incomingText.current);
+
+      window.history.replaceState({}, document.title);
+    }
+  }, [setText]);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -82,7 +93,18 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
     if (container) container.scrollTop = container.scrollHeight;
   }, []);
 
-  const renderMessageContent = (msg: ChatMessage, isLastMessage: boolean) => {
+  useEffect(() => {
+    if (location.state?.initialText) {
+      setText(location.state.initialText);
+      navigate('.', { replace: true, state: {} });
+    }
+  }, [location.state, navigate, setText]);
+
+  const renderMessageContent = (
+    msg: ChatMessage,
+    isLastMessage: boolean,
+    failedQuestion: string,
+  ) => {
     if (msg.role === 'user') return msg.content;
 
     const renderMarkdown = (text: string) => (
@@ -137,7 +159,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
               {isLastMessage && parsed.action && parsed.action.action_type === 'switch_to_sati' && (
                 <button
                   onClick={() => {
-                    navigate('/user', { state: { openSati: true } });
+                    navigate('/user', { state: { openSati: true, initialText: failedQuestion } });
                   }}
                   className="mt-2 w-fit flex items-center gap-1 text-blue-600 dark:text-blue-400 text-sm font-medium transition-colors group"
                 >
@@ -206,6 +228,8 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
 
           {messages.map((msg, index) => {
             const isLastMessage = index === messages.length - 1;
+            const prevMsg = index > 0 ? messages[index - 1] : null;
+            const failedQuestion = prevMsg?.role === 'user' ? prevMsg.content : '';
 
             return (
               <div
@@ -216,7 +240,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
                     : 'bg-gray-100 dark:bg-black-800 text-black dark:text-white self-start rounded-tl-none'
                 }`}
               >
-                {renderMessageContent(msg, isLastMessage)}
+                {renderMessageContent(msg, isLastMessage, failedQuestion)}
               </div>
             );
           })}
@@ -233,7 +257,7 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
 
           <form className="flex-1 relative" onSubmit={handleSubmit}>
             <input
-              className="flex justify-center items-center h-16 text-xl px-3 w-full rounded-full border-2 border-black-400 dark:border-black-600 bg-white dark:bg-black-800 text-black-900 dark:text-white pr-16"
+              className="flex justify-center items-center h-16 text-xl pl-6 px-3 w-full rounded-full border-2 border-black-400 dark:border-black-600 bg-white dark:bg-black-800 text-black-900 dark:text-white pr-16"
               value={text}
               onChange={handleInputChange}
               placeholder={t('type_message_placeholder', 'พิมพ์ข้อความ...')}

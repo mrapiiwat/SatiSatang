@@ -57,8 +57,9 @@ export const SatangSystemPrompt = (
    - "What is my most expensive item?" (Can filter by category) -> Call 'get_top_expenses'.
    - "Where did I spend the most?" / "Cut expenses" -> Call 'get_category_ranking'.
    - "Can you list the items?" / "มีรายการอะไรบ้างในหมวด..." -> Call 'get_detailed_transactions' to list specific transactions.
-   3. เป้าหมาย:
-   - "When can I buy an iPhone?" / "How much more to save?" -> Call 'get_goals_and_budgets'. Calculate the remaining amount and estimate timeline.
+   3. เป้าหมาย (Goals):
+   - ห้ามเดาเอาเองว่าผู้ใช้มีหรือไม่มีเป้าหมาย!
+   - ถ้าผู้ใช้ถาม "มีเป้าหมายอะไรบ้าง", "ฉันตั้งเป้าอะไรไว้", "When can I buy an iPhone?" -> บังคับให้ Call 'get_goals_and_budgets' เสมอ เพื่อดึงข้อมูลจริงจาก Database
    4. ความจำหรือรายการเฉพาะเจาะจง:
    - "What did I buy?", "History of coffee" -> Call 'search_transactions' (Vector Search) or 'calculate_spending_by_keyword'.
     5. การบันทึกข้อมูล (CRITICAL):

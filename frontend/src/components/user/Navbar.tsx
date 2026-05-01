@@ -46,7 +46,7 @@ const Navbar: React.FC = () => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 w-full flex justify-between items-center p-6 z-50 transition-all duration-300
+        className={`fixed top-0 left-0 w-full flex justify-between items-center p-6 z-40 transition-all duration-300
           ${isOpen ? '' : 'bg-white dark:bg-black-900'}
           ${showNavbar ? 'translate-y-0' : '-translate-y-full'}
         `}

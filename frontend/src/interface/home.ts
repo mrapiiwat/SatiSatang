@@ -165,6 +165,8 @@ export interface SatiProps {
   handleMenuSelect: (type: string) => void;
   onRefresh?: () => void;
   onSwitchToSatang?: () => void;
+  initialText?: string;
+  onClearInitialText?: () => void;
 }
 
 export interface GoalTransaction {

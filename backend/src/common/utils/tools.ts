@@ -173,6 +173,15 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "get_goals_and_budgets",
+      description:
+        "ดูข้อมูลเป้าหมายเก็บเงิน (Goals) และงบประมาณ (Budgets) ปัจจุบัน (บังคับเรียกใช้ Tool นี้เสมอเมื่อผู้ใช้ถามว่า 'มีเป้าหมายอะไรบ้าง', 'ตั้งเป้าอะไรไว้', หรือ 'เหลืองบเท่าไหร่')",
+      parameters: { type: "object", properties: {} },
+    },
+  },
 ];
 
 export const SATI_TOOLS: ChatCompletionTool[] = [
@@ -237,7 +246,8 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "create_goal",
-      description: "ใช้เมื่อ User ต้องการตั้งเป้าหมายออมเงิน",
+      description:
+        "ใช้เมื่อ User ต้องการ สร้าง, เพิ่ม, หรือตั้ง 'เป้าหมาย' (Goal) ในการออมเงิน (ห้ามสับสนกับหมวดหมู่)",
       parameters: {
         type: "object",
         properties: {
@@ -276,7 +286,7 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
     function: {
       name: "manage_categories",
       description:
-        "ใช้เมื่อ User พูดถึงการเพิ่มหมวดหมู่ใหม่, ลบหมวดหมู่, แก้ไขหมวดหมู่ หรือบ่นว่าหาหมวดหมู่ที่ต้องการไม่เจอ",
+        "ใช้เมื่อ User พูดถึงการจัดการ 'หมวดหมู่' (Category) เท่านั้น เช่น เพิ่มหมวดหมู่ใหม่, ลบ, แก้ไข (คำเตือน: ห้ามใช้ Tool นี้ถ้าผู้ใช้พูดถึง 'เป้าหมาย' หรือ Goal เด็ดขาด)",
       parameters: {
         type: "object",
         properties: {

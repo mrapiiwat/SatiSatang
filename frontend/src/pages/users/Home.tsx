@@ -28,6 +28,7 @@ const Home = () => {
   const initialMonthParam = parseInt(searchParams.get('month') || '', 10);
   const initialYearParam = parseInt(searchParams.get('year') || '', 10);
   const shouldOpenSati = useRef(location.state?.openSati);
+  const incomingText = useRef(location.state?.initialText);
   const defaultMonth =
     initialMonthParam && initialMonthParam >= 1 && initialMonthParam <= 12
       ? initialMonthParam
@@ -35,6 +36,7 @@ const Home = () => {
   const defaultYear =
     initialYearParam && initialYearParam >= 1900 ? initialYearParam : today.getFullYear();
 
+  const [initialSatiText, setInitialSatiText] = useState('');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
@@ -202,10 +204,16 @@ const Home = () => {
 
   useEffect(() => {
     if (shouldOpenSati.current) {
+      if (incomingText.current) {
+        setInitialSatiText(incomingText.current);
+      }
+
       const timer = setTimeout(() => {
         setIsChatOpen(true);
         shouldOpenSati.current = false;
       }, 500);
+
+      window.history.replaceState({}, document.title);
 
       return () => clearTimeout(timer);
     }
@@ -689,6 +697,8 @@ const Home = () => {
           setIsMenuOpen={setIsMenuOpen}
           handleMenuSelect={handleMenuSelect}
           onRefresh={handleRefreshAll}
+          initialText={initialSatiText}
+          onClearInitialText={() => setInitialSatiText('')}
         />
       )}
 
