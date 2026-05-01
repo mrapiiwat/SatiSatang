@@ -1,5 +1,9 @@
 import { and, desc, eq, gte, ilike, isNull, lt, or } from "drizzle-orm";
-import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import type {
+  ChatCompletionChunk,
+  ChatCompletionMessageParam,
+} from "openai/resources/chat/completions";
+import type { Stream } from "openai/streaming";
 import { NotFoundError } from "@/common/exceptions";
 import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
@@ -276,7 +280,7 @@ export class ChatService {
       { role: "user", content },
     ] as ChatCompletionMessageParam[];
 
-    const stream = await openAIService.processSatangToolCallsAndStream(
+    const result = await openAIService.processSatangToolCallsAndStream(
       userId,
       messages,
       aiLang
@@ -284,11 +288,19 @@ export class ChatService {
 
     let fullReply = "";
 
-    for await (const chunk of stream) {
-      const text = chunk.choices[0]?.delta?.content || "";
-      if (text) {
-        fullReply += text;
-        yield text;
+    if ("type" in result && result.type === "message_with_action") {
+      const actionJson = JSON.stringify(result);
+      yield actionJson;
+      fullReply = actionJson;
+    } else {
+      const stream = result as Stream<ChatCompletionChunk>;
+
+      for await (const chunk of stream) {
+        const text = chunk.choices[0]?.delta?.content || "";
+        if (text) {
+          fullReply += text;
+          yield text;
+        }
       }
     }
 

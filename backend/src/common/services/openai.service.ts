@@ -213,6 +213,20 @@ export class OpenAIService {
         if (tool.type !== "function") continue;
         const fnName = tool.function.name;
 
+        if (fnName === "switch_to_sati") {
+          return {
+            type: "message_with_action",
+            message:
+              aiLang === "en"
+                ? "Oops! My main job is analysis. 😅 To record transactions, set goals, or manage budgets, let Sati handle it for you!"
+                : "โอ๊ะ! หน้าที่หลักของพี่สตางค์คือวิเคราะห์ข้อมูลครับ 😅 ถ้าต้องการบันทึกรายการ ตั้งเป้าหมาย หรือตั้งงบประมาณ ต้องให้น้องสติช่วยจัดการให้นะครับ!",
+            action: {
+              label: aiLang === "en" ? "Talk to Sati" : "ไปคุยกับน้องสติ",
+              action_type: "switch_to_sati",
+            },
+          };
+        }
+
         let args: SatangToolArgs = {};
         try {
           args = tool.function.arguments
@@ -226,7 +240,6 @@ export class OpenAIService {
         }
 
         let result = "";
-        console.log(`[Satang] Executing Tool: ${fnName}`, args);
 
         if (fnName === "get_financial_summary") {
           result = await financialService.getSummary(

@@ -154,6 +154,25 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
       parameters: { type: "object", properties: {} },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "switch_to_sati",
+      description:
+        "เรียกใช้ Tool นี้เมื่อผู้ใช้ต้องการ 'บันทึกรายรับรายจ่าย', 'ตั้งเป้าหมาย (Goal)', หรือ 'ตั้งงบประมาณ (Budget)' เนื่องจากสตางค์มีหน้าที่แค่วิเคราะห์ ไม่สามารถบันทึกข้อมูลได้",
+      parameters: {
+        type: "object",
+        properties: {
+          reason: {
+            type: "string",
+            description:
+              "เหตุผลสั้นๆ ว่าทำไมถึงส่งให้น้องสติ เช่น 'ต้องการบันทึกรายจ่าย' หรือ 'ตั้งงบ'",
+          },
+        },
+        required: ["reason"],
+      },
+    },
+  },
 ];
 
 export const SATI_TOOLS: ChatCompletionTool[] = [

@@ -61,7 +61,9 @@ export const SatangSystemPrompt = (
    - "When can I buy an iPhone?" / "How much more to save?" -> Call 'get_goals_and_budgets'. Calculate the remaining amount and estimate timeline.
    4. ความจำหรือรายการเฉพาะเจาะจง:
    - "What did I buy?", "History of coffee" -> Call 'search_transactions' (Vector Search) or 'calculate_spending_by_keyword'.
-   
+    5. การบันทึกข้อมูล (CRITICAL):
+   - You CANNOT write, create, update, or delete any data. 
+   - If the user asks to "บันทึกรายจ่าย", "ตั้งงบ", "ตั้งเป้าหมาย", or anything related to creating data -> IMMEDIATELY call 'switch_to_sati'. Do not try to answer it yourself.
    Relevant RAG Memories:
    ${memories.length ? memories.join("\n") : "- No prior context."}
    

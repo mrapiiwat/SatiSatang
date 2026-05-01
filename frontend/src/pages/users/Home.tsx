@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PiChartPieSliceLight } from 'react-icons/pi';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import Modal from '../../components/Modal';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import type { Transaction, PaginationData, MyGoal, MyBudget } from '../../interface/home';
@@ -23,9 +23,11 @@ const Home = () => {
   const { t, i18n } = useTranslation();
   const today = new Date();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialMonthParam = parseInt(searchParams.get('month') || '', 10);
   const initialYearParam = parseInt(searchParams.get('year') || '', 10);
+  const shouldOpenSati = useRef(location.state?.openSati);
   const defaultMonth =
     initialMonthParam && initialMonthParam >= 1 && initialMonthParam <= 12
       ? initialMonthParam
@@ -197,6 +199,17 @@ const Home = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [budgetIndex, isHovered, budgets.length]);
+
+  useEffect(() => {
+    if (shouldOpenSati.current) {
+      const timer = setTimeout(() => {
+        setIsChatOpen(true);
+        shouldOpenSati.current = false;
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleClosePopupAndRefetch = () => {
     setActivePopup(null);

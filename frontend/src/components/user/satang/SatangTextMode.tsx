@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useLayoutEffect } from 'react';
 import { GoArrowUp } from 'react-icons/go';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import type { SatangTextModeProps } from '../../../interface/satang';
+import type { SatangTextModeProps, ChatMessage } from '../../../interface/satang';
 import TypingIndicator from './TypingIndicator';
 import PageWrapper from '../../PageWrapper';
 import TrackingFace from './TrackingFace';
@@ -82,6 +82,95 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
     if (container) container.scrollTop = container.scrollHeight;
   }, []);
 
+  const renderMessageContent = (msg: ChatMessage, isLastMessage: boolean) => {
+    if (msg.role === 'user') return msg.content;
+
+    const renderMarkdown = (text: string) => (
+      <div className="markdown-body text-[15px] leading-relaxed [&_ul_ul]:mb-0 [&_ul_ul]:mt-1">
+        <ReactMarkdown
+          components={{
+            p: ({ node: _node, ...props }) => <p className="mb-3 last:mb-0" {...props} />,
+            ul: ({ node: _node, ...props }) => (
+              <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />
+            ),
+            ol: ({ node: _node, ...props }) => (
+              <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />
+            ),
+            li: ({ node: _node, ...props }) => <li className="" {...props} />,
+            strong: ({ node: _node, ...props }) => (
+              <strong className="font-bold text-gray-900 dark:text-gray-200" {...props} />
+            ),
+            h3: ({ node: _node, ...props }) => (
+              <h3 className="text-lg font-bold mt-4 mb-2" {...props} />
+            ),
+          }}
+        >
+          {text}
+        </ReactMarkdown>
+      </div>
+    );
+
+    try {
+      let cleanContent = msg.content.trim();
+
+      if (cleanContent.startsWith('```')) {
+        cleanContent = cleanContent
+          .replace(/^```(json)?\n?/, '')
+          .replace(/\n?```$/, '')
+          .trim();
+      }
+
+      if (cleanContent.startsWith('{')) {
+        const parsed = JSON.parse(cleanContent) as {
+          type?: string;
+          message?: string;
+          action?: {
+            action_type?: string;
+            label?: string;
+          };
+        };
+
+        if (parsed.type === 'message_with_action') {
+          return (
+            <div className="flex flex-col gap-1">
+              {renderMarkdown(parsed.message || '')}
+              {isLastMessage && parsed.action && parsed.action.action_type === 'switch_to_sati' && (
+                <button
+                  onClick={() => {
+                    navigate('/user', { state: { openSati: true } });
+                  }}
+                  className="mt-2 w-fit flex items-center gap-1 text-blue-600 dark:text-blue-400 text-sm font-medium transition-colors group"
+                >
+                  <span className="underline decoration-blue-600 dark:decoration-blue-400 underline-offset-4">
+                    {parsed.action.label}
+                  </span>
+                  <svg
+                    xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+          );
+        }
+      }
+
+      return renderMarkdown(msg.content);
+    } catch {
+      return renderMarkdown(msg.content);
+    }
+  };
+
   return (
     <PageWrapper animation="scale-fade">
       <div className="min-h-[calc(100vh-80px)] flex flex-col justify-evenly px-6">
@@ -115,43 +204,22 @@ const SatangTextMode: React.FC<SatangTextModeProps> = ({
             </div>
           )}
 
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`p-3 rounded-2xl w-fit max-w-[75%] break-words ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white self-end rounded-tr-none whitespace-pre-wrap'
-                  : 'bg-gray-100 dark:bg-black-800 text-black dark:text-white self-start rounded-tl-none'
-              }`}
-            >
-              {msg.role === 'user' ? (
-                msg.content
-              ) : (
-                <div className="markdown-body text-[15px] leading-relaxed">
-                  <ReactMarkdown
-                    components={{
-                      p: ({ node: _node, ...props }) => <p className="mb-3 last:mb-0" {...props} />,
-                      ul: ({ node: _node, ...props }) => (
-                        <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />
-                      ),
-                      ol: ({ node: _node, ...props }) => (
-                        <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />
-                      ),
-                      li: ({ node: _node, ...props }) => <li className="" {...props} />,
-                      strong: ({ node: _node, ...props }) => (
-                        <strong className="font-bold text-gray-900 dark:text-gray-200" {...props} />
-                      ),
-                      h3: ({ node: _node, ...props }) => (
-                        <h3 className="text-lg font-bold mt-4 mb-2" {...props} />
-                      ),
-                    }}
-                  >
-                    {msg.content}
-                  </ReactMarkdown>
-                </div>
-              )}
-            </div>
-          ))}
+          {messages.map((msg, index) => {
+            const isLastMessage = index === messages.length - 1;
+
+            return (
+              <div
+                key={msg.id}
+                className={`p-3 rounded-2xl w-fit max-w-[75%] break-words ${
+                  msg.role === 'user'
+                    ? 'bg-blue-600 text-white self-end rounded-tr-none whitespace-pre-wrap'
+                    : 'bg-gray-100 dark:bg-black-800 text-black dark:text-white self-start rounded-tl-none'
+                }`}
+              >
+                {renderMessageContent(msg, isLastMessage)}
+              </div>
+            );
+          })}
 
           {isTyping && (
             <div className="ml-2">
