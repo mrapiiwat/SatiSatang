@@ -15,7 +15,6 @@ import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
 import type { LoginForm } from '../../interface/auth';
 import type { ElysiaResponse } from '../../interface/error';
-import SATISATANG from '../../../public/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -273,7 +272,11 @@ const Login: React.FC = () => {
     <PageWrapper animation="scale-fade">
       <div className="flex min-h-screen w-full">
         <div className="hidden lg:flex lg:flex-col lg:w-1/2 bg-gray-50 items-center justify-center">
-          <img src={SATISATANG} alt="Logo SatiSatang" className="h-96 object-contain" />
+          <img
+            src="SATASATANG_LOGO_BLACK_VERTICAL_TH.svg"
+            alt="Logo SatiSatang"
+            className="h-96 object-contain"
+          />
         </div>
 
         <div className="w-full lg:w-1/2 flex flex-col justify-center">

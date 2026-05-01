@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import Logo from '../../../public/SATISATANG.svg';
 import { AxiosError } from 'axios';
 import axios from '../../api/axios';
 import useAuthStore from '../../store/authStore';
@@ -170,7 +169,7 @@ const Verify: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col bg-white text-gray-700 px-4">
         <div className="flex justify-center py-8">
-          <img className="w-8 h-8 object-contain" src={Logo} alt="SatiSatang Logo" />
+          <img className="w-8 h-8 object-contain" src="/SATISATANG.svg" alt="SatiSatang Logo" />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-4">
@@ -195,7 +194,7 @@ const Verify: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white px-6 py-8">
       <div className="flex justify-center mb-12">
-        <img className="w-8 h-8 object-contain" src={Logo} alt="SatiSatang Logo" />
+        <img className="w-8 h-8 object-contain" src="/SATISATANG.svg" alt="SatiSatang Logo" />
       </div>
 
       <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
