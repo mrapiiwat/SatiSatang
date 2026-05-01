@@ -10,7 +10,7 @@ import {
   SLIP_EXTRACTION_TOOL,
 } from "@/common/utils/tools";
 import { db } from "@/db";
-import { goals } from "@/db/schema";
+import { budgets, goals } from "@/db/schema";
 import { BudgetService } from "@/modules/budget/budget.service";
 
 const ragService = new RAGService();
@@ -591,6 +591,47 @@ export class OpenAIService {
 
           if (isGoalId) {
             args.isGoal = true;
+          } else if (args.type === "EXPENSE" && args.categoryId) {
+            try {
+              const activeBudgets = await db.query.budgets.findMany({
+                where: and(
+                  eq(budgets.userId, userId),
+                  eq(budgets.categoryId, Number(args.categoryId)),
+                  isNull(budgets.deletedAt)
+                ),
+              });
+
+              for (const budget of activeBudgets) {
+                const projectedAmount = budget.currentAmount + amount;
+                const limit = budget.amount;
+                const warningThreshold = limit * 0.9;
+
+                if (
+                  projectedAmount >= warningThreshold &&
+                  !args.is_force_confirm
+                ) {
+                  const isExceeded = projectedAmount > limit;
+                  let warningMsg = "";
+
+                  if (aiLang === "en") {
+                    warningMsg = isExceeded
+                      ? `**Budget Exceeded!** This expense will push you over your limit. (Budget: ${limit} / Projected: ${projectedAmount}).\n\nDo you still want to proceed?`
+                      : `**Almost out of budget!** This expense puts you very close to your limit. (Budget: ${limit} / Projected: ${projectedAmount}).\n\nDo you still want to proceed?`;
+                  } else {
+                    warningMsg = isExceeded
+                      ? `**พี่ครับ งบจะทะลุแล้วน้า!** รายการนี้จะทำให้หมวดหมู่นี้เกินงบที่ตั้งไว้นะครับ (งบ: ${limit} บ. / ยอดรวมจะเป็น: ${projectedAmount} บ.) \n\nพี่ยังต้องการให้น้องสติบันทึกรายการนี้อยู่มั้ยครับ?`
+                      : `**ระวังนิดนึงน้า!** รายการนี้จะทำให้ยอดใช้จ่ายใกล้เต็มงบแล้วนะครับ (งบ: ${limit} บ. / ยอดรวมจะเป็น: ${projectedAmount} บ.) \n\nพี่ยืนยันจะบันทึกรายการนี้มั้ยครับ?`;
+                  }
+
+                  return {
+                    type: "message",
+                    message: warningMsg,
+                  };
+                }
+              }
+            } catch (err) {
+              console.error("[Sati] Check budget limit error:", err);
+            }
           }
         }
 

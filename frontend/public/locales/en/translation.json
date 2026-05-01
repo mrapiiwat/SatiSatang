@@ -210,6 +210,7 @@
   "month_nov": "November",
   "month_dec": "December",
   "upload_slip": "Upload Slip",
+  "slip_count": "Slip {{current}} of {{total}}",
   "manual_record": "Manual Record",
   "set_budget_menu": "Set Budget",
   "set_goal_menu": "Set Goal",

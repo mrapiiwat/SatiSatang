@@ -211,6 +211,7 @@
   "month_dec": "ธันวาคม",
   "home": "หน้าหลัก",
   "upload_slip": "อัปโหลดสลิป",
+  "slip_count": "สลิป {{current}} จาก {{total}}",
   "manual_record": "บันทึกรายรับรายจ่ายเอง",
   "set_budget_menu": "ตั้งงบ",
   "set_goal_menu": "ตั้งเป้าหมาย",

@@ -31,12 +31,20 @@ import {
 } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { db } from "@/db";
-import { category, goalTransaction, transaction, user } from "@/db/schema";
+import {
+  category,
+  goalTransaction,
+  transaction,
+  user,
+  userSettings,
+} from "@/db/schema";
+import { NotificationService } from "../notification/notification.service";
 import type * as transactionSchema from "./transaction.schema";
 
 const ocrService = new OCRService();
 const ragService = new RAGService();
 const openAIService = new OpenAIService();
+const notificationService = new NotificationService();
 
 export class TransactionService {
   private categorizer = new SmartCategorizer();
@@ -320,22 +328,43 @@ export class TransactionService {
   }
 
   async transactionByUpload(files: File[], userId: number) {
-    const [categories, userData] = await Promise.all([
+    const [categories, settingsData] = await Promise.all([
       db.query.category.findMany({
         where: and(eq(category.userId, userId), isNull(category.deletedAt)),
         columns: { id: true, name: true, type: true },
       }),
-      db.query.user.findFirst({
-        where: and(eq(user.id, userId), isNull(user.deletedAt)),
-        columns: { name: true },
+      db.query.userSettings.findFirst({
+        where: eq(userSettings.userId, userId),
+        columns: { appLanguage: true },
+        with: {
+          user: {
+            columns: { name: true },
+          },
+        },
       }),
     ]);
 
-    if (!userData) throw new NotFoundError("ไม่พบข้อมูลผู้ใช้งาน");
+    if (!settingsData || !settingsData.user)
+      throw new NotFoundError("ไม่พบข้อมูลผู้ใช้งาน");
+
+    const lang = settingsData.appLanguage;
+    const userName = settingsData.user.name;
 
     const results = await Promise.allSettled(
-      files.map((file) => this.processSingleSlip(file, categories, userData))
+      files.map((file) =>
+        this.processSingleSlip(file, categories, { name: userName })
+      )
     );
+
+    const successCount = results.filter((r) => r.status === "fulfilled").length;
+    const totalCount = files.length;
+
+    notificationService
+      .sendTemplatedNotification(userId, lang, "SLIP_PROCESSED", {
+        success: successCount,
+        total: totalCount,
+      })
+      .catch((err) => console.error("FCM Background Error:", err));
 
     return results.map((result, index) => {
       if (result.status === "fulfilled") {

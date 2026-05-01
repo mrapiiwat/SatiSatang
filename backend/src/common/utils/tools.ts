@@ -181,6 +181,11 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
             description:
               "วันที่เกิดรายการ (ISO Format YYYY-MM-DD) คำนวณจากข้อความเช่น 'เมื่อวาน', 'วันจันทร์' โดยอ้างอิงจาก Current Date หากไม่ระบุเวลาเจาะจงให้ใช้วันนี้",
           },
+          is_force_confirm: {
+            type: "boolean",
+            description:
+              "ส่งค่า true เมื่อผู้ใช้ยืนยันที่จะทำรายการต่อ แม้ว่าจะได้รับการแจ้งเตือนเรื่องงบประมาณเกินไปแล้ว (ดูจากประวัติการคุยล่าสุด)",
+          },
         },
         required: ["type", "amount"],
       },
