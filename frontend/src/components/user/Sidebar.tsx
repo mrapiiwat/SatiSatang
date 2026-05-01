@@ -39,7 +39,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="flex flex-col justify-between h-full">
           <div>
             <div className="flex justify-between items-center px-9 pt-8 pb-4 md:pb-8">
-              <div className="hidden md:flex items-center gap-3 pl-2">
+              <Link
+                to="/user/account"
+                onClick={onClose}
+                className="hidden md:flex items-center gap-3 cursor-pointer pl-2"
+              >
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
@@ -51,7 +55,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     {user?.email}
                   </span>
                 </div>
-              </div>
+              </Link>
               <button
                 onClick={onClose}
                 className="hidden md:flex w-10 h-10 justify-center items-center rounded-full bg-gray-100 dark:bg-black-700 hover:bg-gray-200 dark:hover:bg-black-600 transition-colors shadow-sm"
