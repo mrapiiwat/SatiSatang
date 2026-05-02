@@ -102,6 +102,8 @@
   "expense_label": "Expenses",
   "income_label": "Income",
   "view_summary": "Summary",
+  "share": "Share",
+  "download": "Download",
   "loading_data": "Loading data...",
   "budget_set": "Budget Set",
   "goal_label": "Goals",
