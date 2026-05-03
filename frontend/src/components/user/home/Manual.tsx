@@ -471,10 +471,14 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               classNames={{
                 control: (state) =>
                   `!border-[1px] !border-black-500 dark:!border-black-500 text-black-900 dark:text-white transition-all
-      ${state.isDisabled ? '!bg-black-700 !cursor-not-allowed' : '!bg-black-800 !cursor-pointer'}`,
+    ${
+      state.isDisabled
+        ? '!bg-gray-200 dark:!bg-black-700 !cursor-not-allowed opacity-60'
+        : '!bg-white dark:!bg-black-800 !cursor-pointer'
+    }`,
                 menu: () =>
                   'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
-                placeholder: () => 'dark:text-gray-50 text-xs',
+                placeholder: () => 'text-gray-400 dark:text-gray-50',
               }}
             />
           </div>
