@@ -80,6 +80,11 @@ const config: Config = {
           position: 'left',
           label: 'เอกสารคู่มือ',
         },
+        {
+          to: '/developers',
+          label: 'ผู้จัดทำ',
+          position: 'left',
+        },
       ],
     },
     footer: {
