@@ -354,7 +354,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                 type="text"
                 value={goalName}
                 onChange={(e) => setGoalName(e.target.value)}
-                className="border border-black-500 dark:border-black-500 dark:bg-black-700 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
+                className="border border-black-500 dark:border-black-500 dark:bg-black-800 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
               />
             </div>
 
@@ -365,8 +365,9 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
               <input
                 type="number"
                 value={amount}
+                min="0"
                 onChange={(e) => setAmount(e.target.value)}
-                className="border border-black-500 dark:border-black-500 dark:bg-black-700 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
+                className="border border-black-500 dark:border-black-500 dark:bg-black-800 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
               />
             </div>
 

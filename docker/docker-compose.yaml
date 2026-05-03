@@ -55,6 +55,3 @@ volumes:
   satisatang_qdrant_data:
   satisatang_redis_data:
   satisatang_postgres_data:
-
-
-

@@ -10,15 +10,20 @@ const FileUploadArea: React.FC<FileUploadProps> = ({ files, onFileChange, onRemo
     <div className="flex flex-col gap-4 mb-6">
       <label
         htmlFor="fileInput"
-        className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl w-full py-10 cursor-pointer hover:bg-gray-50 transition"
+        className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl w-full py-10 cursor-pointer transition 
+      border-gray-300 bg-white hover:bg-gray-50 
+      dark:border-black-600 dark:bg-black-800 dark:hover:bg-black-700"
       >
-        <FaCloudUploadAlt className="text-5xl text-blue-600 mb-3" />
-        <p className="text-sm text-gray-900 font-medium">
+        <FaCloudUploadAlt className="text-5xl text-blue-600 dark:text-blue-500 mb-3" />
+
+        <p className="text-sm font-medium text-gray-900 dark:text-zinc-100">
           {t('click_to_upload', 'คลิกเพื่อเลือกไฟล์สลิป')}
         </p>
-        <p className="text-xs text-gray-500">
+
+        <p className="text-xs text-gray-500 dark:text-zinc-400">
           {t('supported_formats', '(รองรับ .jpg, .png, .pdf)')}
         </p>
+
         <input
           id="fileInput"
           type="file"

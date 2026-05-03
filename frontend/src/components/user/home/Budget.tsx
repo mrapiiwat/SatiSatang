@@ -84,10 +84,18 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
     return isCategoryChanged || isFrequencyChanged || isAmountChanged;
   };
 
-  const canSubmit = isModified();
+  const isFormValid = () => {
+    if (!selectedCategory) return false;
+    if (!selectedFrequency) return false;
+    if (!amount || Number(amount) <= 0) return false;
+    return true;
+  };
+
+  const canSubmit = isModified() && isFormValid();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isFormValid()) return;
 
     const newErrors = {
       category: !selectedCategory,
@@ -220,7 +228,12 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                     minHeight: 40,
                     borderRadius: 6,
                     borderColor: 'var(--tw-border-opacity, #B1B0AD)',
+                    boxShadow: 'none',
+                    '&:hover': {
+                      borderColor: 'var(--tw-border-opacity, #B1B0AD)',
+                    },
                     backgroundColor: 'transparent',
+                    caretColor: 'white',
                   }),
                   singleValue: (base) => ({ ...base, color: 'inherit' }),
                   menu: (base) => ({ ...base, zIndex: 9999 }),
@@ -266,7 +279,12 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                     minHeight: 40,
                     borderRadius: 6,
                     borderColor: 'var(--tw-border-opacity, #B1B0AD)',
+                    boxShadow: 'none',
+                    '&:hover': {
+                      borderColor: 'var(--tw-border-opacity, #B1B0AD)',
+                    },
                     backgroundColor: 'transparent',
+                    caretColor: 'white',
                   }),
                   singleValue: (base) => ({ ...base, color: 'inherit' }),
                   menu: (base) => ({ ...base, zIndex: 9999 }),
@@ -296,10 +314,11 @@ const Budget: React.FC<ExtendedBudgetProps> = ({ onClose, onSuccess, editData, o
                 id="amount"
                 type="number"
                 value={amount}
+                min="0"
                 onChange={(e) => {
                   setAmount(e.target.value);
                 }}
-                className="text-black-900 dark:text-white dark:bg-black-700 w-full h-10 rounded-md p-1 px-3 focus:outline-none transition border-[1px] border-black-500 dark:border-black-500 shadow-sm focus:border-sky-700 focus:ring-0"
+                className="text-black-900 dark:text-white dark:bg-black-800 w-full h-10 rounded-md p-1 px-3 focus:outline-none transition border-[1px] border-black-500 dark:border-black-500 dark:hover:border-[#B1B0AD]"
               />
             </div>
 

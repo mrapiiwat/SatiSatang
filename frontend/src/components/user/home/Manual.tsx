@@ -217,7 +217,17 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
     );
   };
 
-  const canSubmit = isModified();
+  const isFormValid = () => {
+    return (
+      detail.trim() !== '' &&
+      selectedType !== null &&
+      selectedCategory !== null &&
+      amount !== '' &&
+      Number(amount) > 0
+    );
+  };
+
+  const canSubmit = isModified() && isFormValid();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -274,17 +284,21 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
   };
 
   const selectStyles: StylesConfig<OptionType | CategoryOption, false> = {
-    control: (base) => ({
+    control: (base, state) => ({
       ...base,
       height: 40,
       minHeight: 40,
       borderRadius: 6,
-      backgroundColor: 'transparent',
-      borderColor: 'transparent',
+      backgroundColor: state.isDisabled ? 'transparent' : 'rgba(255, 255, 255, 0.05)',
+      borderColor: 'var(--tw-border-opacity, #B1B0AD)',
       boxShadow: 'none',
       '&:hover': {
-        borderColor: 'transparent',
+        borderColor: state.isDisabled ? 'var(--tw-border-opacity, #B1B0AD)' : '#B1B0AD',
       },
+      ...(state.isFocused && {
+        borderColor: '#B1B0AD',
+      }),
+      caretColor: 'white',
     }),
     singleValue: (base) => ({ ...base, color: 'inherit' }),
     menu: (base) => ({ ...base, zIndex: 9999 }),
@@ -323,9 +337,9 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
           >
             <GoCalendar
               size={20}
-              className="group-hover:text-blue-600 transition-colors dark:text-white"
+              className="group-hover:text-gray-300 transition-colors dark:text-white"
             />
-            <h5 className="text-base group-hover:text-blue-600 transition-colors select-none dark:text-white">
+            <h5 className="text-base group-hover:text-gray-300 transition-colors select-none dark:text-white">
               {formattedDate}
             </h5>
           </div>
@@ -417,7 +431,7 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               type="text"
               value={detail}
               onChange={(e) => setDetail(e.target.value)}
-              className="border-[1px] text-black-900 dark:text-white bg-transparent dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none focus:border-sky-700"
+              className="border-[1px] text-black-900 dark:text-white bg-transparent dark:bg-black-800 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none focus:border-sky-700"
             />
           </div>
 
@@ -433,7 +447,8 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               styles={selectStyles as StylesConfig<OptionType, false>}
               classNames={{
                 control: (state) =>
-                  `!border-[1px] !border-black-500 dark:!border-black-500 text-black-900 dark:text-white ${state.isFocused ? '!border-sky-700' : ''} ${state.isDisabled ? '!bg-gray-100 dark:!bg-black-800/50 !cursor-not-allowed opacity-60' : '!bg-transparent dark:!bg-black-700'}`,
+                  `!border-[1px] !border-black-500 dark:!border-black-500 text-black-900 dark:text-white 
+    ${state.isDisabled ? '!bg-gray-100 dark:!bg-black-800/50 !cursor-not-allowed opacity-60' : '!bg-transparent dark:!bg-black-800'}`,
                 menu: () =>
                   'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 text-black-900 dark:text-white',
               }}
@@ -446,17 +461,20 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
               options={categories}
               value={selectedCategory}
               onChange={(option: SingleValue<CategoryOption>) => setSelectedCategory(option)}
-              placeholder={
-                !selectedType ? t('please_select_type_first', 'กรุณาเลือกประเภทรายการก่อน') : ''
-              }
+              placeholder=""
+              // {
+              //   !selectedType ? t('please_select_type_first', 'กรุณาเลือกประเภทรายการก่อน') : ''
+              // }
               isDisabled={!selectedType}
               menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
               styles={selectStyles as StylesConfig<CategoryOption, false>}
               classNames={{
                 control: (state) =>
-                  `!border-[1px] !border-black-500 dark:!border-black-500 text-black-900 dark:text-white ${state.isFocused ? '!border-sky-700' : ''} ${state.isDisabled ? '!bg-gray-100 dark:!bg-black-800/50 !cursor-not-allowed opacity-60' : '!bg-transparent dark:!bg-black-700'}`,
+                  `!border-[1px] !border-black-500 dark:!border-black-500 text-black-900 dark:text-white transition-all
+      ${state.isDisabled ? '!bg-black-700 !cursor-not-allowed' : '!bg-black-800 !cursor-pointer'}`,
                 menu: () =>
-                  'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 text-black-900 dark:text-white',
+                  'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
+                placeholder: () => 'dark:text-gray-50 text-xs',
               }}
             />
           </div>
@@ -468,9 +486,10 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
             <input
               id="amount"
               type="number"
+              min="0"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="border-[1px] text-black-900 dark:text-white bg-transparent dark:bg-black-700 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none focus:border-sky-700"
+              className="border-[1px] text-black-900 dark:text-white bg-transparent dark:bg-black-800 border-black-500 dark:border-black-500 w-full h-10 rounded-md p-1 px-3 focus:outline-none focus:border-sky-700"
             />
           </div>
 

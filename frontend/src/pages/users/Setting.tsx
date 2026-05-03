@@ -147,7 +147,9 @@ const Setting: React.FC = () => {
         row.danger ? 'text-red-500' : 'text-black-900 dark:text-white'
       } ${index < arr.length - 1 ? 'border-b border-gray-100 dark:border-black-600' : ''}`}
     >
-      <span className={`shrink-0 ${row.danger ? 'text-red-500' : 'text-black-700'}`}>
+      <span
+        className={`shrink-0 ${row.danger ? 'text-red-500' : 'text-black-700 dark:text-white'}`}
+      >
         {row.icon}
       </span>
       <div className="flex flex-col items-start flex-1 min-w-0 text-left">
@@ -176,7 +178,7 @@ const Setting: React.FC = () => {
         </p>
         <div className="bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600 rounded-2xl shadow-sm overflow-hidden mb-6">
           <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
-            <span className="shrink-0 text-black-700">
+            <span className="shrink-0 text-black-700 dark:text-white">
               <IoLanguageOutline size={20} />
             </span>
             <span className="text-sm font-medium flex-1">{t('app_language', 'ภาษาแอป')}</span>
@@ -200,7 +202,7 @@ const Setting: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
-            <span className="shrink-0 text-black-700">
+            <span className="shrink-0 text-black-700 dark:text-white">
               <IoSparklesOutline size={20} />
             </span>
             <span className="text-sm font-medium flex-1">{t('ai_language', 'ภาษา AI')}</span>
@@ -221,7 +223,7 @@ const Setting: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
-            <span className="shrink-0 text-black-700">
+            <span className="shrink-0 text-black-700 dark:text-white">
               <IoContrastOutline size={20} />
             </span>
             <span className="text-sm font-medium flex-1">{t('theme_label', 'ธีม')}</span>
@@ -243,7 +245,7 @@ const Setting: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4 px-4 py-3.5 border-b border-gray-100">
-            <span className="shrink-0 text-black-700">
+            <span className="shrink-0 text-black-700 dark:text-white">
               <IoNotificationsOutline size={20} />
             </span>
             <span className="text-sm font-medium flex-1">
@@ -264,7 +266,7 @@ const Setting: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4 px-4 py-3.5">
-            <span className="shrink-0 text-black-700">
+            <span className="shrink-0 text-black-700 dark:text-white">
               <IoCalendarOutline size={20} />
             </span>
             <div className="flex flex-col flex-1">

@@ -82,16 +82,16 @@ const DraftCard: React.FC<{
       <div className="flex gap-3 items-start relative ">
         <div className="flex gap-2 h-full shrink-0 ">
           <div
-            className={`w-1 h-[74px] rounded-full ${isCancelled ? 'bg-gray-300' : 'bg-blue-700'}`}
+            className={`w-1 h-[74px] rounded-full ${isCancelled ? 'bg-gray-300' : 'bg-blue-700 dark:bg-white'}`}
           ></div>
           <div className="flex flex-col gap-1 justify-center items-center w-full">
             <span
-              className={`text-base font-medium leading-none mb-1 ${isCancelled ? 'text-gray-400' : 'text-blue-700'}`}
+              className={`text-base font-medium leading-none mb-1 ${isCancelled ? 'text-gray-400' : 'text-blue-700 dark:text-white'}`}
             >
               {displayTopText}
             </span>
             <span
-              className={`text-base font-medium leading-none tracking-tighter ${isCancelled ? 'text-gray-400' : 'text-blue-700'}`}
+              className={`text-base font-medium leading-none tracking-tighter ${isCancelled ? 'text-gray-400' : 'text-blue-700 dark:text-white'}`}
             >
               {dateNum}
             </span>
