@@ -116,6 +116,10 @@ export const goalTransactionRelations = relations(
       fields: [goalTransaction.goalId],
       references: [goals.id],
     }),
+    user: one(user, {
+      fields: [goalTransaction.userId],
+      references: [user.id],
+    }),
   })
 );
 
