@@ -48,3 +48,8 @@ export interface SettingStore extends SettingState {
   actionClearSettings: () => void;
   actionSyncFCMToken: () => void;
 }
+export interface LoadingState {
+  loadingCount: number;
+  startLoading: () => void;
+  stopLoading: () => void;
+}

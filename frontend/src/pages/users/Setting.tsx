@@ -21,14 +21,8 @@ import {
   IoCalendarOutline,
 } from 'react-icons/io5';
 import axios from '../../api/axios';
-
-interface SettingRow {
-  icon: React.ReactNode;
-  label: string;
-  description?: string;
-  onClick: () => void;
-  danger?: boolean;
-}
+import useLoadingStore from '../../store/loadingStore';
+import type { SettingRow } from '../../interface/setting';
 
 const LANGUAGE_OPTIONS = [
   { value: 'th', label: 'ภาษาไทย' },
@@ -47,13 +41,15 @@ const Setting: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const actionLogout = useAuthStore((state) => state.actionLogout);
 
-  const appLanguage = useSettingStore((s) => s.appLanguage);
-  const aiLanguage = useSettingStore((s) => s.aiLanguage);
-  const theme = useSettingStore((s) => s.theme);
-  const isNotificationEnabled = useSettingStore((s) => s.isNotificationEnabled);
-  const budgetStartDate = useSettingStore((s) => s.budgetStartDate);
-  const actionUpdateSetting = useSettingStore((s) => s.actionUpdateSetting);
-  const actionClearSettings = useSettingStore((s) => s.actionClearSettings);
+  const appLanguage = useSettingStore((state) => state.appLanguage);
+  const aiLanguage = useSettingStore((state) => state.aiLanguage);
+  const theme = useSettingStore((state) => state.theme);
+  const isNotificationEnabled = useSettingStore((state) => state.isNotificationEnabled);
+  const budgetStartDate = useSettingStore((state) => state.budgetStartDate);
+  const actionUpdateSetting = useSettingStore((state) => state.actionUpdateSetting);
+  const actionClearSettings = useSettingStore((state) => state.actionClearSettings);
+  const startLoading = useLoadingStore((state) => state.startLoading);
+  const stopLoading = useLoadingStore((state) => state.stopLoading);
 
   const handleLogout = async () => {
     actionClearSettings();
@@ -186,9 +182,14 @@ const Setting: React.FC = () => {
               {LANGUAGE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => {
-                    actionUpdateSetting({ appLanguage: opt.value });
-                    i18n.changeLanguage(opt.value);
+                  onClick={async () => {
+                    startLoading();
+                    try {
+                      await actionUpdateSetting({ appLanguage: opt.value });
+                      await i18n.changeLanguage(opt.value);
+                    } finally {
+                      setTimeout(stopLoading, 300);
+                    }
                   }}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                     appLanguage === opt.value
@@ -210,7 +211,14 @@ const Setting: React.FC = () => {
               {LANGUAGE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => actionUpdateSetting({ aiLanguage: opt.value })}
+                  onClick={async () => {
+                    startLoading();
+                    try {
+                      await actionUpdateSetting({ aiLanguage: opt.value });
+                    } finally {
+                      setTimeout(stopLoading, 300);
+                    }
+                  }}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                     aiLanguage === opt.value
                       ? 'bg-white dark:bg-black-500 text-blue-600 shadow-sm'
@@ -231,7 +239,23 @@ const Setting: React.FC = () => {
               {THEME_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => actionUpdateSetting({ theme: opt.value })}
+                  onClick={async () => {
+                    startLoading();
+                    try {
+                      await actionUpdateSetting({ theme: opt.value });
+
+                      const root = document.documentElement;
+
+                      if (opt.value === 'dark') root.classList.add('dark');
+                      else if (opt.value === 'light') root.classList.remove('dark');
+                      else {
+                        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                        root.classList.toggle('dark', isDark);
+                      }
+                    } finally {
+                      setTimeout(stopLoading, 300);
+                    }
+                  }}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                     theme === opt.value
                       ? 'bg-white dark:bg-black-500 text-blue-600 shadow-sm'
