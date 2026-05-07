@@ -37,5 +37,5 @@ export interface CombinedCategory {
 }
 
 export const paramsId = t.Object({
-  id: t.Numeric(),
+  id: t.String(),
 });

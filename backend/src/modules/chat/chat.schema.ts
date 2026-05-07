@@ -26,7 +26,7 @@ export const satiLog = t.Object({
 });
 
 export const paramsId = t.Object({
-  id: t.Numeric(),
+  id: t.String(),
 });
 
 export type getSessionQuery = Static<typeof getSessionQuery>;

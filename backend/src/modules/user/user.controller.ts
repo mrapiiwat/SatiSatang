@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError } from "@/common/exceptions";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import { cached } from "@/common/utils/cache";
 import { clearUserCache, userCache } from "./user.cache";
 import * as userSchema from "./user.schema";
@@ -60,6 +61,11 @@ export const userController = new Elysia({ tags: ["USER"] })
           },
           {
             body: userSchema.password,
+            beforeHandle: limit({
+              max: 5,
+              window: 60,
+              prefix: "change-password",
+            }),
             detail: {
               summary: "เปลี่ยนรหัสผ่าน",
               description: "เปลี่ยนรหัสผ่านใหม่สำหรับผู้ใช้งานที่เข้าสู่ระบบด้วยอีเมล",
@@ -82,6 +88,11 @@ export const userController = new Elysia({ tags: ["USER"] })
           },
           {
             body: userSchema.name,
+            beforeHandle: limit({
+              max: 10,
+              window: 60,
+              prefix: "update-name",
+            }),
             detail: {
               summary: "แก้ไขชื่อผู้ใช้งาน",
               description: "อัปเดตชื่อที่แสดงในระบบของผู้ใช้งาน",
@@ -103,6 +114,11 @@ export const userController = new Elysia({ tags: ["USER"] })
           },
           {
             body: userSchema.deleteAccount,
+            beforeHandle: limit({
+              max: 3,
+              window: 60,
+              prefix: "delete-account",
+            }),
             detail: {
               summary: "ลบบัญชีผู้ใช้งาน",
               description: "ลบข้อมูลบัญชีและข้อมูลที่เกี่ยวข้องทั้งหมดของผู้ใช้งานออกจากระบบ",

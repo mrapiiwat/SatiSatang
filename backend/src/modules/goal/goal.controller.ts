@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import { cached } from "@/common/utils/cache";
 import { clearGoalCache, goalCache } from "./goal.cache";
 import * as goalSchema from "./goal.schema";
@@ -33,6 +34,11 @@ export const goalController = new Elysia({ prefix: "/goal", tags: ["GOAL"] })
           },
           {
             body: goalSchema.createGoal,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "create-goal",
+            }),
             detail: {
               summary: "สร้างเป้าหมายการออมใหม่",
               description:
@@ -88,8 +94,13 @@ export const goalController = new Elysia({ prefix: "/goal", tags: ["GOAL"] })
             };
           },
           {
-            params: goalSchema.paramsId,
             body: goalSchema.updateGoal,
+            params: goalSchema.paramsId,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "update-goal",
+            }),
             detail: {
               summary: "แก้ไขข้อมูลเป้าหมายการออม",
               description:
@@ -110,6 +121,11 @@ export const goalController = new Elysia({ prefix: "/goal", tags: ["GOAL"] })
           },
           {
             params: goalSchema.paramsId,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "delete-goal",
+            }),
             detail: {
               summary: "ลบเป้าหมายการออม",
               description: "ลบเป้าหมายการออมที่ไม่ต้องการออกจากระบบ",

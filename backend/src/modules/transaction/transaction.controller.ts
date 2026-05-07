@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import { cached } from "@/common/utils/cache";
 import { clearBudgetCache } from "../budget/budget.cache";
 import { clearGoalCache } from "../goal/goal.cache";
@@ -109,6 +110,11 @@ export const transactionController = new Elysia({
           },
           {
             body: transactionSchema.createTransaction,
+            beforeHandle: limit({
+              max: 30,
+              window: 60,
+              prefix: "tx-create",
+            }),
             detail: {
               summary: "สร้างรายการธุรกรรมใหม่",
               description: "เพิ่มรายการธุรกรรม รายรับ หรือ รายจ่าย เข้าสู่ระบบ",
@@ -131,6 +137,11 @@ export const transactionController = new Elysia({
           },
           {
             body: transactionSchema.predictCategory,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "tx-ai",
+            }),
             detail: {
               summary: "ทำนายหมวดหมู่ธุรกรรม",
               description: "ใช้ AI ทำนายหมวดหมู่ที่เหมาะสมที่สุดจากคำอธิบายรายการ",
@@ -161,6 +172,11 @@ export const transactionController = new Elysia({
           },
           {
             body: transactionSchema.uploadReceipt,
+            beforeHandle: limit({
+              max: 5,
+              window: 60,
+              prefix: "tx-upload",
+            }),
             detail: {
               summary: "อัปโหลดและประมวลผลสลิป",
               description: "อัปโหลดรูปภาพสลิปธนาคารเพื่อประมวลผลข้อมูลธุรกรรมโดยอัตโนมัติ",
@@ -174,7 +190,7 @@ export const transactionController = new Elysia({
             const userId = Number(user.id);
 
             const result = await transactionService.updateTransaction(
-              id,
+              Number(id),
               body,
               userId
             );
@@ -189,6 +205,11 @@ export const transactionController = new Elysia({
           },
           {
             params: transactionSchema.paramsId,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "tx-update",
+            }),
             body: transactionSchema.updateTransaction,
             detail: {
               summary: "แก้ไขข้อมูลธุรกรรม",
@@ -202,7 +223,7 @@ export const transactionController = new Elysia({
           async ({ params: { id }, user, set }) => {
             const userId = Number(user.id);
             const result = await transactionService.deleteTransaction(
-              id,
+              Number(id),
               userId
             );
             await invalidateAllFinancialData(userId);
@@ -212,6 +233,11 @@ export const transactionController = new Elysia({
           },
           {
             params: transactionSchema.paramsId,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "tx-delete",
+            }),
             detail: {
               summary: "ลบรายการธุรกรรม",
               description: "ลบข้อมูลรายการธุรกรรมออกจากระบบ",

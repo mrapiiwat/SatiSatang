@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import { cached } from "@/common/utils/cache";
 import { clearBudgetCache } from "../budget/budget.cache";
 import { clearSettingCache, settingCache } from "./setting.cache";
@@ -65,6 +66,11 @@ export const settingController = new Elysia({
           },
           {
             body: settingSchema.updateSetting,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "update-setting",
+            }),
             detail: {
               summary: "อัปเดตการตั้งค่าของผู้ใช้งาน",
               description: "แก้ไขข้อมูลการตั้งค่าต่างๆ ของผู้ใช้งาน",

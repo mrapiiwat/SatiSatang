@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import { cached } from "@/common/utils/cache";
 import { categoryCache, clearCategoryCache } from "./category.cache";
 import * as categorySchema from "./category.schema";
@@ -33,6 +34,11 @@ export const categoryController = new Elysia({ tags: ["CATEGORY"] })
           },
           {
             body: categorySchema.CategorySchema,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "create-category",
+            }),
             detail: {
               summary: "สร้างหมวดหมู่ธุรกรรมใหม่",
               description: "สร้างหมวดหมู่ใหม่สำหรับจัดกลุ่มธุรกรรม (รายรับ/รายจ่าย)",
@@ -88,6 +94,11 @@ export const categoryController = new Elysia({ tags: ["CATEGORY"] })
           {
             params: categorySchema.paramsId,
             body: categorySchema.UpdateCategorySchema,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "update-category",
+            }),
             detail: {
               summary: "แก้ไขหมวดหมู่ธุรกรรม",
               description: "อัปเดตชื่อ ไอคอน หรือสี ของหมวดหมู่ธุรกรรม",
@@ -110,6 +121,11 @@ export const categoryController = new Elysia({ tags: ["CATEGORY"] })
           },
           {
             params: categorySchema.paramsId,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "delete-category",
+            }),
             detail: {
               summary: "ลบหมวดหมู่ธุรกรรม",
               description: "ลบหมวดหมู่ธุรกรรมออกจากระบบ",

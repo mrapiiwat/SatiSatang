@@ -6,6 +6,7 @@ import {
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import { facebookAuth, googleAuth } from "@/common/utils/oauth";
 import { createRefreshToken } from "@/common/utils/token";
 import { setup } from "@/setup";
@@ -25,6 +26,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       body: authSchema.emailSchema,
+      beforeHandle: limit({
+        max: 15,
+        window: 60,
+        prefix: "check-email",
+      }),
       detail: {
         summary: "ตรวจสอบสถานะอีเมล",
         description: "ตรวจสอบว่าอีเมลนี้ลงทะเบียนแล้วหรือยัง และต้องการการยืนยันตัวตนหรือไม่",
@@ -45,6 +51,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       body: authSchema.registerSchema,
+      beforeHandle: limit({
+        max: 3,
+        window: 60,
+        prefix: "register",
+      }),
       detail: {
         summary: "ลงทะเบียนผู้ใช้งานใหม่",
         description: "สร้างบัญชีผู้ใช้งานใหม่ด้วยอีเมลและรหัสผ่าน",
@@ -77,6 +88,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       body: authSchema.loginSchema,
+      beforeHandle: limit({
+        max: 5,
+        window: 60,
+        prefix: "login",
+      }),
       detail: {
         summary: "เข้าสู่ระบบ",
         description:
@@ -112,6 +128,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       body: authSchema.verifySchema,
+      beforeHandle: limit({
+        max: 3,
+        window: 60,
+        prefix: "verify-email",
+      }),
       detail: {
         summary: "ยืนยันอีเมล",
         description: "ยืนยันความถูกต้องของอีเมลด้วยรหัส OTP",
@@ -145,6 +166,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
       return { accessToken };
     },
     {
+      beforeHandle: limit({
+        max: 10,
+        window: 60,
+        prefix: "refresh-token",
+      }),
       detail: {
         summary: "ต่ออายุ Access Token",
         description: "ใช้ Refresh Token เพื่อขอ Access Token ใหม่",
@@ -165,6 +191,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       body: authSchema.emailSchema,
+      beforeHandle: limit({
+        max: 3,
+        window: 60,
+        prefix: "resend-otp",
+      }),
       detail: {
         summary: "ส่งรหัส OTP อีกครั้ง",
         description: "ร้องขอให้ส่งรหัส OTP ไปที่อีเมลใหม่อีกครั้ง",
@@ -182,6 +213,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       body: authSchema.emailSchema,
+      beforeHandle: limit({
+        max: 3,
+        window: 300,
+        prefix: "forgot",
+      }),
       detail: {
         summary: "ลืมรหัสผ่าน",
         description: "ส่งคำขอรีเซ็ตรหัสผ่านไปยังอีเมลของผู้ใช้งาน",
@@ -199,6 +235,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
     },
     {
       body: authSchema.resetPasswordSchema,
+      beforeHandle: limit({
+        max: 3,
+        window: 300,
+        prefix: "reset-password",
+      }),
       detail: {
         summary: "ตั้งรหัสผ่านใหม่",
         description: "เปลี่ยนรหัสผ่านใหม่โดยใช้รหัส OTP หรือ Token ที่ได้รับ",
@@ -268,6 +309,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
       return redirect(url.toString());
     },
     {
+      beforeHandle: limit({
+        max: 10,
+        window: 60,
+        prefix: "oauth-google",
+      }),
       detail: {
         summary: "เข้าสู่ระบบด้วย Google",
         description: "นำทางไปยังหน้า Login ของ Google",
@@ -380,6 +426,11 @@ export const authController = new Elysia({ tags: ["AUTH"] })
       return redirect(url.toString());
     },
     {
+      beforeHandle: limit({
+        max: 10,
+        window: 60,
+        prefix: "oauth-facebook",
+      }),
       detail: {
         summary: "เข้าสู่ระบบด้วย Facebook",
         description: "นำทางไปยังหน้า Login ของ Facebook",

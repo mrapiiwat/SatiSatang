@@ -54,5 +54,5 @@ export const getBudgetsQuery = t.Object({
 export type getBudgetsQuery = Static<typeof getBudgetsQuery>;
 
 export const paramsId = t.Object({
-  id: t.Numeric(),
+  id: t.String(),
 });

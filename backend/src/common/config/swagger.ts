@@ -11,7 +11,6 @@ const swaggerConfig = swagger({
     tags: [
       { name: "AUTH", description: "ระบบจัดการการยืนยันตัวตนและการเข้าสู่ระบบ" },
       { name: "USER", description: "ระบบจัดการข้อมูลผู้ใช้งาน" },
-      { name: "ICON", description: "ระบบจัดการข้อมูลไอคอน" },
       { name: "GOAL", description: "ระบบจัดการเป้าหมายทางการเงิน" },
       { name: "CATEGORY", description: "ระบบจัดการหมวดหมู่ธุรกรรม" },
       { name: "BUDGET", description: "ระบบจัดการงบประมาณ" },
@@ -21,6 +20,11 @@ const swaggerConfig = swagger({
       { name: "SETTING", description: "ระบบจัดการการตั้งค่าผู้ใช้งาน" },
       { name: "NOTIFICATION", description: "ระบบจัดการการแจ้งเตือน" },
       { name: "STOCK", description: "ระบบจัดการข้อมูลหุ้นและการลงทุน" },
+      {
+        name: "ICON (UNAVAILABLE)",
+        description:
+          "ระบบจัดการและจัดเก็บข้อมูลไอคอน (จำกัดสิทธิ์การใช้งานเฉพาะภายในทีมพัฒนาเท่านั้น)",
+      },
     ],
     components: {
       securitySchemes: {

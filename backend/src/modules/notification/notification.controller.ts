@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import * as notificationSchema from "./notification.schema";
 import { NotificationService } from "./notification.service";
 
@@ -34,6 +35,11 @@ export const notificationController = new Elysia({
           },
           {
             body: notificationSchema.registerToken,
+            beforeHandle: limit({
+              max: 10,
+              window: 60,
+              prefix: "register-token",
+            }),
             detail: {
               summary: "ลงทะเบียนอุปกรณ์สำหรับการแจ้งเตือน",
               description:
@@ -51,6 +57,11 @@ export const notificationController = new Elysia({
           },
           {
             body: notificationSchema.registerToken,
+            beforeHandle: limit({
+              max: 10,
+              window: 60,
+              prefix: "unregister-token",
+            }),
             detail: {
               summary: "ยกเลิกการลงทะเบียนอุปกรณ์",
               description:

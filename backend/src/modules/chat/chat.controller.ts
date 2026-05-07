@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import * as chatSchema from "./chat.schema";
 import { ChatService } from "./chat.service";
 
@@ -77,6 +78,11 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           },
           {
             body: chatSchema.checkMessage,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "check-message",
+            }),
             detail: {
               summary: "ตรวจสอบและวิเคราะห์ข้อความ",
               description: "ใช้ AI วิเคราะห์เนื้อหาข้อความเพื่อแยกแยะข้อมูลทางการเงิน",
@@ -95,6 +101,11 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           },
           {
             body: chatSchema.satiLog,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "sati-log",
+            }),
             detail: {
               summary: "บันทึกประวัติการแชท (Sati)",
               description: "บันทึกการโต้ตอบระหว่างผู้ใช้งานและ AI Sati",
@@ -106,7 +117,7 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           "/sati/message/:id",
           async ({ params, body, set }) => {
             const result = await chatService.updateMessage(
-              params.id,
+              Number(params.id),
               body.content
             );
 
@@ -116,6 +127,11 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           {
             body: chatSchema.chatMessage,
             params: chatSchema.paramsId,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "update-message",
+            }),
             detail: {
               summary: "แก้ไขข้อความในแชท",
               description: "อัปเดตเนื้อหาข้อความที่เคยส่งไปแล้วในเซสชัน",
@@ -137,6 +153,11 @@ export const chatController = new Elysia({ tags: ["CHAT"] })
           },
           {
             body: chatSchema.chatMessage,
+            beforeHandle: limit({
+              max: 10,
+              window: 60,
+              prefix: "satang-chat",
+            }),
             detail: {
               summary: "แชทกับ AI Satang",
               description: "ส่งข้อความพูดคุยกับ AI Satang และรับคำตอบแบบ Streaming",

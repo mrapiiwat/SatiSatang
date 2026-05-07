@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
+import { limit } from "@/common/middlewares/limit.middleware";
 import { cached } from "@/common/utils/cache";
 import { budgetCache, clearBudgetCache } from "./budget.cache";
 import * as budgetSchema from "./budget.schema";
@@ -36,6 +37,11 @@ export const budgetController = new Elysia({
           },
           {
             body: budgetSchema.createBudget,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "create-budget",
+            }),
             detail: {
               summary: "สร้างงบประมาณใหม่",
               description: "กำหนดงบประมาณการใช้จ่ายรายเดือนสำหรับหมวดหมู่ต่างๆ",
@@ -76,7 +82,7 @@ export const budgetController = new Elysia({
             const userId = Number(user.id);
             const result = await budgetService.updateBudget(
               userId,
-              params.id,
+              Number(params.id),
               body
             );
             await clearBudgetCache(userId);
@@ -90,6 +96,11 @@ export const budgetController = new Elysia({
           {
             body: budgetSchema.updateBudget,
             params: budgetSchema.paramsId,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "update-budget",
+            }),
             detail: {
               summary: "แก้ไขข้อมูลงบประมาณ",
               description: "อัปเดตวงเงินงบประมาณสำหรับหมวดหมู่ที่เลือก",
@@ -101,7 +112,7 @@ export const budgetController = new Elysia({
           "/:id",
           async ({ params, user, set }) => {
             const userId = Number(user.id);
-            await budgetService.deleteBudget(userId, params.id);
+            await budgetService.deleteBudget(userId, Number(params.id));
             await clearBudgetCache(userId);
 
             set.status = StatusCodes.NO_CONTENT;
@@ -111,6 +122,11 @@ export const budgetController = new Elysia({
           },
           {
             params: budgetSchema.paramsId,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "delete-budget",
+            }),
             detail: {
               summary: "ลบงบประมาณ",
               description: "ลบข้อมูลการตั้งงบประมาณของหมวดหมู่ที่เลือก",
