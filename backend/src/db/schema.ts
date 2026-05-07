@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
@@ -8,6 +9,7 @@ import {
   pgEnum,
   pgTable,
   serial,
+  smallint,
   text,
   timestamp,
   uniqueIndex,
@@ -43,7 +45,7 @@ export const stock = pgTable(
   "stocks",
   {
     id: serial("id").primaryKey().notNull(),
-    symbol: text("symbol").notNull(),
+    symbol: text("symbol").notNull().unique(),
     name: text("name"),
     quoteType: text("quote_type"),
     currency: text("currency"),
@@ -80,43 +82,25 @@ export const stock = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [
-    index("stocks_symbol_idx").using(
-      "btree",
-      table.symbol.asc().nullsLast().op("text_ops")
-    ),
-    uniqueIndex("stocks_symbol_key").using(
-      "btree",
-      table.symbol.asc().nullsLast().op("text_ops")
-    ),
-  ]
+  (table) => [index("idx_stocks_market").on(table.market)]
 );
 
-export const user = pgTable(
-  "users",
-  {
-    id: serial("id").primaryKey().notNull(),
-    email: text("email"),
-    password: text("password"),
-    name: text("name").notNull(),
-    balance: doublePrecision("balance").default(0).notNull(),
-    isEmailVerified: boolean("is_email_verified").default(false).notNull(),
-    createdAt: timestamp("created_at", { precision: 3, mode: "date" })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
-    deletedAt: timestamp("deleted_at", { precision: 3, mode: "date" }),
-  },
-  (table) => [
-    uniqueIndex("users_email_key").using(
-      "btree",
-      table.email.asc().nullsLast().op("text_ops")
-    ),
-  ]
-);
+export const user = pgTable("users", {
+  id: serial("id").primaryKey().notNull(),
+  email: text("email").unique(),
+  password: text("password"),
+  name: text("name").notNull(),
+  balance: doublePrecision("balance").default(0).notNull(),
+  isEmailVerified: boolean("is_email_verified").default(false).notNull(),
+  createdAt: timestamp("created_at", { precision: 3, mode: "date" })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+  deletedAt: timestamp("deleted_at", { precision: 3, mode: "date" }),
+});
 
 export const userConsents = pgTable(
   "user_consents",
@@ -159,6 +143,7 @@ export const oauthAccount = pgTable(
     userId: integer("user_id").notNull(),
   },
   (table) => [
+    index("idx_oauth_accounts_user_id").on(table.userId),
     uniqueIndex("oauth_accounts_provider_provider_user_id_key").using(
       "btree",
       table.provider.asc().nullsLast().op("text_ops"),
@@ -190,6 +175,7 @@ export const passwordResetToken = pgTable(
       .notNull(),
   },
   (table) => [
+    index("idx_password_reset_tokens_user_id").on(table.userId),
     uniqueIndex("password_reset_tokens_token_hash_key").using(
       "btree",
       table.tokenHash.asc().nullsLast().op("text_ops")
@@ -221,6 +207,7 @@ export const refreshToken = pgTable(
     userId: integer("user_id").notNull(),
   },
   (table) => [
+    index("idx_refresh_tokens_user_id").on(table.userId),
     uniqueIndex("refresh_tokens_token_hash_key").using(
       "btree",
       table.tokenHash.asc().nullsLast().op("text_ops")
@@ -250,6 +237,7 @@ export const emailVerification = pgTable(
     userId: integer("user_id").notNull(),
   },
   (table) => [
+    index("idx_email_verifications_user_id").on(table.userId),
     uniqueIndex("email_verifications_otp_hash_key").using(
       "btree",
       table.otpHash.asc().nullsLast().op("text_ops")
@@ -282,6 +270,7 @@ export const category = pgTable(
     iconId: integer("icon_id").notNull(),
   },
   (table) => [
+    index("idx_categories_user_id").on(table.userId),
     foreignKey({
       columns: [table.iconId],
       foreignColumns: [icon.id],
@@ -324,11 +313,9 @@ export const transaction = pgTable(
     categoryId: integer("category_id").notNull(),
   },
   (table) => [
-    index("idx_transactions_user_date").using(
-      "btree",
-      table.userId.asc().nullsLast().op("int4_ops"),
-      table.date.asc().nullsLast().op("timestamp_ops")
-    ),
+    index("idx_transactions_user_created_at").on(table.userId, table.createdAt),
+    index("idx_transactions_date").on(table.date),
+    index("idx_transactions_category_id").on(table.categoryId),
     foreignKey({
       columns: [table.categoryId],
       foreignColumns: [category.id],
@@ -391,6 +378,7 @@ export const goals = pgTable(
     userId: integer("user_id").notNull(),
   },
   (table) => [
+    index("idx_goals_user_id_finished").on(table.userId, table.finished),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
@@ -413,6 +401,8 @@ export const goalTransaction = pgTable(
       .notNull(),
   },
   (table) => [
+    index("idx_goal_transactions_goal_id").on(table.goalId),
+    index("idx_goal_transactions_user_id").on(table.userId),
     foreignKey({
       columns: [table.goalId],
       foreignColumns: [goals.id],
@@ -420,6 +410,13 @@ export const goalTransaction = pgTable(
     })
       .onUpdate("cascade")
       .onDelete("restrict"),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [user.id],
+      name: "goal_transactions_user_id_fkey",
+    })
+      .onUpdate("cascade")
+      .onDelete("cascade"),
   ]
 );
 
@@ -443,6 +440,7 @@ export const budgets = pgTable(
     deletedAt: timestamp("deleted_at", { precision: 3, mode: "date" }),
   },
   (table) => [
+    index("idx_budgets_user_id").on(table.userId),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
@@ -475,6 +473,7 @@ export const chatSession = pgTable(
     userId: integer("user_id").notNull(),
   },
   (table) => [
+    index("idx_chat_sessions_user_id").on(table.userId),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
@@ -502,6 +501,7 @@ export const chatMessage = pgTable(
     sessionId: integer("session_id").notNull(),
   },
   (table) => [
+    index("idx_chat_messages_session_id").on(table.sessionId, table.createdAt),
     foreignKey({
       columns: [table.sessionId],
       foreignColumns: [chatSession.id],
@@ -529,13 +529,14 @@ export const userSettings = pgTable(
     isNotificationEnabled: boolean("is_notification_enabled")
       .default(false)
       .notNull(),
-    budgetStartDate: integer("budget_start_date").default(1).notNull(),
+    budgetStartDate: smallint("budget_start_date").default(1).notNull(),
     updatedAt: timestamp("updated_at", { precision: 3, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [
+    sql`CHECK (${table.budgetStartDate} BETWEEN 1 AND 31)`,
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
@@ -551,7 +552,7 @@ export const userFcmTokens = pgTable(
   {
     id: serial("id").primaryKey().notNull(),
     userId: integer("user_id").notNull(),
-    token: text("token").notNull(),
+    token: text("token").notNull().unique(),
     createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
@@ -561,10 +562,7 @@ export const userFcmTokens = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("user_fcm_tokens_token_key").using(
-      "btree",
-      table.token.asc().nullsLast().op("text_ops")
-    ),
+    index("idx_user_fcm_tokens_user_id").on(table.userId),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],

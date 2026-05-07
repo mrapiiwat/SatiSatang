@@ -18,6 +18,7 @@ import type {
 import type { SingleValue } from 'react-select';
 import type { ElysiaResponse } from '../../../interface/error';
 import { useTranslation } from 'react-i18next';
+import imageCompression from 'browser-image-compression';
 
 const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation();
@@ -80,13 +81,27 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleUpload = async () => {
     if (files.length === 0) return;
 
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('receipt', file);
-    });
-
     try {
       setLoading(true);
+
+      const formData = new FormData();
+
+      for (const file of files) {
+        try {
+          const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1280,
+            useWebWorker: true,
+          };
+
+          const compressedFile = await imageCompression(file, options);
+          formData.append('receipt', compressedFile);
+        } catch (compressError) {
+          console.error('บีบอัดรูปภาพล้มเหลว ใช้ไฟล์ต้นฉบับแทน:', compressError);
+          formData.append('receipt', file);
+        }
+      }
+
       const res = await axios.post('/transaction/upload', formData);
 
       const results = res.data.results || [];

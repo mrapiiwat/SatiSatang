@@ -1,5 +1,9 @@
 import { eq, inArray } from "drizzle-orm";
 import { messaging } from "@/common/config/firebase";
+import {
+  NOTIFICATION_TEMPLATES,
+  type NotificationParamsMap,
+} from "@/common/constants/notifications";
 import { db } from "@/db";
 import { userFcmTokens } from "@/db/schema";
 
@@ -68,5 +72,21 @@ export class NotificationService {
     } catch (error) {
       console.error("Notification Error:", error);
     }
+  }
+
+  async sendTemplatedNotification<T extends keyof NotificationParamsMap>(
+    userId: number,
+    lang: "th" | "en",
+    template: T,
+    params: NotificationParamsMap[T]
+  ) {
+    const templateData = NOTIFICATION_TEMPLATES[template][lang];
+    const title = templateData.title;
+    const bodyFunc = templateData.body as (
+      p: NotificationParamsMap[T]
+    ) => string;
+    const body = bodyFunc(params);
+
+    return this.sendPushNotification(userId, title, body);
   }
 }

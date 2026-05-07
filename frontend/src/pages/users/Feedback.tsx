@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import SATISATANG from '../../../public/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg';
 import { IoAttachOutline, IoCloseOutline } from 'react-icons/io5';
 import useAuthStore from '../../store/authStore';
 import { showToastAlert } from '../../store/toastStore';
@@ -90,7 +89,7 @@ const Feedback: React.FC = () => {
         <div className="flex flex-col items-center justify-center text-center flex-grow px-6">
           <div className="flex flex-col items-center gap-3 sm:gap-4">
             <img
-              src={SATISATANG}
+              src="/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg"
               alt={t('satisatang_logo', 'โลโก้สติสตางค์')}
               className="w-48 object-contain dark:invert"
             />

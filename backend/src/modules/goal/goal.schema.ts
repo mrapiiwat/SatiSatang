@@ -35,5 +35,5 @@ export const getGoalsQuery = t.Object({
 export type getGoalsQuery = Static<typeof getGoalsQuery>;
 
 export const paramsId = t.Object({
-  id: t.Numeric(),
+  id: t.String(),
 });

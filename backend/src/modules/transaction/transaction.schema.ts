@@ -84,5 +84,5 @@ export const predictCategory = t.Object({
 export type predictCategory = Static<typeof predictCategory>;
 
 export const paramsId = t.Object({
-  id: t.Numeric(),
+  id: t.String(),
 });

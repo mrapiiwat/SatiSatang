@@ -296,10 +296,11 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
       minHeight: 36,
       borderRadius: 6,
       borderColor: 'var(--tw-border-opacity, #B1B0AD)',
-      backgroundColor: 'inherit',
+      backgroundColor: 'transparent',
     }),
     singleValue: (base) => ({ ...base, color: 'inherit' }),
-    menu: (base) => ({ ...base, zIndex: 9999, backgroundColor: 'inherit' }),
+    menu: (base) => ({ ...base, zIndex: 9999 }),
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isFocused
@@ -353,7 +354,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                 type="text"
                 value={goalName}
                 onChange={(e) => setGoalName(e.target.value)}
-                className="border border-black-500 dark:border-black-500 dark:bg-black-700 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
+                className="border border-black-500 dark:border-black-500 dark:bg-black-800 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
               />
             </div>
 
@@ -364,8 +365,9 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
               <input
                 type="number"
                 value={amount}
+                min="0"
                 onChange={(e) => setAmount(e.target.value)}
-                className="border border-black-500 dark:border-black-500 dark:bg-black-700 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
+                className="border border-black-500 dark:border-black-500 dark:bg-black-800 w-full h-10 rounded-md px-3 text-black-900 dark:text-white focus:border-blue-600 focus:outline-none"
               />
             </div>
 
@@ -404,6 +406,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                       isClearable
                       isSearchable={false}
                       styles={selectStyles}
+                      menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
                       classNames={{
                         control: () => 'dark:border-black-500',
                         menu: () =>
@@ -427,6 +430,7 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                         return Number(year.value) === currentY && Number(option.value) < currentM;
                       }}
                       styles={selectStyles}
+                      menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
                       classNames={{
                         control: () => 'dark:border-black-500',
                         menu: () =>
@@ -455,6 +459,12 @@ const Goal: React.FC<GoalProps> = ({ onClose, onSuccess, editData, onUpdateDraft
                         return false;
                       }}
                       styles={selectStyles}
+                      menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
+                      classNames={{
+                        control: () => 'dark:border-black-500',
+                        menu: () =>
+                          'bg-white dark:bg-black-800 border border-gray-100 dark:border-black-600',
+                      }}
                     />
                   </div>
                 </div>

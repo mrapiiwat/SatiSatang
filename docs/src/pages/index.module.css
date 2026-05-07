@@ -1,0 +1,86 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+@media screen and (min-width: 997px) {
+  .mainContainer {
+    height: calc(100vh - var(--ifm-navbar-height) - 88px);
+    overflow: hidden;
+  }
+}
+
+.heroBanner {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.featuresSection {
+  flex: 0.8;
+  display: flex;
+  align-items: center;
+  background: var(--ifm-background-color);
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 3rem 1.5rem !important;
+    display: block;
+    flex: none;
+  }
+  .featuresSection {
+    flex: none;
+    display: block;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.heroButtonPrimary {
+  background-color: #6002EE !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 16px !important;
+  padding: 0.8rem 2.5rem !important;
+  font-weight: 700 !important;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.heroButtonPrimary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.heroButtonSecondary {
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(10px);
+  color: white !important;
+  border: none !important;
+  border-radius: 16px !important;
+  padding: 0.8rem 2.5rem !important;
+  font-weight: 700 !important;
+  transition: all 0.3s ease;
+}
+
+.heroButtonSecondary:hover {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  transform: translateY(-3px);
+}

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PiChartPieSliceLight } from 'react-icons/pi';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import Modal from '../../components/Modal';
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import type { Transaction, PaginationData, MyGoal, MyBudget } from '../../interface/home';
@@ -23,9 +23,12 @@ const Home = () => {
   const { t, i18n } = useTranslation();
   const today = new Date();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialMonthParam = parseInt(searchParams.get('month') || '', 10);
   const initialYearParam = parseInt(searchParams.get('year') || '', 10);
+  const shouldOpenSati = useRef(location.state?.openSati);
+  const incomingText = useRef(location.state?.initialText);
   const defaultMonth =
     initialMonthParam && initialMonthParam >= 1 && initialMonthParam <= 12
       ? initialMonthParam
@@ -33,6 +36,7 @@ const Home = () => {
   const defaultYear =
     initialYearParam && initialYearParam >= 1900 ? initialYearParam : today.getFullYear();
 
+  const [initialSatiText, setInitialSatiText] = useState('');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
@@ -91,7 +95,7 @@ const Home = () => {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `/transaction?month=${selectedMonth}&year=${selectedYear}&page=${currentPage}&limit=${pagination.limit}`,
+        `/transaction?month=${selectedMonth}&year=${selectedYear}&page=${currentPage}&limit=${pagination.limit}&sortBy=createdAt`,
       );
       setTransactions(response.data.data || []);
       setPagination(response.data.pagination);
@@ -197,6 +201,23 @@ const Home = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [budgetIndex, isHovered, budgets.length]);
+
+  useEffect(() => {
+    if (shouldOpenSati.current) {
+      if (incomingText.current) {
+        setInitialSatiText(incomingText.current);
+      }
+
+      const timer = setTimeout(() => {
+        setIsChatOpen(true);
+        shouldOpenSati.current = false;
+      }, 500);
+
+      window.history.replaceState({}, document.title);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleClosePopupAndRefetch = () => {
     setActivePopup(null);
@@ -676,6 +697,8 @@ const Home = () => {
           setIsMenuOpen={setIsMenuOpen}
           handleMenuSelect={handleMenuSelect}
           onRefresh={handleRefreshAll}
+          initialText={initialSatiText}
+          onClearInitialText={() => setInitialSatiText('')}
         />
       )}
 

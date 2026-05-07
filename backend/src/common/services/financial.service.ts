@@ -1,6 +1,12 @@
 import { and, desc, eq, gte, ilike, isNull, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { budgets, category, goals, transaction } from "@/db/schema";
+import {
+  budgets,
+  category,
+  goals,
+  goalTransaction,
+  transaction,
+} from "@/db/schema";
 
 export class FinancialService {
   async getSummary(userId: number, startDate?: string, endDate?: string) {
@@ -44,6 +50,7 @@ export class FinancialService {
     const conditions = [
       eq(transaction.userId, userId),
       isNull(transaction.deletedAt),
+      eq(transaction.type, "EXPENSE"),
       ilike(transaction.description, `%${keyword}%`),
     ];
 
@@ -84,6 +91,7 @@ export class FinancialService {
   ) {
     const conditions = [
       eq(transaction.userId, userId),
+      eq(transaction.type, "EXPENSE"),
       isNull(transaction.deletedAt),
       isNull(category.deletedAt),
       ilike(category.name, `%${categoryName}%`),
@@ -363,9 +371,19 @@ export class FinancialService {
 
   async getGoalsAndBudgets(userId: number) {
     const userGoals = await db
-      .select()
+      .select({
+        name: goals.name,
+        amount: goals.amount,
+        finished: goals.finished,
+        savedAmount:
+          sql<number>`COALESCE(SUM(${goalTransaction.amount}), 0)`.mapWith(
+            Number
+          ),
+      })
       .from(goals)
-      .where(and(eq(goals.userId, userId), isNull(goals.deletedAt)));
+      .leftJoin(goalTransaction, eq(goals.id, goalTransaction.goalId))
+      .where(and(eq(goals.userId, userId), isNull(goals.deletedAt)))
+      .groupBy(goals.id);
 
     const userBudgets = await db
       .select({
@@ -388,10 +406,11 @@ export class FinancialService {
       ? userGoals
           .map(
             (g) =>
-              `- เป้าหมาย: ${g.name} (เป้า: ${g.amount}, สำเร็จ: ${g.finished})`
+              `- เป้าหมาย: ${g.name} (เป้า: ${g.amount}, เก็บได้แล้ว: ${g.savedAmount}, สำเร็จ: ${g.finished})`
           )
           .join("\n")
       : "ไม่มีเป้าหมาย";
+
     const budgetsText = userBudgets.length
       ? userBudgets
           .map(

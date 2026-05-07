@@ -11,7 +11,6 @@ export const transactionCache = {
   total: (userId: number, query: getTotalAmountQuery) => {
     return `tx:total:user:${userId}:t:${query.type || "all"}:m:${query.month || "all"}:y:${query.year || "all"}`;
   },
-  receipt: (txnId: number) => `tx:receipt:${txnId}`,
   pattern: (userId: number) => `tx:*user:${userId}:*`,
 };
 

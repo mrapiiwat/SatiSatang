@@ -9,6 +9,8 @@ services:
     depends_on:
       - frontend
       - backend
+      - minio
+      - docs 
     networks:
       - satisatang-network
 
@@ -46,7 +48,7 @@ services:
   cron-job:
     build:
       context: ../cron
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: cron-job
     restart: unless-stopped
     env_file: ../cron/.env
@@ -58,10 +60,22 @@ services:
     networks:
       - satisatang-network
 
+  docs:
+    build:
+      context: ../docs
+      dockerfile: dockerfile.dev
+    volumes:
+      - ../docs:/app
+      - /app/node_modules
+    depends_on:
+      - backend 
+    networks:
+      - satisatang-network
+
   db:
     build:
       context: ../db
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: satisatang-postgres
     restart: unless-stopped
     environment:

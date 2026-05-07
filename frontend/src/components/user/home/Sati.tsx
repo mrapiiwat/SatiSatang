@@ -27,6 +27,8 @@ import { useTranslation } from 'react-i18next';
 import useSettingStore from '../../../store/settingStore';
 
 const Sati: React.FC<SatiProps> = ({
+  initialText,
+  onClearInitialText,
   handleCloseChatModal,
   isMenuOpen,
   setIsMenuOpen,
@@ -84,6 +86,13 @@ const Sati: React.FC<SatiProps> = ({
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  useEffect(() => {
+    if (initialText) {
+      setInputValue(initialText);
+      if (onClearInitialText) onClearInitialText();
+    }
+  }, [initialText, onClearInitialText]);
 
   const getErrorMessage = (error: unknown): string => {
     if (isAxiosError(error) && error.response?.data) {
@@ -560,7 +569,11 @@ const Sati: React.FC<SatiProps> = ({
     }
   };
 
-  const renderMessageContent = (msg: ChatMessage, isLastMessage: boolean) => {
+  const renderMessageContent = (
+    msg: ChatMessage,
+    isLastMessage: boolean,
+    failedQuestion: string,
+  ) => {
     if (msg.role === 'user') return msg.content;
 
     const renderMarkdown = (text: string) => (
@@ -648,7 +661,7 @@ const Sati: React.FC<SatiProps> = ({
                 onClick={() => {
                   if (parsed.action.action_type === 'switch_to_satang') {
                     handleCloseChatModal();
-                    navigate('/user/satang');
+                    navigate('/user/satang', { state: { initialText: failedQuestion } });
                     if (onSwitchToSatang) onSwitchToSatang();
                   } else if (parsed.action.action_type === 'manage_categories') {
                     handleCloseChatModal();
@@ -733,6 +746,8 @@ const Sati: React.FC<SatiProps> = ({
                     (msg.content.includes('"create_transaction"') ||
                       msg.content.includes('"create_budget"') ||
                       msg.content.includes('"create_goal"'));
+                  const prevMsg = index > 0 ? messages[index - 1] : null;
+                  const failedQuestion = prevMsg?.role === 'user' ? prevMsg.content : '';
                   return (
                     <div
                       key={msg.id}
@@ -744,7 +759,7 @@ const Sati: React.FC<SatiProps> = ({
                             : 'bg-gray-100 dark:bg-black-700 text-black dark:text-white p-3 rounded-2xl rounded-tl-none self-start w-fit max-w-[85%]'
                       }`}
                     >
-                      {renderMessageContent(msg, isLastMessage)}
+                      {renderMessageContent(msg, isLastMessage, failedQuestion)}
                     </div>
                   );
                 })}

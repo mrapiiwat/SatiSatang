@@ -39,6 +39,9 @@ export interface Transaction {
   amount: number;
   date: string;
   categoryId: number;
+  receipt?: string | null;
+  fromAccount?: string | null;
+  toAccount?: string | null;
 }
 
 export interface DayTransactionsProps {
@@ -162,6 +165,8 @@ export interface SatiProps {
   handleMenuSelect: (type: string) => void;
   onRefresh?: () => void;
   onSwitchToSatang?: () => void;
+  initialText?: string;
+  onClearInitialText?: () => void;
 }
 
 export interface GoalTransaction {
@@ -219,6 +224,9 @@ export interface DraftData {
   category?: string;
   categoryId: number;
   isGoal?: boolean;
+  receipt?: string | null;
+  fromAccount?: string | null;
+  toAccount?: string | null;
 }
 
 export interface CategoryType {

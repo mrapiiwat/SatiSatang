@@ -31,12 +31,20 @@ import {
 } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
 import { db } from "@/db";
-import { category, goalTransaction, transaction, user } from "@/db/schema";
+import {
+  category,
+  goalTransaction,
+  transaction,
+  user,
+  userSettings,
+} from "@/db/schema";
+import { NotificationService } from "../notification/notification.service";
 import type * as transactionSchema from "./transaction.schema";
 
 const ocrService = new OCRService();
 const ragService = new RAGService();
 const openAIService = new OpenAIService();
+const notificationService = new NotificationService();
 
 export class TransactionService {
   private categorizer = new SmartCategorizer();
@@ -98,7 +106,7 @@ export class TransactionService {
 
     const transactions = await db.query.transaction.findMany({
       where: and(...conditions, isNull(transaction.deletedAt)),
-      orderBy: [orderFn(sortColumn)],
+      orderBy: [orderFn(sortColumn), desc(transaction.createdAt)],
       limit: limit,
       offset: skip,
       with: {
@@ -106,13 +114,32 @@ export class TransactionService {
       },
     });
 
-    const formattedTransactions = transactions.map((t) => ({
-      ...t,
-      amount: Number(t.amount),
-      receipt: t.receipt
-        ? `${Bun.env.APP_BASE_URL}/api/transactions/receipt/${t.id}`
-        : null,
-    }));
+    const formattedTransactions = await Promise.all(
+      transactions.map(async (t) => {
+        let signedReceiptUrl = null;
+
+        if (t.receipt) {
+          try {
+            const command = new GetObjectCommand({
+              Bucket: BUCKET_NAME,
+              Key: t.receipt,
+            });
+
+            signedReceiptUrl = await getSignedUrl(s3Client, command, {
+              expiresIn: 3600,
+            });
+          } catch (error) {
+            console.error(`Failed to sign url for transaction ${t.id}`, error);
+          }
+        }
+
+        return {
+          ...t,
+          amount: Number(t.amount),
+          receipt: signedReceiptUrl,
+        };
+      })
+    );
 
     return {
       data: formattedTransactions,
@@ -152,38 +179,6 @@ export class TransactionService {
     return {
       totalAmount: Number(result?.totalAmount ?? 0),
     };
-  }
-
-  async getReceiptUrl(transactionId: number) {
-    const txn = await db.query.transaction.findFirst({
-      where: and(
-        eq(transaction.id, transactionId),
-        isNull(transaction.deletedAt)
-      ),
-    });
-
-    if (!txn || !txn.receipt) {
-      throw new NotFoundError("Receipt not found");
-    }
-
-    try {
-      const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: txn.receipt,
-      });
-
-      const signedUrl = await getSignedUrl(s3Client, command, {
-        expiresIn: 3600,
-      });
-
-      return {
-        url: signedUrl,
-        filename: txn.receipt,
-      };
-    } catch (error) {
-      console.error("S3 Signing Error:", error);
-      throw new Error("Cannot generate receipt URL");
-    }
   }
 
   async createTransaction(
@@ -314,39 +309,62 @@ export class TransactionService {
   ) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const ocrText = await ocrService.extractTextFromImage(buffer);
+    if (!ocrText) throw new Error("ไม่สามารถอ่านข้อความจากภาพได้");
 
-    const text = await ocrService.extractTextFromImage(buffer);
-    if (!text) throw new Error("ไม่สามารถอ่านข้อความจากภาพได้");
+    const base64Image = buffer.toString("base64");
 
-    const isSlip = await openAIService.checkSlipType(text);
+    const isSlip = await openAIService.checkSlipType(base64Image);
     if (!isSlip) throw new Error("รูปภาพนี้ไม่ใช่สลิปการเงิน");
 
     const transactionData = await openAIService.extractTransactionData(
-      text,
+      base64Image,
+      ocrText,
       categories,
-      { name: user.name }
+      user.name
     );
 
     return transactionData;
   }
 
   async transactionByUpload(files: File[], userId: number) {
-    const [categories, userData] = await Promise.all([
+    const [categories, settingsData] = await Promise.all([
       db.query.category.findMany({
         where: and(eq(category.userId, userId), isNull(category.deletedAt)),
         columns: { id: true, name: true, type: true },
       }),
-      db.query.user.findFirst({
-        where: and(eq(user.id, userId), isNull(user.deletedAt)),
-        columns: { name: true },
+      db.query.userSettings.findFirst({
+        where: eq(userSettings.userId, userId),
+        columns: { appLanguage: true },
+        with: {
+          user: {
+            columns: { name: true },
+          },
+        },
       }),
     ]);
 
-    if (!userData) throw new NotFoundError("ไม่พบข้อมูลผู้ใช้งาน");
+    if (!settingsData || !settingsData.user)
+      throw new NotFoundError("ไม่พบข้อมูลผู้ใช้งาน");
+
+    const lang = settingsData.appLanguage;
+    const userName = settingsData.user.name;
 
     const results = await Promise.allSettled(
-      files.map((file) => this.processSingleSlip(file, categories, userData))
+      files.map((file) =>
+        this.processSingleSlip(file, categories, { name: userName })
+      )
     );
+
+    const successCount = results.filter((r) => r.status === "fulfilled").length;
+    const totalCount = files.length;
+
+    notificationService
+      .sendTemplatedNotification(userId, lang, "SLIP_PROCESSED", {
+        success: successCount,
+        total: totalCount,
+      })
+      .catch((err) => console.error("FCM Background Error:", err));
 
     return results.map((result, index) => {
       if (result.status === "fulfilled") {
@@ -490,7 +508,7 @@ export class TransactionService {
 
       await tx
         .update(transaction)
-        .set({ deletedAt: new Date() })
+        .set({ receipt: null, deletedAt: new Date() })
         .where(
           and(
             eq(transaction.id, id),

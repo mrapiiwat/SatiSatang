@@ -10,7 +10,7 @@ import {
   SLIP_EXTRACTION_TOOL,
 } from "@/common/utils/tools";
 import { db } from "@/db";
-import { goals } from "@/db/schema";
+import { budgets, goals } from "@/db/schema";
 import { BudgetService } from "@/modules/budget/budget.service";
 
 const ragService = new RAGService();
@@ -76,13 +76,25 @@ export class OpenAIService {
     }
   }
 
-  async checkSlipType(text: string): Promise<boolean> {
+  async checkSlipType(base64Image: string): Promise<boolean> {
     try {
       const response = await openai.chat.completions.create({
         model: MODEL_NAME,
         messages: [
           { role: "system", content: prompts.checkSlipTypePrompt },
-          { role: "user", content: text },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "ภาพนี้คือสลิปโอนเงินหรือใบเสร็จรับเงินใช่หรือไม่?" },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                  detail: "low",
+                },
+              },
+            ],
+          },
         ],
       });
 
@@ -95,9 +107,10 @@ export class OpenAIService {
   }
 
   async extractTransactionData(
-    text: string,
+    base64Image: string,
+    ocrText: string,
     categories: Category[],
-    user: User
+    user: string
   ) {
     try {
       const categoryListText = categories
@@ -105,7 +118,7 @@ export class OpenAIService {
         .join("\n");
 
       const prompt = prompts.getExtractTransactionPrompt(
-        user.name,
+        user,
         categoryListText
       );
 
@@ -113,7 +126,22 @@ export class OpenAIService {
         model: MODEL_NAME,
         messages: [
           { role: "system", content: prompt },
-          { role: "user", content: text },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `อ้างอิงการสะกดคำจากข้อความ OCR นี้:\n---\n${ocrText}\n---\n\nจงสกัดข้อมูลการเงินจากสลิปใบนี้อย่างแม่นยำ`,
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                  detail: "high",
+                },
+              },
+            ],
+          },
         ],
         tools: [SLIP_EXTRACTION_TOOL],
         tool_choice: {
@@ -185,6 +213,20 @@ export class OpenAIService {
         if (tool.type !== "function") continue;
         const fnName = tool.function.name;
 
+        if (fnName === "switch_to_sati") {
+          return {
+            type: "message_with_action",
+            message:
+              aiLang === "en"
+                ? "Oops! My main job is analysis. 😅 To record transactions, set goals, or manage budgets, let Sati handle it for you!"
+                : "โอ๊ะ! หน้าที่หลักของพี่สตางค์คือวิเคราะห์ข้อมูลครับ 😅 ถ้าต้องการบันทึกรายการ ตั้งเป้าหมาย หรือตั้งงบประมาณ ต้องให้น้องสติช่วยจัดการให้นะครับ!",
+            action: {
+              label: aiLang === "en" ? "Talk to Sati" : "ไปคุยกับน้องสติ",
+              action_type: "switch_to_sati",
+            },
+          };
+        }
+
         let args: SatangToolArgs = {};
         try {
           args = tool.function.arguments
@@ -198,7 +240,6 @@ export class OpenAIService {
         }
 
         let result = "";
-        console.log(`[Satang] Executing Tool: ${fnName}`, args);
 
         if (fnName === "get_financial_summary") {
           result = await financialService.getSummary(
@@ -563,6 +604,47 @@ export class OpenAIService {
 
           if (isGoalId) {
             args.isGoal = true;
+          } else if (args.type === "EXPENSE" && args.categoryId) {
+            try {
+              const activeBudgets = await db.query.budgets.findMany({
+                where: and(
+                  eq(budgets.userId, userId),
+                  eq(budgets.categoryId, Number(args.categoryId)),
+                  isNull(budgets.deletedAt)
+                ),
+              });
+
+              for (const budget of activeBudgets) {
+                const projectedAmount = budget.currentAmount + amount;
+                const limit = budget.amount;
+                const warningThreshold = limit * 0.9;
+
+                if (
+                  projectedAmount >= warningThreshold &&
+                  !args.is_force_confirm
+                ) {
+                  const isExceeded = projectedAmount > limit;
+                  let warningMsg = "";
+
+                  if (aiLang === "en") {
+                    warningMsg = isExceeded
+                      ? `**Budget Exceeded!** This expense will push you over your limit. (Budget: ${limit} / Projected: ${projectedAmount}).\n\nDo you still want to proceed?`
+                      : `**Almost out of budget!** This expense puts you very close to your limit. (Budget: ${limit} / Projected: ${projectedAmount}).\n\nDo you still want to proceed?`;
+                  } else {
+                    warningMsg = isExceeded
+                      ? `**พี่ครับ งบจะทะลุแล้วน้า!** รายการนี้จะทำให้หมวดหมู่นี้เกินงบที่ตั้งไว้นะครับ (งบ: ${limit} บ. / ยอดรวมจะเป็น: ${projectedAmount} บ.) \n\nพี่ยังต้องการให้น้องสติบันทึกรายการนี้อยู่มั้ยครับ?`
+                      : `**ระวังนิดนึงน้า!** รายการนี้จะทำให้ยอดใช้จ่ายใกล้เต็มงบแล้วนะครับ (งบ: ${limit} บ. / ยอดรวมจะเป็น: ${projectedAmount} บ.) \n\nพี่ยืนยันจะบันทึกรายการนี้มั้ยครับ?`;
+                  }
+
+                  return {
+                    type: "message",
+                    message: warningMsg,
+                  };
+                }
+              }
+            } catch (err) {
+              console.error("[Sati] Check budget limit error:", err);
+            }
           }
         }
 

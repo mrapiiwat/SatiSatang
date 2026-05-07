@@ -19,6 +19,16 @@ jobs:
         with:
           bun-version: 'latest'
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
       - name: Install & Check Backend
         working-directory: backend
         run: |
@@ -32,17 +42,28 @@ jobs:
           npm run lint -- --max-warnings=0
           npm run format:check
 
+      - name: Install & Check Docs
+        working-directory: docs
+        run: |
+          npm install
+          npm run build
+
+      - name: Check Python Code (Cron)
+        working-directory: cron
+        run: |
+          pip install black isort
+          black .
+          isort .
+
   build-backend-docker:
     name: Test Build Backend Docker
     runs-on: ubuntu-latest
-    needs: [] 
+    needs: [lint-and-format] 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
       - name: Build Backend Image
         uses: docker/build-push-action@v4
         with:
@@ -56,14 +77,12 @@ jobs:
   build-frontend-docker:
     name: Test Build Frontend Docker
     runs-on: ubuntu-latest
-    needs: [] 
+    needs: [lint-and-format] 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
       - name: Build Frontend Image
         uses: docker/build-push-action@v4
         with:
@@ -71,5 +90,43 @@ jobs:
           file: ./frontend/Dockerfile
           push: false 
           tags: frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-docs-docker:
+    name: Test Build Docs Docker
+    runs-on: ubuntu-latest
+    needs: [lint-and-format] 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Docs Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./docs
+          file: ./docs/Dockerfile 
+          push: false 
+          tags: docs:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-cron-docker:
+    name: Test Build Cron Docker
+    runs-on: ubuntu-latest
+    needs: [lint-and-format] 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Cron Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./cron
+          file: ./cron/Dockerfile 
+          push: false 
+          tags: cron:test
           cache-from: type=gha
           cache-to: type=gha,mode=max

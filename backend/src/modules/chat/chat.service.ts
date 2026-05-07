@@ -1,5 +1,9 @@
 import { and, desc, eq, gte, ilike, isNull, lt, or } from "drizzle-orm";
-import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import type {
+  ChatCompletionChunk,
+  ChatCompletionMessageParam,
+} from "openai/resources/chat/completions";
+import type { Stream } from "openai/streaming";
 import { NotFoundError } from "@/common/exceptions";
 import { OpenAIService } from "@/common/services/openai.service";
 import { RAGService } from "@/common/services/rag.service";
@@ -13,11 +17,13 @@ import {
   user,
   userSettings,
 } from "@/db/schema";
+import { NotificationService } from "../notification/notification.service";
 import type * as chatSchema from "./chat.schema";
 import { BotType } from "./chat.schema";
 
 const ragService = new RAGService();
 const openAIService = new OpenAIService();
+const notificationService = new NotificationService();
 
 export class ChatService {
   async getOrCreateSession(
@@ -232,7 +238,9 @@ export class ChatService {
     const setting = await db.query.userSettings.findFirst({
       where: eq(userSettings.userId, userId),
     });
+
     const aiLang = setting?.aiLanguage ?? "th";
+    const appLang = setting?.appLanguage ?? "th";
 
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
@@ -272,7 +280,7 @@ export class ChatService {
       { role: "user", content },
     ] as ChatCompletionMessageParam[];
 
-    const stream = await openAIService.processSatangToolCallsAndStream(
+    const result = await openAIService.processSatangToolCallsAndStream(
       userId,
       messages,
       aiLang
@@ -280,11 +288,19 @@ export class ChatService {
 
     let fullReply = "";
 
-    for await (const chunk of stream) {
-      const text = chunk.choices[0]?.delta?.content || "";
-      if (text) {
-        fullReply += text;
-        yield text;
+    if ("type" in result && result.type === "message_with_action") {
+      const actionJson = JSON.stringify(result);
+      yield actionJson;
+      fullReply = actionJson;
+    } else {
+      const stream = result as Stream<ChatCompletionChunk>;
+
+      for await (const chunk of stream) {
+        const text = chunk.choices[0]?.delta?.content || "";
+        if (text) {
+          fullReply += text;
+          yield text;
+        }
       }
     }
 
@@ -292,6 +308,11 @@ export class ChatService {
       .insert(chatMessage)
       .values({ sessionId, userId, role: "assistant", content: fullReply });
     void ragService.addMemory(userId, fullReply, "assistant");
+    notificationService
+      .sendTemplatedNotification(userId, appLang as "th" | "en", "AI_REPLY", {
+        text: fullReply,
+      })
+      .catch((err) => console.error("[Satang Noti] Error:", err));
   }
 
   async updateMessage(messageId: number, content: string) {

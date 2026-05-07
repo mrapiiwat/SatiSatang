@@ -57,6 +57,8 @@ CREATE TABLE
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
 
+CREATE INDEX idx_oauth_accounts_user_id ON public.oauth_accounts (user_id);
+
 CREATE TABLE
   public.password_reset_tokens (
     id SERIAL PRIMARY KEY,
@@ -67,6 +69,8 @@ CREATE TABLE
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
+
+CREATE INDEX idx_password_reset_tokens_user_id ON public.password_reset_tokens (user_id);
 
 CREATE TABLE
   public.refresh_tokens (
@@ -80,6 +84,8 @@ CREATE TABLE
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
 
+CREATE INDEX idx_refresh_tokens_user_id ON public.refresh_tokens (user_id);
+
 CREATE TABLE
   public.email_verifications (
     id SERIAL PRIMARY KEY,
@@ -89,6 +95,8 @@ CREATE TABLE
     user_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
+
+CREATE INDEX idx_email_verifications_user_id ON public.email_verifications (user_id);
 
 CREATE TABLE
   public.stocks (
@@ -122,6 +130,8 @@ CREATE TABLE
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
+CREATE INDEX idx_stocks_market ON public.stocks (market);
+
 CREATE TABLE
   public.icons (
     id SERIAL PRIMARY KEY,
@@ -147,6 +157,8 @@ CREATE TABLE
     FOREIGN KEY (icon_id) REFERENCES public.icons (id) ON DELETE CASCADE
   );
 
+CREATE INDEX idx_categories_user_id ON public.categories (user_id);
+
 CREATE TABLE
   public.transactions (
     id SERIAL PRIMARY KEY,
@@ -167,6 +179,8 @@ CREATE TABLE
   );
 
 CREATE INDEX idx_transactions_user_created_at ON public.transactions (user_id, created_at);
+CREATE INDEX idx_transactions_date ON public.transactions (date);
+CREATE INDEX idx_transactions_category_id ON public.transactions (category_id);
 
 CREATE TABLE
   public.goals (
@@ -182,6 +196,8 @@ CREATE TABLE
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
 
+CREATE INDEX idx_goals_user_id_finished ON public.goals (user_id, finished);
+
 CREATE TABLE
   public.goal_transactions (
     id SERIAL PRIMARY KEY,
@@ -192,6 +208,9 @@ CREATE TABLE
     FOREIGN KEY (goal_id) REFERENCES public.goals (id) ON DELETE RESTRICT,
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
+
+CREATE INDEX idx_goal_transactions_goal_id ON public.goal_transactions (goal_id);
+CREATE INDEX idx_goal_transactions_user_id ON public.goal_transactions (user_id);
 
 CREATE TABLE
   public.budgets (
@@ -209,6 +228,8 @@ CREATE TABLE
     FOREIGN KEY (category_id) REFERENCES public.categories (id) ON DELETE CASCADE
   );
 
+CREATE INDEX idx_budgets_user_id ON public.budgets (user_id);
+
 CREATE TABLE
   public.chat_sessions (
     id SERIAL PRIMARY KEY,
@@ -218,6 +239,8 @@ CREATE TABLE
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
+
+CREATE INDEX idx_chat_sessions_user_id ON public.chat_sessions (user_id);
 
 CREATE TABLE
   public.chat_messages (
@@ -231,6 +254,8 @@ CREATE TABLE
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE,
     FOREIGN KEY (session_id) REFERENCES public.chat_sessions (id) ON DELETE CASCADE
   );
+
+CREATE INDEX idx_chat_messages_session_id ON public.chat_messages (session_id, created_at);
 
 CREATE TABLE public.user_settings (
     user_id INT PRIMARY KEY,
@@ -252,6 +277,8 @@ CREATE TABLE
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
+
+CREATE INDEX idx_user_fcm_tokens_user_id ON public.user_fcm_tokens (user_id);
 
 CREATE TRIGGER update_users_updated_at BEFORE
 UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column ();

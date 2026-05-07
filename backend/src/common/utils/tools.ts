@@ -154,6 +154,34 @@ export const SATANG_TOOLS: ChatCompletionTool[] = [
       parameters: { type: "object", properties: {} },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "switch_to_sati",
+      description:
+        "เรียกใช้ Tool นี้เมื่อผู้ใช้ต้องการ 'บันทึกรายรับรายจ่าย', 'ตั้งเป้าหมาย (Goal)', หรือ 'ตั้งงบประมาณ (Budget)' เนื่องจากสตางค์มีหน้าที่แค่วิเคราะห์ ไม่สามารถบันทึกข้อมูลได้",
+      parameters: {
+        type: "object",
+        properties: {
+          reason: {
+            type: "string",
+            description:
+              "เหตุผลสั้นๆ ว่าทำไมถึงส่งให้น้องสติ เช่น 'ต้องการบันทึกรายจ่าย' หรือ 'ตั้งงบ'",
+          },
+        },
+        required: ["reason"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_goals_and_budgets",
+      description:
+        "ดูข้อมูลเป้าหมายเก็บเงิน (Goals) และงบประมาณ (Budgets) ปัจจุบัน (บังคับเรียกใช้ Tool นี้เสมอเมื่อผู้ใช้ถามว่า 'มีเป้าหมายอะไรบ้าง', 'ตั้งเป้าอะไรไว้', หรือ 'เหลืองบเท่าไหร่')",
+      parameters: { type: "object", properties: {} },
+    },
+  },
 ];
 
 export const SATI_TOOLS: ChatCompletionTool[] = [
@@ -180,6 +208,11 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
             type: "string",
             description:
               "วันที่เกิดรายการ (ISO Format YYYY-MM-DD) คำนวณจากข้อความเช่น 'เมื่อวาน', 'วันจันทร์' โดยอ้างอิงจาก Current Date หากไม่ระบุเวลาเจาะจงให้ใช้วันนี้",
+          },
+          is_force_confirm: {
+            type: "boolean",
+            description:
+              "ส่งค่า true เมื่อผู้ใช้ยืนยันที่จะทำรายการต่อ แม้ว่าจะได้รับการแจ้งเตือนเรื่องงบประมาณเกินไปแล้ว (ดูจากประวัติการคุยล่าสุด)",
           },
         },
         required: ["type", "amount"],
@@ -213,7 +246,8 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "create_goal",
-      description: "ใช้เมื่อ User ต้องการตั้งเป้าหมายออมเงิน",
+      description:
+        "ใช้เมื่อ User ต้องการ สร้าง, เพิ่ม, หรือตั้ง 'เป้าหมาย' (Goal) ในการออมเงิน (ห้ามสับสนกับหมวดหมู่)",
       parameters: {
         type: "object",
         properties: {
@@ -252,7 +286,7 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
     function: {
       name: "manage_categories",
       description:
-        "ใช้เมื่อ User พูดถึงการเพิ่มหมวดหมู่ใหม่, ลบหมวดหมู่, แก้ไขหมวดหมู่ หรือบ่นว่าหาหมวดหมู่ที่ต้องการไม่เจอ",
+        "ใช้เมื่อ User พูดถึงการจัดการ 'หมวดหมู่' (Category) เท่านั้น เช่น เพิ่มหมวดหมู่ใหม่, ลบ, แก้ไข (คำเตือน: ห้ามใช้ Tool นี้ถ้าผู้ใช้พูดถึง 'เป้าหมาย' หรือ Goal เด็ดขาด)",
       parameters: {
         type: "object",
         properties: {
@@ -270,19 +304,23 @@ export const SLIP_EXTRACTION_TOOL: ChatCompletionTool = {
   type: "function",
   function: {
     name: "extract_slip_data",
-    description: "สกัดข้อมูลการเงินจากข้อความ OCR ของสลิปธนาคารหรือใบเสร็จ",
+    description: "สกัดข้อมูลการเงินจากสลิปธนาคาร",
     parameters: {
       type: "object",
       properties: {
+        reasoning: {
+          type: "string",
+          description:
+            "อธิบายสิ่งที่คุณเห็นบนสลิปทีละขั้นตอน เช่น 'คำว่า จาก คือใคร', 'คำว่า ไปยัง คือใคร' เพื่อป้องกันการสลับกัน",
+        },
         type: {
           type: "string",
           enum: ["INCOME", "EXPENSE"],
-          description:
-            "ทิศทางของเงิน (INCOME = เงินเข้าบัญชีเรา, EXPENSE = เงินออกจากบัญชีเรา)",
+          description: "ทิศทางของเงิน",
         },
         description: {
           type: "string",
-          description: "รายละเอียดรายการ เช่น โอนเงินให้..., จ่ายค่า...",
+          description: "รายละเอียดรายการ",
         },
         amount: {
           type: "number",
@@ -290,25 +328,29 @@ export const SLIP_EXTRACTION_TOOL: ChatCompletionTool = {
         },
         toAccount: {
           type: "string",
-          description: "ชื่อบัญชีหรือชื่อผู้รับเงิน (ถ้ามี)",
+          description: "ผู้รับเงิน / ปลายทาง (วิเคราะห์จาก reasoning)",
         },
         fromAccount: {
           type: "string",
-          description: "ชื่อบัญชีหรือชื่อผู้โอนเงิน (ถ้ามี)",
+          description: "ผู้โอนเงิน / ต้นทาง (วิเคราะห์จาก reasoning)",
         },
         categoryId: {
           type: "number",
-          description:
-            "ID ของหมวดหมู่ที่เหมาะสมที่สุด (อ้างอิงจาก Category List ที่แนบไปใน Prompt)",
         },
         date: {
           type: "string",
-          description:
-            "วันที่และเวลาที่ทำรายการ (ISO 8601) เช่น 2026-03-05T14:04:00+07:00 " +
-            "ห้ามเดาเดือนผิดเด็ดขาด ตรวจสอบตัวย่อเดือนไทยให้ดี",
         },
       },
-      required: ["type", "description", "amount"],
+      required: [
+        "reasoning",
+        "type",
+        "description",
+        "amount",
+        "date",
+        "categoryId",
+        "toAccount",
+        "fromAccount",
+      ],
     },
   },
 };
