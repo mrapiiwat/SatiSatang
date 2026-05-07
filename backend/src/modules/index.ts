@@ -6,7 +6,7 @@ import { categoryController } from "./category/category.controller";
 import { chatController } from "./chat/chat.controller";
 import { consentController } from "./consent/consent.controller";
 import { goalController } from "./goal/goal.controller";
-// import { iconController } from "./icon/icon.controller";
+import { iconController } from "./icon/icon.controller";
 import { notificationController } from "./notification/notification.controller";
 import { notificationCrons } from "./notification/notification.crons";
 import { settingController } from "./setting/setting.controller";
@@ -24,7 +24,7 @@ const modules = new Elysia({ prefix: "/api" })
   )
   .use(authController)
   .use(userController)
-  // .use(iconController)
+  .use(iconController)
   .use(goalController)
   .use(categoryController)
   .use(budgetController)
