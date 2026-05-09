@@ -15,11 +15,11 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification?.title || 'สติสตางค์';
+  const notificationTitle = payload.data?.title || 'สติสตางค์';
   const notificationOptions = {
-    body: payload.notification?.body,
+    body: payload.data?.body || '',
     icon: '/logo/192-white.svg',
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  return self.registration.showNotification(notificationTitle, notificationOptions);
 });
