@@ -42,6 +42,7 @@ export class NotificationService {
       const registrationTokens = tokensRecord.map((t) => t.token);
 
       const response = await messaging.sendEachForMulticast({
+        notification: { title: title },
         data: {
           title: title,
           body: body,
