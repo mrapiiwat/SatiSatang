@@ -32,9 +32,9 @@ const LoadingToRedirect: React.FC = () => {
   return (
     <div className="p-6">
       <Logo />
-      <div className="min-h-screen flex items-center justify-center bg-white text-gray-700 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black-900 text-gray-700 px-4">
         <div className="text-center space-y-6">
-          <p className="text-base">
+          <p className="text-base dark:text-white">
             {
               t('redirecting_in_seconds', 'กำลังนำคุณกลับไปยังหน้าแรกใน {{count}} วินาที').split(
                 '{{count}}',

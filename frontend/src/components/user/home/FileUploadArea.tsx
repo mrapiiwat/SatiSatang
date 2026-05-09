@@ -39,17 +39,17 @@ const FileUploadArea: React.FC<FileUploadProps> = ({ files, onFileChange, onRemo
           {files.map((file, index) => (
             <div
               key={`${file.name}-${index}`}
-              className="flex justify-between items-center p-3 mb-2 bg-gray-50 border border-gray-200 rounded-xl"
+              className="flex justify-between items-center p-3 mb-2 dark:bg-black-700 dark:border-black-800 bg-gray-50 border border-gray-200 rounded-xl"
             >
               <div className="flex items-center gap-3 overflow-hidden">
-                <div className="bg-white p-2 rounded-lg border border-gray-100">
-                  <FaFileAlt className="text-gray-400" />
+                <div className="bg-white dark:bg-black-800 p-2 rounded-lg border border-gray-100 dark:border-zinc-600">
+                  <FaFileAlt className="text-gray-400 dark:text-zinc-400" />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate max-w-[180px]">
+                  <p className="text-sm font-medium text-gray-900 dark:text-zinc-100 truncate max-w-[180px]">
                     {index + 1}. {file.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">
                     {(file.size / (1024 * 1024)).toFixed(2)} MB
                   </p>
                 </div>
