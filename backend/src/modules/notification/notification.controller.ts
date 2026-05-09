@@ -1,5 +1,6 @@
 import { Elysia } from "elysia";
 import { StatusCodes } from "http-status-codes";
+import { UAParser } from "ua-parser-js";
 import { authenticateJWT } from "@/common/middlewares/auth.middleware";
 import { limit } from "@/common/middlewares/limit.middleware";
 import * as notificationSchema from "./notification.schema";
@@ -22,12 +23,24 @@ export const notificationController = new Elysia({
       app
         .post(
           "/token",
-          async ({ user, body, set }) => {
+          async ({ user, body, set, headers }) => {
             const userId = Number(user.id);
+            const userAgent = headers["user-agent"] || "unknown";
+            const parser = new UAParser(userAgent);
+            const device = parser.getDevice();
+            const os = parser.getOS();
+
+            const deviceName = device.model
+              ? `${device.model} (${os.name} ${os.version})`
+              : `${os.name} (Browser)`;
+
+            const deviceType = device.type || "desktop";
 
             const result = await notificationService.registerToken(
               userId,
-              body.token
+              body.token,
+              deviceName,
+              deviceType
             );
 
             set.status = StatusCodes.OK;
@@ -66,6 +79,28 @@ export const notificationController = new Elysia({
               summary: "ยกเลิกการลงทะเบียนอุปกรณ์",
               description:
                 "ลบ Push Token ออกจากระบบเพื่อหยุดส่งการแจ้งเตือนไปยังอุปกรณ์นั้น",
+            },
+          }
+        )
+        .delete(
+          "/token/all",
+          async ({ user, set }) => {
+            const userId = Number(user.id);
+            await notificationService.unregisterAllToken(userId);
+
+            set.status = StatusCodes.OK;
+            return { message: "All tokens removed" };
+          },
+          {
+            beforeHandle: limit({
+              max: 10,
+              window: 60,
+              prefix: "unregister-token",
+            }),
+            detail: {
+              summary: "ยกเลิกการลงทะเบียนอุปกรณ์ทั้งหมด",
+              description:
+                "ลบ Push Token ทั้งหมดของผู้ใช้งานออกจากระบบเพื่อหยุดส่งการแจ้งเตือนไปยังอุปกรณ์ทั้งหมดของผู้ใช้งาน",
             },
           }
         )

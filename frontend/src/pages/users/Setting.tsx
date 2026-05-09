@@ -91,7 +91,7 @@ const Setting: React.FC = () => {
       try {
         const token = await requestForToken();
         if (token) {
-          await axios.delete('/notification/token', { data: { token } });
+          await axios.delete('/notification/token/all');
         }
 
         actionUpdateSetting({

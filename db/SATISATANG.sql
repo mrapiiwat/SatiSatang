@@ -268,15 +268,16 @@ CREATE TABLE public.user_settings (
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
   );
 
-CREATE TABLE
-  public.user_fcm_tokens (
+CREATE TABLE public.user_fcm_tokens (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     token TEXT NOT NULL UNIQUE,
+    device_name TEXT,                   
+    device_type TEXT,            
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE
-  );
+);
 
 CREATE INDEX idx_user_fcm_tokens_user_id ON public.user_fcm_tokens (user_id);
 

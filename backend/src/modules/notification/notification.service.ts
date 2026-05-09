@@ -8,16 +8,27 @@ import { db } from "@/db";
 import { userFcmTokens } from "@/db/schema";
 
 export class NotificationService {
-  async registerToken(userId: number, token: string) {
+  async registerToken(
+    userId: number,
+    token: string,
+    deviceName?: string,
+    deviceType?: string
+  ) {
     const [result] = await db
       .insert(userFcmTokens)
       .values({
         userId,
         token,
+        deviceName,
+        deviceType,
       })
       .onConflictDoUpdate({
         target: userFcmTokens.token,
-        set: { userId: userId },
+        set: {
+          userId: userId,
+          deviceName: deviceName,
+          deviceType: deviceType,
+        },
       })
       .returning();
 
@@ -26,6 +37,12 @@ export class NotificationService {
 
   async unregisterToken(token: string) {
     await db.delete(userFcmTokens).where(eq(userFcmTokens.token, token));
+
+    return { success: true };
+  }
+
+  async unregisterAllToken(userId: number) {
+    await db.delete(userFcmTokens).where(eq(userFcmTokens.userId, userId));
 
     return { success: true };
   }
