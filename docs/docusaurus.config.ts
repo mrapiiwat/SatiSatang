@@ -50,7 +50,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/mrapiiwat/SatiSatang/blob/develop/docs/',
+            'https://github.com/mrapiiwat/SatiSatang/blob/main/docs/',
         },
         blog: false,
         theme: {
