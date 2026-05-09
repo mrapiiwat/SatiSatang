@@ -43,11 +43,15 @@ const settingStore: StateCreator<SettingStore> = (set, get) => ({
     if (!state.isNotificationEnabled || !state.userId) return;
 
     try {
-      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      if (!('Notification' in window)) return;
+
+      if (Notification.permission === 'denied') return;
 
       const currentToken = await requestForToken();
+
       if (currentToken && currentToken !== state.lastSyncedToken) {
         await axios.post('/notification/token', { token: currentToken });
+
         set({ lastSyncedToken: currentToken });
       }
     } catch (error) {

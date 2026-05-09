@@ -553,6 +553,8 @@ export const userFcmTokens = pgTable(
     id: serial("id").primaryKey().notNull(),
     userId: integer("user_id").notNull(),
     token: text("token").notNull().unique(),
+    deviceName: text("device_name"),
+    deviceType: text("device_type"),
     createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
