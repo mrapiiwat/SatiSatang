@@ -271,14 +271,18 @@ const Login: React.FC = () => {
   return (
     <PageWrapper animation="scale-fade">
       <div className="flex min-h-screen w-full">
-        <div className="hidden lg:flex lg:flex-col lg:w-1/2 bg-gray-50 items-center justify-center">
+        <div className="hidden lg:flex lg:flex-col lg:w-1/2 bg-gray-50 dark:bg-black-800 items-center justify-center">
           <img
-            src="SATASATANG_LOGO_BLACK_VERTICAL_TH.svg"
+            src="/SATASATANG_LOGO_BLACK_VERTICAL_TH.svg"
             alt="Logo SatiSatang"
-            className="h-96 object-contain"
+            className="h-96 object-contain block dark:hidden"
+          />
+          <img
+            src="/SATASATANG_LOGO_WH_VERTICAL_TH.svg"
+            alt="Logo SatiSatang Dark"
+            className="h-96 object-contain hidden dark:block"
           />
         </div>
-
         <div className="w-full lg:w-1/2 flex flex-col justify-center">
           <div className="p-6 w-full max-w-md mx-auto">
             <Link to="/" className="cursor-pointer">

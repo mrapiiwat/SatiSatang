@@ -339,7 +339,7 @@ const Setting: React.FC = () => {
         </div>
 
         <p className="text-center text-xs text-gray-300">
-          {t('app_version', 'สติสตางค์ · v1.1.0')}
+          {t('app_version', 'สติสตางค์ · v1.2.0')}
         </p>
       </div>
     </PageWrapper>
