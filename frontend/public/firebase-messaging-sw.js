@@ -15,15 +15,14 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.data?.title || 'สติสตางค์';
-  const body = payload.data?.body || '';
+  const title = payload.data?.title || payload.notification?.title || 'สติสตางค์';
+  const body = payload.data?.body || payload.notification?.body || '';
 
   const notificationOptions = {
     body: body,
     icon: '/logo/192-white.svg',
-    badge: '/logo/192-white.svg',
-    tag: 'satisatang-general',
-    renotify: true,
+    tag: 'satisatang-notification',
+    renotify: false,
   };
 
   return self.registration.showNotification(title, notificationOptions);
