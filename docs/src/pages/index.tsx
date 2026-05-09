@@ -14,10 +14,10 @@ function HomepageHeader() {
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
-        <Heading as="h1" className="hero__title" style={{ fontSize: '3.5rem' }}>
+        <Heading as="h1" className="hero__title" style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)' }}>
           {siteConfig.title}
         </Heading>
-        <p className="hero__subtitle" style={{ fontSize: '1.5rem', opacity: 0.9 }}>
+        <p className="hero__subtitle" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.5rem)', opacity: 0.9 }}>
           คู่มือที่จะช่วยให้คุณบันทึกและจัดการการเงินได้อย่างง่ายดายและมีประสิทธิภาพ
         </p>
         <div className={styles.buttons}>
