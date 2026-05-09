@@ -15,11 +15,20 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.data?.title || 'สติสตางค์';
+  console.log('Background message received', payload);
+
+  const notificationTitle = payload.data?.title || payload.notification?.title || 'สติสตางค์';
   const notificationOptions = {
-    body: payload.data?.body || '',
+    body: payload.data?.body || payload.notification?.body || '',
     icon: '/logo/192-white.svg',
+    tag: 'satisatang-noti',
+    renotify: false,
   };
 
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  return self.registration.getNotifications({ tag: 'satisatang-noti' }).then((notifications) => {
+    if (notifications && notifications.length > 0) {
+      return;
+    }
+    return self.registration.showNotification(notificationTitle, notificationOptions);
+  });
 });
