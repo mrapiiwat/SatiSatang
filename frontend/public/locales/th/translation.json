@@ -94,7 +94,7 @@
   "date_format": "วันที่ {{date}}",
   "support_section": "การสนับสนุน",
   "logout_btn": "ออกจากระบบ",
-  "app_version": "สติสตางค์ · v1.2.0",
+  "app_version": "สติสตางค์ · v",
   "please_select_type_first": "กรุณาเลือกประเภทรายการก่อน",
   "fetch_goal_error": "เกิดข้อผิดพลาดในการดึง goal",
   "fetch_budget_error": "เกิดข้อผิดพลาดในการดึง budget",

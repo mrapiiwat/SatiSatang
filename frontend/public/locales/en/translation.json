@@ -94,7 +94,7 @@
   "date_format": "{{date}}",
   "support_section": "SUPPORT",
   "logout_btn": "Log out",
-  "app_version": "SatiSatang · v1.2.0",
+  "app_version": "SatiSatang · v",
   "please_select_type_first": "Please select type first",
   "fetch_goal_error": "Error fetching goals",
   "fetch_budget_error": "Error fetching budget",
