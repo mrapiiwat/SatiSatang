@@ -15,15 +15,23 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.data?.title || payload.notification?.title || 'สติสตางค์';
-  const body = payload.data?.body || payload.notification?.body || '';
+  return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+    const isFocused = clientList.some((client) => client.focused);
 
-  const notificationOptions = {
-    body: body,
-    icon: '/logo/192-white.svg',
-    tag: 'satisatang-notification',
-    renotify: false,
-  };
+    if (isFocused) {
+      return;
+    }
 
-  return self.registration.showNotification(title, notificationOptions);
+    const title = payload.data?.title || payload.notification?.title || 'สติสตางค์';
+    const body = payload.data?.body || payload.notification?.body || '';
+
+    const notificationOptions = {
+      body: body,
+      icon: '/logo/192-white.svg',
+      tag: 'satisatang-notification',
+      renotify: false,
+    };
+
+    return self.registration.showNotification(title, notificationOptions);
+  });
 });

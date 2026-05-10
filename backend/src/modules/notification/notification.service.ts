@@ -28,6 +28,7 @@ export class NotificationService {
           userId: userId,
           deviceName: deviceName,
           deviceType: deviceType,
+          updatedAt: new Date(),
         },
       })
       .returning();
