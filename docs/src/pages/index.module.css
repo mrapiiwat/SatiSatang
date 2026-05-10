@@ -45,12 +45,32 @@
   }
 }
 
+@media screen and (max-width: 600px) {
+  .heroBanner {
+    padding: 2rem 1rem !important;
+  }
+
+  .buttons {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .heroButtonPrimary,
+  .heroButtonSecondary {
+    width: 100% !important;
+    max-width: 320px;
+    text-align: center;
+  }
+}
+
 .buttons {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
   margin-top: 2rem;
+  flex-wrap: wrap;
 }
 
 .heroButtonPrimary {
