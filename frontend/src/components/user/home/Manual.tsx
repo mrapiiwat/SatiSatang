@@ -237,14 +237,14 @@ const Manual: React.FC<ManualProps> = ({ onClose, onSuccess, editData, onUpdateD
     if (Number(amount) < 0) {
       return showToastAlert(t('manual_error_amount_gt_0', 'จำนวนเงินต้องมากกว่า 0'), 'error');
     }
-    const offsetDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
+    // const offsetDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
     const payload = {
       type: selectedType.value as 'INCOME' | 'EXPENSE',
       description: detail,
       categoryId: selectedCategory.value,
       amount: Number(amount),
       isGoal: selectedCategory.isGoal || false,
-      date: offsetDate.toISOString(),
+      date: selectedDate.toISOString(),
     };
 
     if (onUpdateDraft) {

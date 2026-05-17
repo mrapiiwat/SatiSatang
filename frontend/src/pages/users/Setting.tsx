@@ -340,7 +340,7 @@ const Setting: React.FC = () => {
 
         <p className="text-center text-xs text-gray-300">
           {t('app_version', 'สติสตางค์ · v')}
-          {import.meta.env.VITE_APP_VERSION ? import.meta.env.VITE_APP_VERSION : '1.2.1'}
+          {import.meta.env.VITE_APP_VERSION ? import.meta.env.VITE_APP_VERSION : '1.2.2'}
         </p>
       </div>
     </PageWrapper>
