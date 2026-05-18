@@ -35,6 +35,9 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [pendingTransactions, setPendingTransactions] = useState<PendingTransaction[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [categories, setCategories] = useState<CategoryOptions[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const currentTransaction = useMemo(
     () => pendingTransactions[currentIndex] || null,
@@ -44,10 +47,6 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     if (!currentTransaction || !files[currentTransaction.fileIndex]) return null;
     return URL.createObjectURL(files[currentTransaction.fileIndex]);
   }, [currentTransaction, files]);
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -152,6 +151,18 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     setPendingTransactions((prev) => {
       const newList = [...prev];
       newList[currentIndex].data = { ...newList[currentIndex].data, [name]: value };
+      return newList;
+    });
+  };
+
+  const handleDateChange = (date: Date) => {
+    if (!currentTransaction) return;
+    setPendingTransactions((prev) => {
+      const newList = [...prev];
+      newList[currentIndex].data = {
+        ...newList[currentIndex].data,
+        date: date.toISOString(),
+      };
       return newList;
     });
   };
@@ -289,6 +300,7 @@ const Upload: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     categories={categories}
                     onInputChange={handleInputChange}
                     onSelectChange={handleSelectChange}
+                    onDateChange={handleDateChange}
                     onSave={handleSave}
                     onClose={() => setIsOpen(false)}
                     previewUrl={currentPreviewUrl}
