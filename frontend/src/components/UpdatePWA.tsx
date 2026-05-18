@@ -8,7 +8,8 @@ const UPDATE_CHECK_INTERVAL = 60 * 60 * 1000;
 const isStandalone = (): boolean => {
   if (typeof window === 'undefined') return false;
   const mediaStandalone = window.matchMedia?.('(display-mode: standalone)').matches;
-  const iosStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+  const iosStandalone =
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
   return Boolean(mediaStandalone || iosStandalone);
 };
 
