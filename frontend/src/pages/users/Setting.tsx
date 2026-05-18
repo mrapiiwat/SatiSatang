@@ -307,7 +307,15 @@ const Setting: React.FC = () => {
             <select
               value={budgetStartDate}
               onChange={(e) => actionUpdateSetting({ budgetStartDate: Number(e.target.value) })}
-              className="text-sm text-black-900 dark:text-white border border-gray-200 dark:border-black-500 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-black-700"
+              className="
+    text-sm
+    text-black-900 dark:text-white
+    border border-gray-200 dark:border-black-500
+    rounded-lg px-2 py-1.5
+    focus:outline-none focus:ring-2 focus:ring-blue-500
+    bg-white dark:bg-black-700
+    dark:[color-scheme:dark]
+  "
             >
               {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                 <option key={d} value={d}>

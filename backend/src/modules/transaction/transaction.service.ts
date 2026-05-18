@@ -92,8 +92,8 @@ export class TransactionService {
       sortBy === "amount"
         ? transaction.amount
         : sortBy === "createdAt"
-          ? transaction.createdAt
-          : transaction.date;
+          ? sql`DATE(${transaction.createdAt})`
+          : sql`DATE(${transaction.date})`;
 
     const orderFn = order === "asc" ? asc : desc;
 
