@@ -30,6 +30,16 @@ export default defineConfig({
             type: 'image/svg+xml',
             purpose: 'any maskable',
           },
+          {
+            src: '/SATISATANG.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+          },
+          {
+            src: '/SATISATANG1.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+          },
         ],
       },
       workbox: {
