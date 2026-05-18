@@ -77,6 +77,17 @@ export const updateTransaction = t.Object({
 
 export type updateTransaction = Static<typeof updateTransaction>;
 
+export const reorderTransactions = t.Object({
+  items: t.Array(
+    t.Object({
+      id: t.Numeric(),
+      sortOrder: t.Numeric(),
+    })
+  ),
+});
+
+export type reorderTransactions = Static<typeof reorderTransactions>;
+
 export const predictCategory = t.Object({
   description: t.String({ minLength: 1, error: "Description is required" }),
 });

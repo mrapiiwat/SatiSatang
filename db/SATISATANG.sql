@@ -171,6 +171,7 @@ CREATE TABLE
     from_account TEXT,
     user_id INT NOT NULL,
     category_id INT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
@@ -181,6 +182,7 @@ CREATE TABLE
 CREATE INDEX idx_transactions_user_created_at ON public.transactions (user_id, created_at);
 CREATE INDEX idx_transactions_date ON public.transactions (date);
 CREATE INDEX idx_transactions_category_id ON public.transactions (category_id);
+CREATE INDEX idx_transactions_sort_order ON public.transactions (sort_order);
 
 CREATE TABLE
   public.goals (

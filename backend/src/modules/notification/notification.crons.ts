@@ -15,7 +15,7 @@ const notificationService = new NotificationService();
 export const notificationCrons = new Elysia({ name: "Cron.Notification" }).use(
   cron({
     name: "daily-reminder",
-    pattern: "0 04 * * *",
+    pattern: "0 09 * * *",
     async run() {
       try {
         const targetUsers = await db
@@ -56,7 +56,7 @@ export const notificationCrons = new Elysia({ name: "Cron.Notification" }).use(
 export const goalReminderCron = new Elysia({ name: "Cron.GoalReminder" }).use(
   cron({
     name: "evening-goal-reminder",
-    pattern: "0 12 * * *",
+    pattern: "0 19 * * *",
     async run() {
       try {
         const allPendingGoals = await db

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useSettingStore from './store/settingStore';
 import AppRoutes from './routes/AppRoutes';
 import InstallPWA from './components/InstallPWA';
+import UpdatePWA from './components/UpdatePWA';
 import { useTheme } from './hooks/useTheme';
 import Loading from './components/Loading';
 import useLoadingStore from './store/loadingStore';
@@ -23,6 +24,7 @@ export default function App() {
   return (
     <>
       <InstallPWA />
+      <UpdatePWA />
       {isLoading && <Loading />}
       <Suspense fallback={<Loading />}>
         <AppRoutes />

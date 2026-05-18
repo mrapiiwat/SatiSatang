@@ -140,6 +140,7 @@ export interface TransactionFormProps {
   categories: CategoryOptions[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: string, option: SingleValue<OptionType | CategoryOptions>) => void;
+  onDateChange: (date: Date) => void;
   onSave: () => void;
 }
 

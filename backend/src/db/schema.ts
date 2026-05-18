@@ -301,6 +301,7 @@ export const transaction = pgTable(
     receipt: text("receipt"),
     toAccount: text("to_account"),
     fromAccount: text("from_account"),
+    sortOrder: integer("sort_order").default(0).notNull(),
     createdAt: timestamp("created_at", { precision: 3, mode: "date" })
       .defaultNow()
       .notNull(),
@@ -316,6 +317,7 @@ export const transaction = pgTable(
     index("idx_transactions_user_created_at").on(table.userId, table.createdAt),
     index("idx_transactions_date").on(table.date),
     index("idx_transactions_category_id").on(table.categoryId),
+    index("idx_transactions_sort_order").on(table.sortOrder),
     foreignKey({
       columns: [table.categoryId],
       foreignColumns: [category.id],
