@@ -3,6 +3,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
+declare global {
+  interface NotificationOptions {
+    renotify?: boolean;
+    requireInteraction?: boolean;
+  }
+}
+
 const UPDATE_CHECK_INTERVAL = 60 * 60 * 1000;
 
 const isStandalone = (): boolean => {
@@ -16,6 +23,7 @@ const isStandalone = (): boolean => {
 const UpdatePWA: React.FC = () => {
   const { t } = useTranslation();
   const [isPWA, setIsPWA] = useState<boolean>(false);
+  const [hasNotified, setHasNotified] = useState<boolean>(false);
 
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -30,6 +38,38 @@ const UpdatePWA: React.FC = () => {
   });
 
   useEffect(() => {
+    const sendUpdateNotification = async () => {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        registration.showNotification(t('update_noti_title', 'อัปเดตเวอร์ชันใหม่!'), {
+          body: t(
+            'update_noti_body',
+            'มีเวอร์ชันใหม่ของ สติสตางค์ พร้อมใช้งานแล้ว กดเพื่ออัปเดตทันที',
+          ),
+          icon: `${window.location.origin}/logo/192-white.svg`,
+          tag: 'pwa-update-available',
+          renotify: true,
+          requireInteraction: true,
+        });
+      }
+    };
+
+    if (needRefresh && !hasNotified) {
+      if (Notification.permission === 'granted') {
+        sendUpdateNotification();
+        setHasNotified(true);
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then((permission) => {
+          if (permission === 'granted') {
+            sendUpdateNotification();
+            setHasNotified(true);
+          }
+        });
+      }
+    }
+  }, [needRefresh, hasNotified, t]);
+
+  useEffect(() => {
     setIsPWA(isStandalone());
     const mql = window.matchMedia('(display-mode: standalone)');
     const onChange = (e: MediaQueryListEvent) => setIsPWA(e.matches);
@@ -41,10 +81,12 @@ const UpdatePWA: React.FC = () => {
 
   const handleUpdate = async () => {
     await updateServiceWorker(true);
+    window.location.reload();
   };
 
   const handleDismiss = () => {
     setNeedRefresh(false);
+    setHasNotified(false);
   };
 
   return (

@@ -27,7 +27,7 @@ messaging.onBackgroundMessage((payload) => {
 
     const notificationOptions = {
       body: body,
-      icon: '/logo/192-white.svg',
+      icon: `${self.location.origin}/logo/192-white.svg`,
       tag: 'satisatang-notification',
       renotify: false,
     };
