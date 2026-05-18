@@ -117,13 +117,27 @@ export class OpenAIService {
         .map((c) => `${c.id}: ${c.name} (${c.type})`)
         .join("\n");
 
+      const now = new Date();
+      const currentDateISO = now.toLocaleDateString("en-CA", {
+        timeZone: "Asia/Bangkok",
+      });
+      const currentYearAD = Number(
+        now.toLocaleDateString("en-US", {
+          timeZone: "Asia/Bangkok",
+          year: "numeric",
+        })
+      );
+
       const prompt = prompts.getExtractTransactionPrompt(
         user,
-        categoryListText
+        categoryListText,
+        currentDateISO,
+        currentYearAD
       );
 
       const jsonResponse = await openai.chat.completions.create({
         model: MODEL_NAME,
+        temperature: 0,
         messages: [
           { role: "system", content: prompt },
           {
@@ -131,7 +145,7 @@ export class OpenAIService {
             content: [
               {
                 type: "text",
-                text: `อ้างอิงการสะกดคำจากข้อความ OCR นี้:\n---\n${ocrText}\n---\n\nจงสกัดข้อมูลการเงินจากสลิปใบนี้อย่างแม่นยำ`,
+                text: `อ้างอิงการสะกดคำจากข้อความ OCR นี้:\n---\n${ocrText}\n---\n\nวันที่ปัจจุบัน (อ้างอิง): ${currentDateISO}\n\nจงสกัดข้อมูลจากสลิปอย่างเคร่งครัด โดยทำตามขั้นตอน 1-5 ใน reasoning ก่อนกรอกฟิลด์อื่น ห้ามสลับผู้โอน/ผู้รับ และห้ามใช้ปี พ.ศ. โดยไม่แปลงเป็น ค.ศ.`,
               },
               {
                 type: "image_url",

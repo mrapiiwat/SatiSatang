@@ -304,41 +304,51 @@ export const SLIP_EXTRACTION_TOOL: ChatCompletionTool = {
   type: "function",
   function: {
     name: "extract_slip_data",
-    description: "สกัดข้อมูลการเงินจากสลิปธนาคาร",
+    description:
+      "สกัดข้อมูลการเงินจากสลิปธนาคาร โดยต้องเขียน reasoning ตามขั้นตอน 1-5 ก่อนกรอกฟิลด์อื่น",
     parameters: {
       type: "object",
       properties: {
         reasoning: {
           type: "string",
           description:
-            "อธิบายสิ่งที่คุณเห็นบนสลิปทีละขั้นตอน เช่น 'คำว่า จาก คือใคร', 'คำว่า ไปยัง คือใคร' เพื่อป้องกันการสลับกัน",
+            "บังคับเขียนเป็น 5 บรรทัดตามรูปแบบนี้ (ห้ามข้าม):\n[1] ชื่อบล็อก 'จาก/From' = ... | ชื่อบล็อก 'ไปยัง/To' = ...\n[2] ผู้ใช้ตรงกับฝั่ง: from / to / both / none — เหตุผล: ...\n[3] type = INCOME หรือ EXPENSE\n[4] วันที่ดิบ = '...' | ปีเป็น พ.ศ./ค.ศ. = ... | แปลงเป็น ISO = ...\n[5] categoryId = ... เพราะ ...",
         },
         type: {
           type: "string",
           enum: ["INCOME", "EXPENSE"],
-          description: "ทิศทางของเงิน",
+          description:
+            "INCOME = ผู้ใช้คือ 'ผู้รับ (toAccount)' / EXPENSE = ผู้ใช้คือ 'ผู้โอน (fromAccount)' หรือเป็นใบเสร็จร้านค้า ห้ามตัดสินจากความรู้สึก ต้องตัดสินจากการ match ชื่อใน reasoning ขั้น [2] เท่านั้น",
         },
         description: {
           type: "string",
-          description: "รายละเอียดรายการ",
+          description:
+            "รายละเอียดรายการสั้นๆ ไม่เกิน 50 ตัวอักษร เช่น 'โอนให้ ร้านอาหาร XYZ', 'รับเงินจาก สมชาย', 'ค่ากาแฟ Starbucks'",
         },
         amount: {
           type: "number",
-          description: "จำนวนเงินที่ทำรายการ",
+          description:
+            "ยอดเงินที่ทำรายการ (เป็นบวกเสมอ ไม่ใส่เครื่องหมายลบ ไม่มีคอมม่า) ถ้าสลิปแสดงทั้ง 'ยอดโอน' และ 'ค่าธรรมเนียม' ให้ใช้ 'ยอดโอน' เท่านั้น ไม่ต้องบวกค่าธรรมเนียม",
         },
         toAccount: {
           type: "string",
-          description: "ผู้รับเงิน / ปลายทาง (วิเคราะห์จาก reasoning)",
+          description:
+            "ชื่อผู้รับเงิน/ปลายทาง (ตรงกับบล็อก 'ไปยัง/To' บนสลิป) ใส่ชื่อตามที่อ่านได้เป๊ะๆ ไม่ต้องเดา ห้ามสลับกับ fromAccount",
         },
         fromAccount: {
           type: "string",
-          description: "ผู้โอนเงิน / ต้นทาง (วิเคราะห์จาก reasoning)",
+          description:
+            "ชื่อผู้โอนเงิน/ต้นทาง (ตรงกับบล็อก 'จาก/From' บนสลิป) ใส่ชื่อตามที่อ่านได้เป๊ะๆ ไม่ต้องเดา ห้ามสลับกับ toAccount",
         },
         categoryId: {
           type: "number",
+          description:
+            "ID หมวดหมู่จากรายการที่ให้มา ต้องเป็นตัวเลขที่มีอยู่จริงในรายการเท่านั้น",
         },
         date: {
           type: "string",
+          description:
+            "ISO 8601 พร้อม timezone +07:00 เช่น '2026-05-18T10:30:00+07:00' ถ้าสลิปแสดงปี พ.ศ. (25xx) ต้องลบ 543 ก่อน ถ้าไม่มีเวลาบนสลิปใช้ 00:00:00+07:00",
         },
       },
       required: [
