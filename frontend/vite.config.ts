@@ -7,8 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
-      injectRegister: false,
+      registerType: 'autoUpdate',
       manifest: {
         name: 'SatiSatang',
         short_name: 'สติสตางค์',
@@ -30,21 +29,10 @@ export default defineConfig({
             type: 'image/svg+xml',
             purpose: 'any maskable',
           },
-          {
-            src: '/SATISATANG.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-          },
-          {
-            src: '/SATISATANG1.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-          },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
+        globPatterns: ['**/*.{js,css,html}'],
         runtimeCaching: [
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
