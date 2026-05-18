@@ -46,7 +46,7 @@ const UpdatePWA: React.FC = () => {
             'update_noti_body',
             'มีเวอร์ชันใหม่ของ สติสตางค์ พร้อมใช้งานแล้ว กดเพื่ออัปเดตทันที',
           ),
-          icon: `${window.location.origin}/logo/192-white.svg`,
+          icon: '/logo/192-white.svg',
           tag: 'pwa-update-available',
           renotify: true,
           requireInteraction: true,
