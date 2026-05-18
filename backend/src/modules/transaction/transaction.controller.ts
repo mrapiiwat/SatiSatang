@@ -122,6 +122,35 @@ export const transactionController = new Elysia({
           }
         )
 
+        .put(
+          "/reorder",
+          async ({ body, user, set }) => {
+            const userId = Number(user.id);
+
+            await transactionService.reorderTransactions(body.items, userId);
+            await invalidateAllFinancialData(userId);
+
+            set.status = StatusCodes.OK;
+
+            return {
+              message: "Transactions reordered successfully",
+            };
+          },
+          {
+            body: transactionSchema.reorderTransactions,
+            beforeHandle: limit({
+              max: 20,
+              window: 60,
+              prefix: "tx-reorder",
+            }),
+            detail: {
+              summary: "จัดเรียงลำดับธุรกรรมใหม่",
+              description:
+                "อัปเดตลำดับการแสดงผลของธุรกรรมเมื่อมีการลากย้ายตำแหน่งในวันเดียวกัน",
+            },
+          }
+        )
+
         .post(
           "/predict-category",
           async ({ body, user, set }) => {

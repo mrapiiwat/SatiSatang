@@ -106,7 +106,11 @@ export class TransactionService {
 
     const transactions = await db.query.transaction.findMany({
       where: and(...conditions, isNull(transaction.deletedAt)),
-      orderBy: [orderFn(sortColumn), desc(transaction.createdAt)],
+      orderBy: [
+        orderFn(sortColumn),
+        asc(transaction.sortOrder),
+        desc(transaction.createdAt),
+      ],
       limit: limit,
       offset: skip,
       with: {
@@ -279,6 +283,26 @@ export class TransactionService {
       });
 
       return { type: "transaction", data: newTransaction };
+    });
+  }
+
+  async reorderTransactions(
+    items: transactionSchema.reorderTransactions["items"],
+    userId: number
+  ) {
+    return await db.transaction(async (tx) => {
+      for (const item of items) {
+        await tx
+          .update(transaction)
+          .set({
+            sortOrder: item.sortOrder,
+          })
+          .where(
+            and(eq(transaction.id, item.id), eq(transaction.userId, userId))
+          );
+      }
+
+      return { success: true };
     });
   }
 
