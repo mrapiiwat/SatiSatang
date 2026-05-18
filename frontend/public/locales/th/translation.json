@@ -184,6 +184,8 @@
   "satisatang": "สติสตางค์",
   "install_pwa_text_suffix": "ลงหน้าจอ",
   "install_btn": "ติดตั้ง",
+  "update_pwa_text_prefix": "มีเวอร์ชันใหม่ของ",
+  "update_btn": "อัปเดต",
   "consent_check_error": "กรุณาทำเครื่องหมายเพื่อยืนยันการยอมรับเงื่อนไขทั้งหมด",
   "welcome_message": "ยินดีต้อนรับเข้าสู่ระบบ",
   "save_consent_error": "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง",

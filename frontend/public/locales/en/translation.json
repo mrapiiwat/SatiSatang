@@ -184,6 +184,8 @@
   "satisatang": "SatiSatang",
   "install_pwa_text_suffix": "to Home Screen",
   "install_btn": "Install",
+  "update_pwa_text_prefix": "A new version of",
+  "update_btn": "Update",
   "consent_check_error": "Please check to confirm acceptance of all terms",
   "welcome_message": "Welcome",
   "save_consent_error": "Error saving data. Please try again.",
