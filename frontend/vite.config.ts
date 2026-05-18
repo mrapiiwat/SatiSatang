@@ -33,7 +33,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+        dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
         runtimeCaching: [
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
