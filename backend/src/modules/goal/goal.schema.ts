@@ -10,7 +10,7 @@ export const createGoal = t.Object({
     error: "Amount must be positive",
   }),
   deadline: t.Optional(
-    t.Union([t.Date(), t.String()], {
+    t.Union([t.Date(), t.String(), t.Null()], {
       error: "Invalid date format",
     })
   ),

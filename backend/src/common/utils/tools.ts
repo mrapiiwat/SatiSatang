@@ -189,7 +189,8 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "create_transaction",
-      description: "ใช้เมื่อ User ต้องการบันทึกรายรับหรือรายจ่าย",
+      description:
+        "ใช้เมื่อ User ต้องการบันทึกรายรับหรือรายจ่าย **และมีข้อมูลจำนวนเงิน (amount) รวมถึงมั่นใจในหมวดหมู่ 100% แล้วเท่านั้น** หากผู้ใช้ไม่ได้บอกราคา หรือคลุมเครือว่าอาจจะเป็นเป้าหมายใหม่ ห้ามเรียกใช้ Tool นี้ ให้ถามกลับก่อน",
       parameters: {
         type: "object",
         properties: {
@@ -223,22 +224,25 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "create_budget",
-      description: "ใช้เมื่อ User ต้องการตั้งงบประมาณ",
+      description:
+        "ใช้เมื่อ User ต้องการตั้งงบประมาณ **และระบุจำนวนเงิน หมวดหมู่ และรอบเวลา (frequency) ชัดเจนแล้วเท่านั้น** หากผู้ใช้บอกข้อมูลไม่ครบ หรือหมวดหมู่ก้ำกึ่ง ห้ามเรียกใช้ Tool นี้ ให้ตอบกลับเป็นข้อความเป็นคำถามเพื่อขอข้อมูลเพิ่มก่อน",
       parameters: {
         type: "object",
         properties: {
-          amount: { type: "number" },
+          amount: { type: "number", description: "จำนวนเงินงบประมาณที่ต้องการตั้ง" },
           categoryId: {
             type: "number",
-            description: "Category ID ที่ต้องการตั้งงบ",
+            description:
+              "Category ID ของหมวดหมู่ทั่วไปที่ต้องการผูกงบประมาณนี้ (ห้ามใช้ GOAL_ID ของเป้าหมายเด็ดขาด งบประมาณใช้กับหมวดหมู่ทั่วไปเท่านั้น)",
           },
           frequency: {
             type: "string",
             enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
-            description: "ความถี่ของงบประมาณ",
+            description:
+              "ความถี่ของงบประมาณ โดยตีความจากคำใบ้ เช่น 'เดือนนี้/ทุกเดือน' = MONTHLY, 'อาทิตย์นี้/ทุกสัปดาห์' = WEEKLY, 'ต่อวัน/แต่ละวัน' = DAILY หากผู้ใช้ไม่ได้ระบุรอบเวลาเลย ห้ามเดาเอง ให้ปล่อยผ่านไปถามผู้ใช้ก่อน",
           },
         },
-        required: ["amount", "frequency"],
+        required: ["amount", "frequency", "categoryId"],
       },
     },
   },
@@ -247,7 +251,7 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
     function: {
       name: "create_goal",
       description:
-        "ใช้เมื่อ User ต้องการ สร้าง, เพิ่ม, หรือตั้ง 'เป้าหมาย' (Goal) ในการออมเงิน (ห้ามสับสนกับหมวดหมู่)",
+        "ใช้เมื่อ User ต้องการ สร้าง, เพิ่ม, หรือตั้ง 'เป้าหมาย' (Goal) ใหม่ในการออมเงิน **อย่างชัดเจนเท่านั้น** (ห้ามสับสนกับหมวดหมู่ หากคลุมเครือให้ถามก่อน)",
       parameters: {
         type: "object",
         properties: {
@@ -255,7 +259,8 @@ export const SATI_TOOLS: ChatCompletionTool[] = [
           amount: { type: "number", description: "จำนวนเงินเป้าหมาย" },
           deadline: {
             type: "string",
-            description: "วันที่ครบกำหนด (ISO Date YYYY-MM-DD)",
+            description:
+              "วันที่ครบกำหนด (ISO Date YYYY-MM-DD) **สำคัญ: หากผู้ใช้ไม่ระบุ ห้ามส่งค่า null เด็ดขาด ให้ข้าม property นี้ไปเลย (ไม่ต้องส่งมา)**",
           },
         },
         required: ["name", "amount"],

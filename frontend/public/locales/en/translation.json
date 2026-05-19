@@ -354,5 +354,6 @@
   "noti_disable_success": "Notifications disabled.",
   "noti_save_error": "Failed to save notification settings.",
   "noti_token_error": "Failed to generate token. Please try again.",
-  "noti_server_error": "Server connection error. Please try again later."
+  "noti_server_error": "Server connection error. Please try again later.",
+  "evaluation_form": "Evaluation Form"
 }
