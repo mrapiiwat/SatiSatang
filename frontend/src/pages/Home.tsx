@@ -159,6 +159,14 @@ const Home: React.FC = () => {
                   >
                     {t('about_us', 'เกี่ยวกับเรา')}
                   </a>
+                  <a
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSfsv-LOdD6K4YYGZvHVSK5nCCeCMz6tbHGYYadrZgssXtHVAw/viewform?pli=1"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    {t('evaluation_form', 'แบบประเมิน')}
+                  </a>
                 </div>
 
                 <div className="flex flex-col gap-3">

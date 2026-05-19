@@ -72,6 +72,8 @@ const config: Config = {
         alt: 'SatiSatang Logo',
         src: 'img/SATISATANG_DARK.svg',
         srcDark: 'img/SATISATANG_LIGHT.svg',
+        href: 'https://xn--42cf5ba7hb1dn5t.com',
+        target: '_self',
       },
       items: [
         {
