@@ -8,6 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: false,
       manifest: {
         name: 'SatiSatang',
         short_name: 'สติสตางค์',
@@ -55,7 +56,7 @@ export default defineConfig({
     }),
   ],
   esbuild: {
-    //  drop: ['console', 'debugger'],
+    drop: ['debugger'],
   },
   server: {
     host: '0.0.0.0',

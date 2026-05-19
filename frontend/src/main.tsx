@@ -4,12 +4,8 @@ import './index.css';
 import './i18n';
 import App from './App.tsx';
 
-window.onerror = function (message, source, lineno) {
-  alert('JS Error: ' + message + ' at ' + source + ':' + lineno);
-  return false;
-};
-
 const isAppBrowser = (): boolean => {
+  if (typeof window === 'undefined') return false;
   const ua: string = navigator.userAgent || navigator.vendor || '';
   return /FBAN|FBAV|Instagram|Line|wv|TikTok|Twitter|MicroMessenger|Snapchat|Pinterest|LinkedInApp/i.test(
     ua,
@@ -18,9 +14,31 @@ const isAppBrowser = (): boolean => {
 
 if ('serviceWorker' in navigator) {
   if (isAppBrowser()) {
-    console.log('App browser detected, unregistering service workers');
     navigator.serviceWorker.getRegistrations().then((regs) => {
-      for (const reg of regs) reg.unregister();
+      for (const reg of regs) {
+        reg.unregister();
+      }
+    });
+  } else {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((reg) => {
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  window.location.reload();
+                }
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          console.error('SW registration failed:', err);
+        });
     });
   }
 }
