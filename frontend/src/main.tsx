@@ -4,6 +4,11 @@ import './index.css';
 import './i18n';
 import App from './App.tsx';
 
+window.onerror = function (message, source, lineno) {
+  alert('JS Error: ' + message + ' at ' + source + ':' + lineno);
+  return false;
+};
+
 const isAppBrowser = (): boolean => {
   const ua: string = navigator.userAgent || navigator.vendor || '';
   return /FBAN|FBAV|Instagram|Line|wv|TikTok|Twitter|MicroMessenger|Snapchat|Pinterest|LinkedInApp/i.test(
