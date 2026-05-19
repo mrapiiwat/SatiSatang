@@ -1,11 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import legacy from '@vitejs/plugin-legacy';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    target: ['es2017', 'safari12'],
+  },
   plugins: [
     react(),
+    legacy({
+      targets: ['defaults', 'not IE 11', 'iOS >= 12', 'Android >= 7'],
+      modernPolyfills: true,
+      renderLegacyChunks: true,
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
@@ -56,7 +65,7 @@ export default defineConfig({
     }),
   ],
   esbuild: {
-    drop: ['debugger'],
+    drop: ['console', 'debugger'],
   },
   server: {
     host: '0.0.0.0',
