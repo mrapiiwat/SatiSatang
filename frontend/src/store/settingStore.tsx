@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import axios from '../api/axios';
 import type { SettingState, SettingStore } from '../interface/store';
 import { requestForToken } from '../config/firebase';
+import { zustandSafeStorage } from '../utils/safeStorage';
 
 const defaultSettings: SettingState = {
   appLanguage: 'th',
@@ -62,7 +63,7 @@ const settingStore: StateCreator<SettingStore> = (set, get) => ({
 
 const usePersist = {
   name: 'user-settings',
-  getStorage: () => createJSONStorage(() => localStorage),
+  getStorage: () => createJSONStorage(() => zustandSafeStorage),
 };
 
 const useSettingStore = create(persist(settingStore, usePersist));

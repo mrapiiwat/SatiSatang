@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import React from 'react';
 import { type BeforeInstallPromptEvent } from '../interface/components';
 import { useTranslation } from 'react-i18next';
+import { safeGetItem, safeSetItem } from '../utils/safeStorage';
 
 const InstallPWA: React.FC = () => {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ const InstallPWA: React.FC = () => {
       installEvent.preventDefault();
       setDeferredPrompt(installEvent);
 
-      const dismissedAt = localStorage.getItem('pwa_dismissed_at');
+      const dismissedAt = safeGetItem('pwa_dismissed_at');
 
       let shouldShow = true;
 
@@ -44,16 +45,16 @@ const InstallPWA: React.FC = () => {
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
       setShowButton(false);
-      localStorage.setItem('pwa_installed', 'true');
+      safeSetItem('pwa_installed', 'true');
     }
   };
 
   const handleDismiss = () => {
     setShowButton(false);
-    localStorage.setItem('pwa_dismissed_at', Date.now().toString());
+    safeSetItem('pwa_dismissed_at', Date.now().toString());
   };
 
-  if (!showButton || localStorage.getItem('pwa_installed') === 'true') return null;
+  if (!showButton || safeGetItem('pwa_installed') === 'true') return null;
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-max max-w-[calc(100vw-2rem)]">
