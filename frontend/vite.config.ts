@@ -58,9 +58,9 @@ export default defineConfig({
       },
     }),
   ],
-  // esbuild: {
-  //   drop: ['console', 'debugger'],
-  // },
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
   server: {
     host: '0.0.0.0',
     watch: {
