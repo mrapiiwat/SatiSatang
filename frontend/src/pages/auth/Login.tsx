@@ -15,6 +15,11 @@ import { AxiosError } from 'axios';
 import { showToastAlert } from '../../store/toastStore';
 import type { LoginForm } from '../../interface/auth';
 import type { ElysiaResponse } from '../../interface/error';
+import {
+  safeSessionGetItem,
+  safeSessionRemoveItem,
+  safeSessionSetItem,
+} from '../../utils/safeStorage';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -71,9 +76,9 @@ const Login: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const storeEmail = sessionStorage.getItem('userEmail');
+    const storeEmail = safeSessionGetItem('userEmail');
     if (storeEmail) {
-      sessionStorage.removeItem('userEmail');
+      safeSessionRemoveItem('userEmail');
     }
   }, []);
 
@@ -133,9 +138,9 @@ const Login: React.FC = () => {
 
           const userId = res.data.userId;
 
-          sessionStorage.setItem('pendingVerification', 'true');
-          sessionStorage.setItem('pendingUserId', userId);
-          sessionStorage.setItem('userEmail', email);
+          safeSessionSetItem('pendingVerification', 'true');
+          safeSessionSetItem('pendingUserId', userId);
+          safeSessionSetItem('userEmail', email);
 
           navigate(`/verify?userId=${userId}`);
         } catch (error: unknown) {
@@ -193,9 +198,9 @@ const Login: React.FC = () => {
             const otpRes = await axios.post('/resend-otp', { email });
             const userId = otpRes.data.userId;
 
-            sessionStorage.setItem('pendingVerification', 'true');
-            sessionStorage.setItem('pendingUserId', userId);
-            sessionStorage.setItem('userEmail', email);
+            safeSessionSetItem('pendingVerification', 'true');
+            safeSessionSetItem('pendingUserId', userId);
+            safeSessionSetItem('userEmail', email);
 
             navigate(`/verify?userId=${userId}`);
           } catch (otpError: unknown) {

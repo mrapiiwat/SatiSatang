@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { FloatingBubbleProps } from '../../../interface/home';
 import TrackingFace from '../satang/TrackingFace';
+import { safeGetItem, safeSetItem } from '../../../utils/safeStorage';
 
 const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
   const BUBBLE_SIZE = 65;
@@ -15,7 +16,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
 
   const [position, setPosition] = useState(() => {
     if (typeof window !== 'undefined') {
-      const savedPos = localStorage.getItem(STORAGE_KEY);
+      const savedPos = safeGetItem(STORAGE_KEY);
       if (savedPos) {
         try {
           const parsed = JSON.parse(savedPos);
@@ -62,7 +63,7 @@ const FloatingBubble: React.FC<FloatingBubbleProps> = ({ onClick }) => {
     const newPos = { x: newX, y: newY };
     setPosition(newPos);
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newPos));
+    safeSetItem(STORAGE_KEY, JSON.stringify(newPos));
 
     setTimeout(() => setIsSnapping(false), 300);
   }, [position.x, position.y]);

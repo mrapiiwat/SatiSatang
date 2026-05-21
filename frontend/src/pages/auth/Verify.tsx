@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { showToastAlert } from '../../store/toastStore';
 import type { ElysiaResponse } from '../../interface/error';
 import { useTranslation } from 'react-i18next';
+import { safeSessionGetItem, safeSessionRemoveItem } from '../../utils/safeStorage';
 
 const Verify: React.FC = () => {
   const { t } = useTranslation();
@@ -25,8 +26,8 @@ const Verify: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const pending = sessionStorage.getItem('pendingVerification');
-    const pendingId = sessionStorage.getItem('pendingUserId');
+    const pending = safeSessionGetItem('pendingVerification');
+    const pendingId = safeSessionGetItem('pendingUserId');
 
     if (!pending || !pendingId || pendingId !== userId) {
       setAllowed(false);
@@ -76,9 +77,9 @@ const Verify: React.FC = () => {
       setSuccess(t('verify_success_message', 'ยืนยันอีเมลสำเร็จ! กำลังพาคุณเข้าสู่ระบบ...'));
       actionSetToken(accessToken);
 
-      sessionStorage.removeItem('pendingVerification');
-      sessionStorage.removeItem('pendingUserId');
-      sessionStorage.removeItem('userEmail');
+      safeSessionRemoveItem('pendingVerification');
+      safeSessionRemoveItem('pendingUserId');
+      safeSessionRemoveItem('userEmail');
 
       showToastAlert(t('login_success', 'เข้าสู่ระบบสำเร็จ'), 'success');
 
@@ -127,7 +128,7 @@ const Verify: React.FC = () => {
     setSuccess('');
 
     try {
-      const userEmail = sessionStorage.getItem('userEmail');
+      const userEmail = safeSessionGetItem('userEmail');
       if (!userEmail) {
         setError(t('email_not_found', 'ไม่พบข้อมูลอีเมล'));
         return;

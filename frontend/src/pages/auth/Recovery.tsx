@@ -8,6 +8,7 @@ import { IoMailOutline } from 'react-icons/io5';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import type { ElysiaResponse } from '../../interface/error';
 import { useTranslation } from 'react-i18next';
+import { safeSessionRemoveItem } from '../../utils/safeStorage';
 
 const Recovery: React.FC = () => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ const Recovery: React.FC = () => {
   };
 
   const handleBackToLogin = () => {
-    sessionStorage.removeItem('userEmail');
+    safeSessionRemoveItem('userEmail');
     navigate('/login');
   };
 
