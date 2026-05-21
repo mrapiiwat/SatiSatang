@@ -1,5 +1,12 @@
 import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage, type MessagePayload } from 'firebase/messaging';
+import {
+  getMessaging,
+  getToken,
+  onMessage,
+  isSupported,
+  type MessagePayload,
+  type Messaging,
+} from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBPkQnSLSu8YfG1FP-vAdMH2KqFCw66RhM',
@@ -12,12 +19,27 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const messaging = getMessaging(app);
+
+const getSafeMessaging = async (): Promise<Messaging | null> => {
+  try {
+    const supported = await isSupported();
+    if (supported) {
+      return getMessaging(app);
+    }
+    console.warn('Firebase Messaging is not supported in this browser.');
+    return null;
+  } catch (error) {
+    console.warn('Error checking Firebase Messaging support:', error);
+    return null;
+  }
+};
 
 export const requestForToken = async (): Promise<string | null> => {
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const messaging = await getSafeMessaging();
+    if (!messaging) return null;
 
+    const registration = await navigator.serviceWorker.ready;
     const currentToken = await getToken(messaging, {
       vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
       serviceWorkerRegistration: registration,
@@ -28,14 +50,22 @@ export const requestForToken = async (): Promise<string | null> => {
     } else {
       return null;
     }
-  } catch {
+  } catch (error) {
+    console.warn('Failed to get FCM token:', error);
     return null;
   }
 };
 
-export const onMessageListener = (): Promise<MessagePayload> =>
-  new Promise((resolve) => {
+export const onMessageListener = async (): Promise<MessagePayload | null> => {
+  const messaging = await getSafeMessaging();
+
+  if (!messaging) {
+    return new Promise((resolve) => resolve(null));
+  }
+
+  return new Promise((resolve) => {
     onMessage(messaging, (payload: MessagePayload) => {
       resolve(payload);
     });
   });
+};
