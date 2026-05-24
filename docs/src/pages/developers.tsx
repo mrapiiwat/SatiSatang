@@ -25,7 +25,7 @@ export default function Developers(): ReactNode {
                 <span className="dev-label">ตำแหน่ง:</span> Full Stack Developer
               </div>
               <div className="dev-detail-item">
-                <span className="dev-label">หน้าที่:</span> พัฒนา Frontend และ Backend API
+                <span className="dev-label">หน้าที่:</span> พัฒนา Frontend, Backend API และดูแลส่วนของ DevOps
               </div>
             </div>
           </div>
@@ -37,10 +37,10 @@ export default function Developers(): ReactNode {
             <div className="dev-name">นายภูมิพัฒน์ เวฬุฬฐ์วรรณราช</div>
             <div className="dev-details">
               <div className="dev-detail-item">
-                <span className="dev-label">ตำแหน่ง:</span> Full Stack Developer
+                <span className="dev-label">ตำแหน่ง:</span> UX/UI and Frontend Developer
               </div>
               <div className="dev-detail-item">
-                <span className="dev-label">หน้าที่:</span> พัฒนาระบบฐานข้อมูลและ API integration
+                <span className="dev-label">หน้าที่:</span> ออกแบบประสบการณ์ผู้ใช้ ส่วนติดต่อผู้ใช้ และพัฒนาส่วนหน้าตา UI
               </div>
             </div>
           </div>
