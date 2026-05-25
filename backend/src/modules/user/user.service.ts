@@ -139,16 +139,46 @@ export class UserService {
   }
 
   async getSummary(userId: number, query: userSchema.getSummaryQuery) {
-    const { month, year } = query;
+    const { month, year, day, period = "month" } = query;
 
     let startDate: Date | undefined;
     let endDate: Date | undefined;
     const transactionConditions: SQL[] = [eq(transaction.userId, userId)];
 
-    if (month && year) {
+    if (period === "year" && year) {
+      startDate = new Date(year, 0, 1);
+      endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+    } else if (period === "week" && month && year) {
+      const today = new Date();
+      const reference = day
+        ? new Date(year, month - 1, day)
+        : today.getFullYear() === year && today.getMonth() + 1 === month
+          ? today
+          : new Date(year, month, 0, 23, 59, 59, 999);
+
+      const dayOfWeek = reference.getDay();
+      const diffToMonday = (dayOfWeek + 6) % 7;
+
+      startDate = new Date(
+        reference.getFullYear(),
+        reference.getMonth(),
+        reference.getDate() - diffToMonday
+      );
+      endDate = new Date(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        startDate.getDate() + 6,
+        23,
+        59,
+        59,
+        999
+      );
+    } else if (month && year) {
       startDate = new Date(year, month - 1, 1);
       endDate = new Date(year, month, 0, 23, 59, 59, 999);
+    }
 
+    if (startDate && endDate) {
       transactionConditions.push(gte(transaction.date, startDate));
       transactionConditions.push(lte(transaction.date, endDate));
     }

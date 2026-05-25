@@ -41,6 +41,15 @@ export interface MonthHeaderProps {
   onMonthChange: (month: number, year: number) => void;
 }
 
+export type SummaryPeriod = 'month' | 'year' | 'week';
+
+export interface HeaderSummaryProps {
+  selectedDate: Date;
+  selectedPeriod: SummaryPeriod;
+  onDateChange: (date: Date) => void;
+  onPeriodChange: (period: SummaryPeriod) => void;
+}
+
 export type SidebarProps = {
   isOpen: boolean;
   onClose: () => void;
