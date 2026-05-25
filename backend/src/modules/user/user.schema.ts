@@ -56,6 +56,10 @@ export type deleteAccount = Static<typeof deleteAccount>;
 export const getSummaryQuery = t.Object({
   month: t.Optional(t.Numeric()),
   year: t.Optional(t.Numeric()),
+  day: t.Optional(t.Numeric()),
+  period: t.Optional(
+    t.Union([t.Literal("month"), t.Literal("year"), t.Literal("week")])
+  ),
 });
 
 export type getSummaryQuery = Static<typeof getSummaryQuery>;

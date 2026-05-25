@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import MonthHeader from '../../components/user/MonthHeader';
+import HeaderSummary from '../../components/user/HeaderSummary';
 import { MdKeyboardArrowDown, MdKeyboardArrowUp, MdDownload, MdShare } from 'react-icons/md';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { useSearchParams } from 'react-router-dom';
 import axios from '../../api/axios';
 import type { Transaction, Goal } from '../../interface/summary';
+import type { SummaryPeriod } from '../../interface/components';
 import PageWrapper from '../../components/PageWrapper';
 import { useTranslation } from 'react-i18next';
 import html2canvas from 'html2canvas-pro';
@@ -16,19 +17,38 @@ const Summary: React.FC = () => {
   const printRef = useRef<HTMLDivElement>(null);
   const initialMonthParam = parseInt(searchParams.get('month') || '', 10);
   const initialYearParam = parseInt(searchParams.get('year') || '', 10);
+  const initialDayParam = parseInt(searchParams.get('day') || '', 10);
+  const initialPeriodParam = searchParams.get('period') as SummaryPeriod | null;
   const defaultMonth =
     initialMonthParam && initialMonthParam >= 1 && initialMonthParam <= 12
       ? initialMonthParam
       : today.getMonth() + 1;
   const defaultYear =
     initialYearParam && initialYearParam >= 1900 ? initialYearParam : today.getFullYear();
-  const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
-  const [selectedYear, setSelectedYear] = useState(defaultYear);
+  const defaultDay =
+    initialDayParam && initialDayParam >= 1 && initialDayParam <= 31
+      ? initialDayParam
+      : defaultMonth === today.getMonth() + 1 && defaultYear === today.getFullYear()
+        ? today.getDate()
+        : 1;
+  const defaultPeriod: SummaryPeriod =
+    initialPeriodParam === 'year' || initialPeriodParam === 'month' || initialPeriodParam === 'week'
+      ? initialPeriodParam
+      : 'month';
+
+  const [selectedDate, setSelectedDate] = useState<Date>(
+    new Date(defaultYear, defaultMonth - 1, defaultDay),
+  );
+  const [selectedPeriod, setSelectedPeriod] = useState<SummaryPeriod>(defaultPeriod);
   const [showIncomeDetail, setShowIncomeDetail] = useState(false);
   const [showExpenseDetail, setShowExpenseDetail] = useState(false);
   const [showGoalDetail, setShowGoalDetail] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
+
+  const selectedMonth = selectedDate.getMonth() + 1;
+  const selectedYear = selectedDate.getFullYear();
+  const selectedDay = selectedDate.getDate();
 
   const COLORS = ['#5300E8', '#E278FA', '#C8E84D'];
 
@@ -37,14 +57,18 @@ const Summary: React.FC = () => {
       {
         month: selectedMonth.toString(),
         year: selectedYear.toString(),
+        day: selectedDay.toString(),
+        period: selectedPeriod,
       },
       { replace: true },
     );
-  }, [selectedMonth, selectedYear, setSearchParams]);
+  }, [selectedMonth, selectedYear, selectedDay, selectedPeriod, setSearchParams]);
 
-  const fetchSummary = async (month: number, year: number) => {
+  const fetchSummary = async (month: number, year: number, day: number, period: SummaryPeriod) => {
     try {
-      const res = await axios.get(`/summary?month=${month}&year=${year}`);
+      const res = await axios.get(
+        `/summary?month=${month}&year=${year}&day=${day}&period=${period}`,
+      );
       setTransactions(res.data.transactions);
       setGoals(res.data.goals);
     } catch (err) {
@@ -53,8 +77,42 @@ const Summary: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchSummary(selectedMonth, selectedYear);
-  }, [selectedMonth, selectedYear]);
+    fetchSummary(selectedMonth, selectedYear, selectedDay, selectedPeriod);
+  }, [selectedMonth, selectedYear, selectedDay, selectedPeriod]);
+
+  const getDateRange = () => {
+    if (selectedPeriod === 'year') {
+      return {
+        start: new Date(selectedYear, 0, 1),
+        end: new Date(selectedYear, 11, 31, 23, 59, 59, 999),
+      };
+    }
+    if (selectedPeriod === 'week') {
+      const dayOfWeek = selectedDate.getDay();
+      const diffToMonday = (dayOfWeek + 6) % 7;
+      const start = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate() - diffToMonday,
+      );
+      const end = new Date(
+        start.getFullYear(),
+        start.getMonth(),
+        start.getDate() + 6,
+        23,
+        59,
+        59,
+        999,
+      );
+      return { start, end };
+    }
+    return {
+      start: new Date(selectedYear, selectedMonth - 1, 1),
+      end: new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999),
+    };
+  };
+
+  const { start: rangeStart, end: rangeEnd } = getDateRange();
 
   const handleDownload = async () => {
     if (!printRef.current) return;
@@ -107,23 +165,20 @@ const Summary: React.FC = () => {
 
   const filteredTransactions = transactions.filter((t) => {
     const date = new Date(t.date);
-    return date.getMonth() + 1 === selectedMonth && date.getFullYear() === selectedYear;
+    return date >= rangeStart && date <= rangeEnd;
   });
 
   const incomes = filteredTransactions.filter((t) => t.type === 'INCOME');
   const expenses = filteredTransactions.filter((t) => t.type === 'EXPENSE');
 
-  const monthStart = new Date(selectedYear, selectedMonth - 1, 1);
-  const monthEnd = new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999);
-
   const filteredGoals = goals.filter((g) => {
     const createdAt = new Date(g.createdAt);
     const deadline = g.deadline ? new Date(g.deadline) : null;
 
-    const goalStartBeforeMonthEnd = createdAt <= monthEnd;
-    const goalEndAfterMonthStart = !deadline || deadline >= monthStart;
+    const goalStartBeforeRangeEnd = createdAt <= rangeEnd;
+    const goalEndAfterRangeStart = !deadline || deadline >= rangeStart;
 
-    return goalStartBeforeMonthEnd && goalEndAfterMonthStart && g.currentAmount > 0;
+    return goalStartBeforeRangeEnd && goalEndAfterRangeStart && g.currentAmount > 0;
   });
 
   const totalIncome = incomes.reduce((sum, t) => sum + t.amount, 0);
@@ -141,13 +196,11 @@ const Summary: React.FC = () => {
     <PageWrapper animation="scale-fade">
       <div className="max-w-5xl mx-auto px-6 py-4 font-ibm text-black-900 dark:text-white">
         <div ref={printRef} className="pb-4">
-          <MonthHeader
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            onMonthChange={(month, year) => {
-              setSelectedMonth(month);
-              setSelectedYear(year);
-            }}
+          <HeaderSummary
+            selectedDate={selectedDate}
+            selectedPeriod={selectedPeriod}
+            onDateChange={(date) => setSelectedDate(date)}
+            onPeriodChange={(period) => setSelectedPeriod(period)}
           />
 
           <div className="flex flex-col items-center mb-8">

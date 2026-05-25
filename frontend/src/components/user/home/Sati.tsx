@@ -81,9 +81,32 @@ const Sati: React.FC<SatiProps> = ({
   }, [messages]);
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    const scrollY = window.scrollY;
+    const html = document.documentElement;
+    const body = document.body;
+
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyPosition = body.style.position;
+    const prevBodyTop = body.style.top;
+    const prevBodyWidth = body.style.width;
+    const prevHtmlOverscroll = html.style.overscrollBehavior;
+    const prevBodyOverscroll = body.style.overscrollBehavior;
+
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
+    html.style.overscrollBehavior = 'none';
+    body.style.overscrollBehavior = 'none';
+
     return () => {
-      document.body.style.overflow = 'unset';
+      body.style.overflow = prevBodyOverflow;
+      body.style.position = prevBodyPosition;
+      body.style.top = prevBodyTop;
+      body.style.width = prevBodyWidth;
+      html.style.overscrollBehavior = prevHtmlOverscroll;
+      body.style.overscrollBehavior = prevBodyOverscroll;
+      window.scrollTo(0, scrollY);
     };
   }, []);
 
@@ -706,14 +729,15 @@ const Sati: React.FC<SatiProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-end"
+      className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-end overscroll-none"
+      style={{ height: '100dvh' }}
       onClick={handleCloseChatModal}
     >
       <PageWrapper animation="fade" duration={0.2}>
         <div
           ref={modalRef}
-          className="bg-white dark:bg-black-900 shadow-2xl z-50 w-full"
-          style={{ height: 'calc(100vh - 80px)' }}
+          className="bg-white dark:bg-black-900 shadow-2xl z-50 w-full overscroll-none"
+          style={{ height: 'calc(100dvh - 80px)' }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="h-full flex flex-col px-6 pt-5 pb-6">
